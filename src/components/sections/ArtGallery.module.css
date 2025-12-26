@@ -1,0 +1,137 @@
+/* ArtGallery.module.css */
+
+.projectn {
+    font-size: 18px;
+    --color-text: #211c19;
+    --color-bg: #e3e0d8;
+    --color-link: transparent;
+    --color-link-hover: transparent;
+    --color-label: #a77860;
+    --color-text-alt: #575757;
+    --color-caption: transparent;
+    font-family: "tenon", -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+    color: var(--color-text);
+}
+
+.galleryWrap {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.gallery {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    flex: none;
+}
+
+.galleryItem {
+    background-position: 50% 50%;
+    background-size: cover;
+    flex: none;
+    border-radius: 6px;
+    position: relative;
+    filter: brightness(1);
+}
+
+.galleryGridTiny {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    width: 300%;
+    /* Desktop initial state: zoomed in */
+    padding: 0 2vh;
+    height: min-content;
+    gap: 1vh;
+}
+
+.galleryGridTiny .galleryItem {
+    aspect-ratio: 1;
+    width: 100%;
+    height: auto;
+    filter: contrast(0.8) saturate(0) brightness(0.6) opacity(1);
+}
+
+/* The "Switch" state corresponds to the FINAL view on desktop (zoomed out grid) */
+.gallerySwitch.galleryGridTiny {
+    width: 100%;
+    gap: 2vh;
+}
+
+.gallerySwitch.galleryGridTiny .galleryItem {
+    filter: contrast(1) saturate(1) brightness(0.8) opacity(0.8);
+}
+
+/* Caption */
+.caption {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    left: 50%;
+    top: 50%;
+    margin: -50vh 0 0 -50vw;
+    display: grid;
+    place-items: center;
+    font-size: clamp(2rem, 8vw, 4rem);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.gallerySwitch.galleryGridTiny .caption {
+    opacity: 1;
+}
+
+.danceTitle {
+    font-family: 'BebasNeueRegular', 'Arial Narrow', Arial, sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 5rem !important;
+    color: black;
+    text-shadow: 2px 2px rgb(255, 255, 255);
+}
+
+/* Mobile Overrides: Adjusted to allow animation */
+@media (max-width: 1024px) {
+    .galleryWrap {
+        height: auto;
+        /* Allow height to adjust to content */
+        min-height: auto;
+        padding-bottom: 0;
+        align-items: flex-end;
+    }
+
+    .gallery {
+        height: auto;
+    }
+
+    .galleryGridTiny {
+        width: 200%;
+        /* Reduced for mobile viewport containment */
+        gap: 0.5vh;
+        /* Smaller gap for dense grid */
+        grid-template-columns: repeat(5, 1fr);
+        /* 5 columns */
+        align-content: end;
+    }
+
+    /* Hide items beyond 25 (5x5) */
+    .galleryGridTiny .galleryItem:nth-child(n+26) {
+        display: none;
+    }
+
+    .caption {
+        text-align: center;
+        /* Ensure multiline text is centered */
+        padding: 0 1rem;
+    }
+
+    .danceTitle {
+        font-size: 3rem !important;
+        line-height: 1.1;
+    }
+}
