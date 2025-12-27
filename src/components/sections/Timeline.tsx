@@ -318,7 +318,14 @@ const Timeline = () => {
                     <h2 className="font-display text-5xl lg:text-7xl font-bold text-[#404040] drop-shadow-sm">
                         Our Historic Path
                     </h2>
-                    <div className="w-24 h-1 bg-[#8B6F47] mx-auto mt-8 rounded-full opacity-60" />
+                    <div className="relative w-28 h-6 lg:w-40 lg:h-10 mx-auto mt-8">
+                        <Image
+                            src="/title-separator.png"
+                            fill
+                            alt="Decorative separator"
+                            className="object-contain opacity-80"
+                        />
+                    </div>
                 </motion.div>
 
                 {/* Desktop View */}

@@ -44,6 +44,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css?family=Satisfy|Open+Sans+Condensed:700,300" rel="stylesheet" />
+      </head>
       <body
         className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${oswald.variable} antialiased`}
       >

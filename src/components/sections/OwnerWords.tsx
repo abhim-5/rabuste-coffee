@@ -1,6 +1,7 @@
 "use client";
 
 import BlurImage from "@/components/ui/BlurImage";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
@@ -217,7 +218,7 @@ export function OwnerWords() {
     <>
       <section
         ref={ref}
-        className="relative w-full overflow-visible py-10 lg:py-8 pb-[120px] md:pb-12 lg:pb-8 xl:pb-16 bg-[#D8CBB8] z-10"
+        className="relative w-full overflow-hidden py-10 lg:py-8 pb-[120px] md:pb-12 lg:pb-8 xl:pb-16 bg-[#D8CBB8] z-10"
       >
         {/* Enhanced Cinematic Background Effects */}
         {/* Deep vignette for depth */}
@@ -261,6 +262,21 @@ export function OwnerWords() {
               <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#404040] my-2 text-center drop-shadow-sm leading-tight">
                 Words from the Owner
               </h2>
+
+              {/* Title Separator */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative w-28 h-6 lg:w-40 lg:h-10 mt-4"
+              >
+                <Image
+                  src="/title-separator.png"
+                  fill
+                  alt="Decorative separator"
+                  className="object-contain opacity-80"
+                />
+              </motion.div>
             </motion.div>
 
             {/* Content Grid */}
@@ -321,8 +337,6 @@ export function OwnerWords() {
         </div>
       </section>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css?family=Satisfy|Open+Sans+Condensed:700,300');
-
         /* PFold Styles */
         .uc-container {
           position: relative;
@@ -343,9 +357,9 @@ export function OwnerWords() {
 
         @media (max-width: 768px) {
           .uc-container {
-            width: 101px !important;
-            height: 118px !important;
-            margin: 0 auto 0 23.5% !important;
+            width: 90px !important;
+            height: 140px !important;
+            margin: 0 0 0 -25% !important;
             position: relative !important;
             left: 0px !important;
             transform: none !important;
@@ -355,13 +369,13 @@ export function OwnerWords() {
             transform: none !important;
             left: 0px !important;
             top: 0 !important;
-            margin: 0 auto 0 23.5% !important;
+            margin: 0 0 0 -25% !important;
           }
           
           /* Make clickme button proportional */
           .demo-1 span.clickme {
-            width: 99px !important;
-            height: 80px !important;
+            width: 85px !important;
+            height: 120px !important;
             margin: 20px 0 0 0px !important;
             background-size: contain !important;
           }
@@ -475,21 +489,21 @@ export function OwnerWords() {
           .scrollwrap {
             overflow: hidden;
             font-size: 12px !important;
-            padding: 8px 10px 8px 12px !important;
+            padding: 8px 8px 8px 10px !important;
             line-height: 1.5 !important;
           }
           
           .scrollwrap h3 {
             font-size: 20px !important;
             margin-bottom: 6px !important;
-            padding: 10px 0 5px 20px !important;
+            padding: 10px 0 5px 15px !important;
           }
           
           .scrollwrap p {
             font-size:  15px !important;
             line-height: 1.3 !important;
             margin-bottom: 4px !important;
-            padding: 0 20px !important;
+            padding: 0 15px !important;
           }
           
           .scrollwrap p.signature {
