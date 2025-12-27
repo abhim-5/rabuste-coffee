@@ -12,7 +12,6 @@ export function OwnerWords() {
   useEffect(() => {
     let pfoldInstance: any = null;
     let isInitialized = false;
-    let timeoutId: NodeJS.Timeout;
 
     // Load a script and wait for it
     const loadScript = (src: string, id: string): Promise<void> => {
@@ -172,7 +171,7 @@ export function OwnerWords() {
         });
 
         // Bind click events with more robust handling
-        const clickHandler = function (e) {
+        const clickHandler = function (e: any) {
           console.log('Click detected on:', e.target);
           e.preventDefault();
           e.stopPropagation();
@@ -201,7 +200,6 @@ export function OwnerWords() {
 
     return () => {
       // Cleanup
-      clearTimeout(timeoutId);
       isInitialized = false;
       if (typeof window !== 'undefined' && (window as any).jQuery) {
         const $ = (window as any).jQuery;
@@ -513,7 +511,7 @@ export function OwnerWords() {
           }
         }
 
-        }
+
 
         .scrollwrap h3 {
            /* Inherit Satisfy */
