@@ -15,8 +15,8 @@ export function OwnerWords() {
       // Wait for component to be ready
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (typeof window !== 'undefined' && window.jQuery) {
-        const $ = window.jQuery;
+      if (typeof window !== 'undefined' && (window as any).jQuery) {
+        const $ = (window as any).jQuery;
 
         // Initialize PFold
         const $container = $('#owner-pfold-container');
@@ -84,8 +84,8 @@ export function OwnerWords() {
 
     return () => {
       // Cleanup
-      if (typeof window !== 'undefined' && window.jQuery) {
-        const $ = window.jQuery;
+      if (typeof window !== 'undefined' && (window as any).jQuery) {
+        const $ = (window as any).jQuery;
         $('#owner-pfold-container').off();
       }
     };
