@@ -9,7 +9,7 @@ import Image from "next/image";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
-  { name: "About Us", href: "/about", icon: Info },
+  { name: "About Us", href: "/about-us", icon: Info },
   { name: "Menu", href: "/menu", icon: UtensilsCrossed },
   { name: "Art Gallery", href: "/gallery", icon: Palette },
   { name: "Workshops", href: "/workshops", icon: Wrench },
