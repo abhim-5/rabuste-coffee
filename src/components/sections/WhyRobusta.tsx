@@ -5,14 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import BlurImage from "@/components/ui/BlurImage";
 
 const carouselImages = [
   "/robusta-pack.png",
-  "/carousel-Why Robusta/1.jpg",
-  "/carousel-Why Robusta/2.jpg",
-  "/carousel-Why Robusta/3.jpg",
-  "/carousel-Why Robusta/4.jpg",
-  "/carousel-Why Robusta/5.jpg",
+  "/carousel-Why%20Robusta/1.jpg",
+  "/carousel-Why%20Robusta/2.jpg",
+  "/carousel-Why%20Robusta/3.jpg",
+  "/carousel-Why%20Robusta/4.jpg",
+  "/carousel-Why%20Robusta/5.jpg",
 ];
 
 const reasons = [
@@ -233,11 +234,12 @@ export function WhyRobusta() {
                   }}
                   className="absolute inset-0"
                 >
-                  <Image
+                  <BlurImage
                     src={carouselImages[currentImageIndex]}
                     fill
                     alt="Robusta Coffee"
                     className="object-contain"
+                    priority={currentImageIndex === 0}
                   />
                 </motion.div>
               </AnimatePresence>
@@ -358,11 +360,12 @@ export function WhyRobusta() {
                   }}
                   className="absolute inset-0"
                 >
-                  <Image
+                  <BlurImage
                     src={carouselImages[currentImageIndex]}
                     fill
                     alt="Robusta Coffee"
                     className="object-contain"
+                    priority={currentImageIndex === 0}
                   />
                 </motion.div>
               </AnimatePresence>

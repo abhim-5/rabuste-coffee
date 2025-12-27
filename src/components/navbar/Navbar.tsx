@@ -112,12 +112,12 @@ export default function Navbar() {
                       </span>
                       {isActive && (
                         <motion.div
-                          layoutId="activeTab"
-                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600"
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 origin-left"
                           transition={{
-                            type: "spring",
-                            stiffness: 380,
-                            damping: 30,
+                            duration: 0.3,
+                            ease: [0.22, 1, 0.36, 1]
                           }}
                         />
                       )}

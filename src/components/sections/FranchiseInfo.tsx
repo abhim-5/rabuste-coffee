@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Award, Users } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 const benefits = [
     {
@@ -65,7 +66,9 @@ export default function FranchiseInfo() {
                 </div>
 
                 {/* Buy Now Button (Matching Join Now Style) */}
-                <BuyNowButton />
+                <Link href="/about-us#franchise-inquiry">
+                    <BuyNowButton />
+                </Link>
             </div>
         </section>
     );

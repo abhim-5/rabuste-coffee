@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 import Image from "next/image";
+import BlurImage from "@/components/ui/BlurImage";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Flip } from "gsap/Flip";
@@ -108,9 +109,16 @@ export default function ArtGallery() {
           {galleryImages.map((src, index) => (
             <div
               key={index}
-              className={styles.galleryItem}
-              style={{ backgroundImage: `url(${src})` }}
-            />
+              className={`${styles.galleryItem} relative overflow-hidden`}
+            >
+              <BlurImage
+                src={src}
+                fill
+                alt={`Gallery image ${index + 1}`}
+                className="object-cover"
+                sizes="(max-width: 768px) 33vw, 20vw"
+              />
+            </div>
           ))}
           <div className={clsx(styles.caption, styles.danceTitle)}>
             Experience the Fine Arts →

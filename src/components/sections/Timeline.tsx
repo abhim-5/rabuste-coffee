@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
 import Image from 'next/image';
 
@@ -9,31 +9,36 @@ const timelineData = [
         year: '2023',
         title: 'The Inception',
         description: 'Rabuste Coffee opened its doors in Surat, introducing the city to its first-ever authentic dark roast Robusta experience. A humble beginning with a bold vision.',
-        image: '/about us/1.jpg'
+        image: '/about us/1.jpg',
+        context: 'Genesis'
     },
     {
         year: '2023-Q4',
         title: 'First 1000 Cups',
         description: 'Within months, the aroma of our bold brew captivated the neighborhood. We celebrated serving our 1000th cup, marking the start of a loyal community.',
-        image: '/about us/2.jpg'
+        image: '/about us/2.jpg',
+        context: 'Milestone'
     },
     {
         year: '2024',
         title: 'Menu Expansion',
         description: 'We expanded our menu to include artisanal lattes and our signature "Bold Brew" series, catering to both purists and experimental coffee lovers.',
-        image: '/about us/3.jpg'
+        image: '/about us/3.jpg',
+        context: 'Evolution'
     },
     {
         year: '2024-Q3',
         title: 'Community Hub',
         description: 'Rabuste became more than a cafe; it became a hub for artists, thinkers, and friends. We hosted our first art workshop, blending coffee culture with creativity.',
-        image: '/about us/1.jpg'
+        image: '/about us/1.jpg',
+        context: 'Culture'
     },
     {
         year: 'Today',
         title: 'A Growing Legacy',
         description: 'Continuing to redefine the coffee scene, we are now a landmark for Robusta lovers. The journey is just beginning.',
-        image: '/about us/2.jpg'
+        image: '/about us/2.jpg',
+        context: 'Future'
     }
 ];
 
@@ -44,17 +49,40 @@ const TimelineItem = ({ data, index }: { data: typeof timelineData[0], index: nu
 
     return (
         <div ref={ref} className={`flex justify-between items-center w-full mb-32 ${isEven ? 'flex-row-reverse' : 'flex-row'}`}>
-            {/* Content Side Spacer */}
-            <div className="w-[45%] hidden md:block" />
+            {/* Content Side Spacer with Context Nodes */}
+            <div className="w-[45%] hidden md:flex justify-center items-center relative h-full min-h-[100px]">
+                {/* Ghost Date */}
+                <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="absolute text-[10rem] font-bold text-[#8B6F47]/10 font-display select-none blur-[0.5px]"
+                >
+                    {data.year.split('-')[0]}
+                </motion.span>
+
+                {/* Floating Keywords/Deco */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={isInView ? { opacity: 0.8, y: 8 } : {}} // y: 8 is translate-y-8
+                    transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                    className="absolute flex flex-col items-center gap-2 transform"
+                >
+                    <span className="w-1 h-12 bg-gradient-to-b from-transparent via-[#8B6F47] to-transparent" />
+                    <span className="font-serif text-[#8B6F47] tracking-[0.4em] text-sm uppercase font-bold">
+                        {data.context}
+                    </span>
+                </motion.div>
+            </div>
 
             {/* Cinematic Timeline Node */}
             <motion.div
-                initial={{ scale: 0, boxShadow: "0 0 0px rgba(139, 111, 71, 0)" }}
-                animate={isInView ? { scale: 1, boxShadow: "0 0 20px rgba(139, 111, 71, 0.6)" } : {}}
+                initial={{ scale: 0, boxShadow: "0 0 0px rgba(44, 26, 16, 0)" }}
+                animate={isInView ? { scale: 1, boxShadow: "0 0 20px rgba(44, 26, 16, 0.4)" } : {}}
                 transition={{ duration: 0.6, delay: 0.2, type: "spring" }}
-                className="absolute left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 border-[#D8CBB8] bg-[#8B6F47] z-20 shadow-[0_0_15px_rgba(139,111,71,0.5)]"
+                className="absolute left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 border-[#D8CBB8] bg-[#4A3425] z-20 shadow-[0_0_15px_rgba(74,52,37,0.5)]"
             >
-                <div className="absolute inset-0 bg-[#8B6F47] animate-ping rounded-full opacity-20" />
+                <div className="absolute inset-0 bg-[#2C1A10] animate-ping rounded-full opacity-20" />
             </motion.div>
 
             {/* Card Side */}
@@ -140,6 +168,79 @@ const MobileTimelineItem = ({ data, index }: { data: typeof timelineData[0], ind
     )
 }
 
+const ZigzagLine = ({ progress }: { progress: any }) => {
+    // Extended coordinates to strictly reach top and bottom edges (0 to 1500)
+    // Adjusted control points to ensure smooth entry/exit
+    // Widened X coordinates (5 and 95) to sweep behind the center of the cards (which are at ~25% and ~75% of screen width)
+    const pathD = `
+        M 5 0 
+        C 5 100, 95 100, 95 250
+        C 95 400, 5 400, 5 550
+        C 5 700, 95 700, 95 850
+        C 95 1000, 5 1000, 5 1150
+        C 5 1300, 95 1300, 95 1450
+        C 95 1480, 95 1500, 95 1500
+    `;
+
+    return (
+        <div className="absolute inset-0 pointer-events-none z-0">
+            {/* Expanded viewBox to preventing horizontal clipping of thick strokes */}
+            <svg width="100%" height="100%" viewBox="-20 0 140 1500" preserveAspectRatio="none" className="overflow-visible">
+                <defs>
+                    {/* Rich Coffee Gradient - Lighter/Golden Blend */}
+                    <linearGradient id="coffee-liquid" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#C5A572" stopOpacity="0.8" />
+                        <stop offset="50%" stopColor="#9C7E54" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#C5A572" stopOpacity="0.8" />
+                    </linearGradient>
+
+                    {/* Smoother Gloss */}
+                    <filter id="liquid-gloss">
+                        <feSpecularLighting result="specular" specularConstant="0.6" specularExponent="20" lightingColor="#FFF">
+                            <fePointLight x="50" y="50" z="300" />
+                        </feSpecularLighting>
+                        <feComposite in="specular" in2="SourceAlpha" operator="in" result="specular" />
+                        <feComposite in="SourceGraphic" in2="specular" operator="arithmetic" k1="0" k2="1" k3="0.3" k4="0" />
+                    </filter>
+                </defs>
+
+                {/* Background Track (Empty Pipe) - Thinner and subtler */}
+                <path
+                    d={pathD}
+                    fill="transparent"
+                    stroke="#8B6F47"
+                    strokeWidth="5"
+                    strokeOpacity="0.05"
+                    strokeLinecap="butt"
+                />
+
+                {/* The Liquid Fill - Thinner */}
+                <motion.path
+                    d={pathD}
+                    fill="transparent"
+                    stroke="url(#coffee-liquid)"
+                    strokeWidth="3"
+                    strokeLinecap="butt"
+                    style={{ pathLength: progress }}
+                    filter="url(#liquid-gloss)"
+                />
+
+                {/* Highlight/Sheen Line for Wet Look */}
+                <motion.path
+                    d={pathD}
+                    fill="transparent"
+                    stroke="#FFFFFF"
+                    strokeWidth="1"
+                    strokeOpacity="0.15"
+                    strokeLinecap="butt"
+                    style={{ pathLength: progress }}
+                    className="blur-[0.5px]"
+                />
+            </svg>
+        </div>
+    );
+};
+
 const Timeline = () => {
     const containerRef = useRef(null);
     const { scrollYProgress } = useScroll({
@@ -147,20 +248,33 @@ const Timeline = () => {
         offset: ["start end", "end start"]
     });
 
-    const scaleY = useSpring(scrollYProgress, {
-        stiffness: 60,
+    // Make progress faster: Complete the animation slightly before the section ends
+    const fastScrollProgress = useTransform(scrollYProgress, [0, 0.9], [0, 1]);
+
+    const [particles, setParticles] = useState<any[]>([]);
+
+    useEffect(() => {
+        setParticles([...Array(5)].map(() => ({
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            scale: Math.random() * 0.5 + 0.5,
+            duration: Math.random() * 10 + 10,
+            targetY: Math.random() * -20
+        })));
+    }, []);
+
+    const scaleY = useSpring(fastScrollProgress, {
+        stiffness: 70,
         damping: 20,
         restDelta: 0.001
     });
-
-    const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
     return (
         <section
             ref={containerRef}
             className="relative w-full py-24 lg:py-40 overflow-hidden bg-[#D8CBB8]"
         >
-            {/* Cinematic Background Layers */}
+            {/* Cinematic Background Layers (Cleaner, No Text) */}
 
             {/* 1. Vignette for depth */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.15)_100%)] pointer-events-none" />
@@ -168,15 +282,29 @@ const Timeline = () => {
             {/* 2. Abstract Grain/Noise Texture */}
             <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/noise-lines.png')]" />
 
-            {/* 3. Parallax Background Title */}
-            <motion.div
-                style={{ y: backgroundY }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
-            >
-                <h2 className="text-[18vw] lg:text-[25vw] font-display font-bold text-[#6F4E28] leading-none tracking-tighter opacity-5 blur-[2px]">
-                    JOURNEY
-                </h2>
-            </motion.div>
+            {/* 3. Subtle Floating Dust Particles (Kept for atmosphere, but subtle) */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {particles.map((p, i) => (
+                    <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 bg-[#D4AF37] rounded-full opacity-30 blur-[1px]"
+                        initial={{
+                            x: p.x + "%",
+                            y: p.y + "%",
+                            scale: p.scale
+                        }}
+                        animate={{
+                            y: [null, p.targetY + "%"],
+                            opacity: [0.1, 0.4, 0.1]
+                        }}
+                        transition={{
+                            duration: p.duration,
+                            repeat: Infinity,
+                            ease: "linear"
+                        }}
+                    />
+                ))}
+            </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
                 <motion.div
@@ -195,13 +323,16 @@ const Timeline = () => {
 
                 {/* Desktop View */}
                 <div className="hidden md:block relative">
+                    {/* Zigzag Animation Layer with Scroll Sync - Moved BEHIND the centerline */}
+                    <ZigzagLine progress={scaleY} />
+
                     {/* Base Line */}
                     <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-[#8B6F47]/10 -translate-x-1/2 rounded-full" />
 
-                    {/* Glowing Active Line */}
+                    {/* Glowing Active Line (Liquid Style) */}
                     <motion.div
                         style={{ scaleY, originY: 0 }}
-                        className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#8B6F47] via-[#BC9F75] to-[#8B6F47] -translate-x-1/2 shadow-[0_0_10px_rgba(139,111,71,0.5)] rounded-full"
+                        className="absolute left-1/2 top-0 bottom-0 w-[4px] bg-[#4A3425] -translate-x-1/2 shadow-[0_0_10px_rgba(74,52,37,0.4)] rounded-full"
                     />
 
                     {timelineData.map((item, index) => (

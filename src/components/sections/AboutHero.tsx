@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Circle, Coffee } from 'lucide-react';
-import Image from 'next/image';
+
+import BlurImage from '@/components/ui/BlurImage';
 
 const images = [
   '/about us/1.jpg',
@@ -27,6 +28,21 @@ const variants = {
     opacity: 0
   })
 };
+
+const heroContent = [
+  {
+    title: "OUR ORIGINS",
+    text: "Born in the heart of Surat, Rabuste is more than a cafe—it's a movement. We introduced the city to the intense, unapologetic soul of authentic dark roast Robusta, crafting a legacy one bold cup at a time."
+  },
+  {
+    title: "THE CRAFT",
+    text: "We don't just brew coffee; we curate experiences. From our signature 'Bold Brew' to artisanal lattes, every sip is a testament to our obsession with quality and our mastery of the dark roast."
+  },
+  {
+    title: "THE COMMUNITY",
+    text: "Rabuste is the gathering ground for the dreamers, the doers, and the creators. We are a hub where caffeine meets creativity, fostering connections and fueling the passions of our vibrant community."
+  }
+];
 
 const AboutHero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,26 +72,18 @@ const AboutHero = () => {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black">
+      {/* ... existing image slider code ... */}
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
-          key={currentIndex}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 }
-          }}
+          // ...
           className="absolute inset-0 h-full w-full"
         >
-          <Image
+          <BlurImage
             src={images[currentIndex]}
             alt={`About Us Image ${currentIndex + 1}`}
             fill
             className="object-cover"
-            priority
+            priority={currentIndex === 0}
           />
           {/* Dark Overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
@@ -93,9 +101,9 @@ const AboutHero = () => {
           initial={{ opacity: 0, y: 40, filter: "blur(20px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1.0, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display tracking-wide text-white text-[clamp(2rem,10vw,5.5rem)] leading-tight drop-shadow-2xl"
+          className="font-display tracking-wide text-white text-[clamp(2.5rem,8vw,6rem)] leading-tight drop-shadow-2xl uppercase"
         >
-          RABUSTE COFFEE
+          {heroContent[currentIndex].title}
         </motion.h1>
 
         {/* Divider with icon */}
@@ -119,9 +127,7 @@ const AboutHero = () => {
           transition={{ duration: 1.0, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="font-serif mx-auto max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl"
         >
-          Experience Surat's 1st & Only Dark Roast Robusta Cafe. The boldest coffee in town,
-          crafted for those who demand intensity and flavor. Your premium grab-and-go destination
-          for authentic dark roast excellence.
+          {heroContent[currentIndex].text}
         </motion.p>
       </div>
 

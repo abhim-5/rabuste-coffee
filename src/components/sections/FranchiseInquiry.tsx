@@ -19,7 +19,7 @@ const FranchiseInquiry = () => {
     ];
 
     return (
-        <section className="relative w-full py-20 lg:py-32 bg-[#D8CBB8] overflow-hidden">
+        <section id="franchise-inquiry" className="relative w-full py-20 lg:py-32 bg-[#D8CBB8] overflow-hidden">
             <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
                 <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
 

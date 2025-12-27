@@ -27,6 +27,8 @@ const oswald = Oswald({
   display: "swap",
 });
 
+
+
 export const metadata: Metadata = {
   title: "Rabuste Coffee",
   description: "Experience premium coffee, curated art gallery, inspiring workshops, and franchise opportunities at Rabuste.",
