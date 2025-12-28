@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rabuste-cream: #F9F5F0;
+  --color-rabuste-beige: #E8E0D5;
+  --color-rabuste-dark-beige: #E2D6C0;
+  /* Latte beige with mild yellow tint */
+  --color-rabuste-espresso: #2C1E1A;
+  --color-rabuste-mocha: #5D4037;
+  --color-rabuste-gold: #B08D55;
+
+  --font-serif: var(--font-playfair), serif;
+  --font-sans: var(--font-lato), sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-rabuste-dark-beige);
+  color: var(--color-rabuste-espresso);
+}
