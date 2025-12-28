@@ -151,31 +151,33 @@ export default function Navbar() {
               </motion.button>
 
               {/* Profile/Login Button */}
-              {isLoggedIn ? (
-                <motion.button
-                  initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                  animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Profile</span>
-                </motion.button>
-              ) : (
-                <motion.button
-                  initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                  animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Login</span>
-                </motion.button>
-              )}
+              <Link href="/profile">
+                {isLoggedIn ? (
+                  <motion.button
+                    initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
+                    animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Profile</span>
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
+                    animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Login</span>
+                  </motion.button>
+                )}
+              </Link>
             </div>
           </div>
         </div>
@@ -237,27 +239,29 @@ export default function Navbar() {
             </motion.button>
 
             {/* Profile/Login */}
-            {isLoggedIn ? (
-              <motion.button
-                initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                whileTap={{ scale: 0.95 }}
-                className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold"
-              >
-                <User className="w-5 h-5" />
-              </motion.button>
-            ) : (
-              <motion.button
-                initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                whileTap={{ scale: 0.95 }}
-                className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold tracking-[0.2em] uppercase"
-              >
-                Login
-              </motion.button>
-            )}
+            <Link href="/profile">
+              {isLoggedIn ? (
+                <motion.button
+                  initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                  animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold"
+                >
+                  <User className="w-5 h-5" />
+                </motion.button>
+              ) : (
+                <motion.button
+                  initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                  animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold tracking-[0.2em] uppercase"
+                >
+                  Login
+                </motion.button>
+              )}
+            </Link>
           </div>
         </div>
       </motion.div >
