@@ -117,6 +117,8 @@ export function CoffeeDetail({
                                                 alt={item.name}
                                                 fill
                                                 className="object-cover"
+                                                sizes="(max-width: 1024px) 100vw, 50vw"
+                                                priority
                                             />
                                         </div>
 
@@ -133,8 +135,8 @@ export function CoffeeDetail({
                                                         <Star
                                                             key={i}
                                                             className={`w-4 h-4 ${i < Math.floor(item.rating)
-                                                                    ? "fill-amber-500 text-amber-500"
-                                                                    : "text-gray-300"
+                                                                ? "fill-amber-500 text-amber-500"
+                                                                : "text-gray-300"
                                                                 }`}
                                                         />
                                                     ))}
@@ -183,8 +185,8 @@ export function CoffeeDetail({
                                                                             }))
                                                                         }
                                                                         className={`px-4 py-2 rounded-full font-sans text-sm transition-all ${selectedVariations[variation.id] === option.id
-                                                                                ? "bg-[#8B6F47] text-white shadow-md"
-                                                                                : "bg-[#D8CBB8]/30 text-[#404040] hover:bg-[#D8CBB8]/50"
+                                                                            ? "bg-[#8B6F47] text-white shadow-md"
+                                                                            : "bg-[#D8CBB8]/30 text-[#404040] hover:bg-[#D8CBB8]/50"
                                                                             }`}
                                                                     >
                                                                         {option.name}

@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #fafaf9;
@@ -6,14 +8,7 @@
   --accent: #d97706;
   --accent-light: #f59e0b;
   --muted: #78716c;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
-  --color-accent-light: var(--accent-light);
-  --color-muted: var(--muted);
+  /* Map CSS variables for backward compatibility if needed, though Tailwind v3 uses config */
   --font-display: var(--font-playfair);
   --font-serif: var(--font-cormorant);
   --font-sans: var(--font-inter);

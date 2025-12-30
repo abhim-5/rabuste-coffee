@@ -23,7 +23,7 @@ import {
 import Navbar from "@/components/navbar/Navbar";
 import { WorkshopCard } from "@/components/workshops/WorkshopCard";
 import Footer from "@/components/ui/Footer";
-import { section } from "framer-motion/client";
+
 
 // Data
 const upcomingWorkshops = [
@@ -353,7 +353,13 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
       >
         <div className="relative aspect-[4/5] overflow-hidden rounded-sm shadow-2xl w-full max-w-[90%] mx-auto">
           <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
-            <Image src={workshop.image} alt={workshop.title} fill className="object-cover" />
+            <Image
+              src={workshop.image}
+              alt={workshop.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           </motion.div>
           {/* Polaroid effect */}
           <div className="absolute inset-0 border-8 border-white pointer-events-none" />

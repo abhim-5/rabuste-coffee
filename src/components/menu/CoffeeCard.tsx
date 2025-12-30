@@ -68,6 +68,7 @@ export function CoffeeCard({ item, onCardClick, onAddToCart }: CoffeeCardProps) 
                     alt={item.name}
                     fill
                     className="object-cover transition-transform duration-500 hover:scale-110"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 />
             </div>
 
