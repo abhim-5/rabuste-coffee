@@ -19,7 +19,12 @@ export default function BlurImage({ className, src, alt, ...props }: ImageProps)
                 )}
                 src={src}
                 alt={alt}
-                onLoadingComplete={() => setIsLoading(false)}
+                onLoad={(event) => {
+        const img = event.target as HTMLImageElement;
+        if (img.src.indexOf("data:image/gif;base64") < 0) {
+          setIsLoading(false);
+        }
+      }}
                 {...props}
             />
         </div>

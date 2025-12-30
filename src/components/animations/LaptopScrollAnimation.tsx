@@ -96,11 +96,7 @@ export default function LaptopScrollAnimation() {
         {/* --- BACKGROUND ART --- 
             Hand-drawn sketches blending subtly with the background.
         */}
-        <img
-          src="/coffee-sketch-pattern.png"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.06] select-none pointer-events-none z-0 mix-blend-multiply"
-        />
+
 
         {/* --- CINEMATIC TEXT MARQUEE ---
             Single Layer, Huge, Smooth.

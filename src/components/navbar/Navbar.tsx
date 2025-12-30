@@ -273,7 +273,7 @@ export default function Navbar() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-black/95 backdrop-blur-xl border-t border-neutral-900/40 pb-safe"
       >
-        <div className="flex items-center justify-around h-16 px-2">
+        <div className="relative flex items-center justify-around h-16 px-2">
           {navItems.map((item, index) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;

@@ -74,6 +74,12 @@ export const HoverDistortion = forwardRef<HoverDistortionRef, HoverDistortionPro
         }
 
         if (containerRef.current) {
+          // Suppress console.log and console.warn for this library instantiation
+          const originalLog = console.log;
+          const originalWarn = console.warn;
+          console.log = () => {};
+          console.warn = () => {};
+          
           effectRef.current = new HoverEffect({
             parent: containerRef.current,
             intensity: intensity,
@@ -86,6 +92,10 @@ export const HoverDistortion = forwardRef<HoverDistortionRef, HoverDistortionPro
             easing: "easeOutExpo",
             imagesRatio: 0.75, // Adjust aspect ratio to show more vertical content
           });
+
+          // Restore console functions
+          console.log = originalLog;
+          console.warn = originalWarn;
 
           setIsLoaded(true);
 

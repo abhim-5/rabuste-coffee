@@ -1,17 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "../../src";
+
+@theme {
+  --color-accent: #d97706;
+  --color-accent-light: #f59e0b;
+  --color-muted: #78716c;
+
+  --font-display: var(--font-playfair);
+  --font-serif: var(--font-cormorant);
+  --font-sans: var(--font-inter);
+}
 
 :root {
   --background: #fafaf9;
   --foreground: #1c1917;
-  --accent: #d97706;
-  --accent-light: #f59e0b;
-  --muted: #78716c;
-  /* Map CSS variables for backward compatibility if needed, though Tailwind v3 uses config */
-  --font-display: var(--font-playfair);
-  --font-serif: var(--font-cormorant);
-  --font-sans: var(--font-inter);
+  --accent: var(--color-accent);
+  --accent-light: var(--color-accent-light);
+  --muted: var(--color-muted);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,18 +33,7 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Grain texture overlay */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-}
+
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -87,11 +81,7 @@ body::before {
   text-wrap: balance;
 }
 
-/* Grain texture for hero sections */
-.grain-texture {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
-}
+
 
 /* Radial gradient for vignette */
 .bg-gradient-radial {

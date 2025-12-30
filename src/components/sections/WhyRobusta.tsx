@@ -175,6 +175,7 @@ export function WhyRobusta() {
               fill
               alt="Decorative separator"
               className="object-contain"
+              sizes="(max-width: 768px) 128px, 160px"
             />
           </motion.div>
         </motion.div>
@@ -240,6 +241,7 @@ export function WhyRobusta() {
                     alt="Robusta Coffee"
                     className="object-contain"
                     priority={currentImageIndex === 0}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 380px, 450px"
                   />
                 </motion.div>
               </AnimatePresence>
@@ -366,6 +368,7 @@ export function WhyRobusta() {
                     alt="Robusta Coffee"
                     className="object-contain"
                     priority={currentImageIndex === 0}
+                    sizes="(max-width: 768px) 100vw, 340px"
                   />
                 </motion.div>
               </AnimatePresence>
