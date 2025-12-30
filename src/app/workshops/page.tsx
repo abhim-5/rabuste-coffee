@@ -61,7 +61,7 @@ const upcomingWorkshops = [
 
 const previousWorkshops = [
   {
-    id: 1,
+    id: "1",
     title: "Coffee & Pottery",
     image: "/workshops/1.jpg",
     date: "Dec 2025",
@@ -73,7 +73,7 @@ const previousWorkshops = [
     ],
   },
   {
-    id: 2,
+    id: "2",
     title: "Espresso Fundamentals",
     image: "/workshops/2.jpg",
     date: "Nov 2025",
@@ -85,7 +85,7 @@ const previousWorkshops = [
     ],
   },
   {
-    id: 3,
+    id: "3",
     title: "Coffee & Canvas",
     image: "/workshops/3.jpg",
     date: "Oct 2025",
@@ -97,7 +97,7 @@ const previousWorkshops = [
     ],
   },
   {
-    id: 4,
+    id: "4",
     title: "Brewing Science",
     image: "/workshops/4.jpg",
     date: "Sep 2025",
@@ -109,7 +109,7 @@ const previousWorkshops = [
     ],
   },
   {
-    id: 5,
+    id: "5",
     title: "Pastry Pairing",
     image: "/workshops/5.jpg",
     date: "Aug 2025",
@@ -121,7 +121,7 @@ const previousWorkshops = [
     ],
   },
   {
-    id: 6,
+    id: "6",
     title: "Live Acoustic Night",
     image: "/workshops/6.jpg",
     date: "Jul 2025",
