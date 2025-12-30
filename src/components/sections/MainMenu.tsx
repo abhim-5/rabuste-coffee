@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useScroll, useSpring, useTransform } from "framer-motion";
 import { HoverDistortion, HoverDistortionRef } from "@/components/effects/HoverDistortion";
 import Image from "next/image";
+import Link from "next/link";
 
 const menuItems = [
   {
@@ -141,10 +142,11 @@ function SeeMoreButton() {
   const text = "See More";
 
   return (
-    <button
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative px-8 py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+    <Link href="/menu">
+      <button
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="relative px-8 py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
       suppressHydrationWarning
     >
       <span className="flex space-x-[2px]">
@@ -170,6 +172,7 @@ function SeeMoreButton() {
         ))}
       </span>
     </button>
+    </Link>
   );
 }
 
@@ -179,6 +182,19 @@ function DesktopMenuItem({ item, index, isInView }: any) {
   const [currentName, setCurrentName] = useState(item.nameA);
   const [currentPrice, setCurrentPrice] = useState(item.priceA);
   const [currentImage, setCurrentImage] = useState(item.imageA);
+
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 400,
+    damping: 90
+  });
+
+  const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -200,26 +216,29 @@ function DesktopMenuItem({ item, index, isInView }: any) {
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
       animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
       transition={{ duration: 0.8, delay: 0.4 + index * 0.2, ease: [0.22, 1, 0.36, 1] }}
       className="flex flex-col items-center"
     >
-      {/* Image with Hover Distortion */}
+      {/* Image with Hover Distortion and Parallax */}
       <div
         className="relative w-full aspect-[4/5] overflow-hidden cursor-pointer border border-white/20"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <HoverDistortion
-          image1={item.imageA}
-          image2={item.imageB}
-          displacementImage="/liquid distortion assets/4.png"
-          intensity={0.5}
-          speedIn={1.6}
-          speedOut={1.2}
-          className="w-full h-full"
-        />
+        <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
+          <HoverDistortion
+            image1={item.imageA}
+            image2={item.imageB}
+            displacementImage="/liquid distortion assets/4.png"
+            intensity={0.5}
+            speedIn={1.6}
+            speedOut={1.2}
+            className="w-full h-full"
+          />
+        </motion.div>
 
         {/* Indicator Dots */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
@@ -263,14 +282,24 @@ function MobileMenuItem({ item, index, isInView }: any) {
   const distortionRef = useRef<HoverDistortionRef>(null);
   const [showingB, setShowingB] = useState(false);
 
+  const { scrollYProgress } = useScroll({
+    target: itemRef,
+    offset: ["start end", "end start"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 400,
+    damping: 90
+  });
+
+  const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
+
   const handleArrowClick = () => {
     if (distortionRef.current) {
       if (!showingB) {
-        // Trigger transition to image B
         distortionRef.current.next();
         setShowingB(true);
       } else {
-        // Trigger transition back to image A
         distortionRef.current.previous();
         setShowingB(false);
       }
@@ -288,21 +317,23 @@ function MobileMenuItem({ item, index, isInView }: any) {
       transition={{ duration: 0.8, delay: 0.4 + index * 0.2, ease: [0.22, 1, 0.36, 1] }}
       className="flex flex-col items-center"
     >
-      {/* Image with Distortion */}
+      {/* Image with Distortion and Parallax */}
       <div
         className="relative w-full max-w-[340px] aspect-[4/5] overflow-hidden border border-white/20"
       >
-        <HoverDistortion
-          ref={distortionRef}
-          image1={item.imageA}
-          image2={item.imageB}
-          displacementImage="/liquid distortion assets/4.png"
-          intensity={0.5}
-          speedIn={1.6}
-          speedOut={1.2}
-          className="w-full h-full"
-          disableAutoTrigger={true}
-        />
+        <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
+          <HoverDistortion
+            ref={distortionRef}
+            image1={item.imageA}
+            image2={item.imageB}
+            displacementImage="/liquid distortion assets/4.png"
+            intensity={0.5}
+            speedIn={1.6}
+            speedOut={1.2}
+            className="w-full h-full"
+            disableAutoTrigger={true}
+          />
+        </motion.div>
 
         {/* Arrow Button */}
         <button

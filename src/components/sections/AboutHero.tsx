@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Circle, Coffee } from 'lucide-react';
+import { useRef } from 'react';
 
 import BlurImage from '@/components/ui/BlurImage';
 
@@ -47,6 +48,19 @@ const heroContent = [
 const AboutHero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const heroRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start end", "end start"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 400,
+    damping: 90
+  });
+
+  const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -71,20 +85,31 @@ const AboutHero = () => {
   };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black">
+    <div ref={heroRef} className="relative h-screen w-full overflow-hidden bg-black">
       {/* ... existing image slider code ... */}
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
-          // ...
+          key={currentIndex}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 }
+          }}
           className="absolute inset-0 h-full w-full"
         >
-          <BlurImage
-            src={images[currentIndex]}
-            alt={`About Us Image ${currentIndex + 1}`}
-            fill
-            className="object-cover"
-            priority={currentIndex === 0}
-          />
+          <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
+            <BlurImage
+              src={images[currentIndex]}
+              alt={`About Us Image ${currentIndex + 1}`}
+              fill
+              className="object-cover"
+              priority={currentIndex === 0}
+            />
+          </motion.div>
           {/* Dark Overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
           <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-40">

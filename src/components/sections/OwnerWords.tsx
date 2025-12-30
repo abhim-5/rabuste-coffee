@@ -2,7 +2,7 @@
 
 import BlurImage from "@/components/ui/BlurImage";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
 
@@ -19,14 +19,14 @@ export function OwnerWords() {
       return new Promise((resolve, reject) => {
         // Check if already loaded
         if (document.getElementById(id)) {
-          console.log(`${id} already exists`);
+
           resolve();
           return;
         }
 
         // Check if script is already in window
         if (id === 'jquery-lib' && (window as any).jQuery) {
-          console.log('jQuery already in window');
+
           resolve();
           return;
         }
@@ -37,7 +37,7 @@ export function OwnerWords() {
         script.async = false;
 
         script.onload = () => {
-          console.log(`${id} loaded successfully`);
+
           resolve();
         };
 
@@ -53,7 +53,7 @@ export function OwnerWords() {
     // Load all scripts in sequence
     const loadAllScripts = async () => {
       try {
-        console.log('Starting script loading...');
+
 
         // Load jQuery
         await loadScript('https://code.jquery.com/jquery-1.8.2.min.js', 'jquery-lib');
@@ -70,7 +70,7 @@ export function OwnerWords() {
         // Small delay for PFold to initialize
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        console.log('All scripts loaded successfully');
+
         return true;
       } catch (error) {
         console.error('Error loading scripts:', error);
@@ -82,15 +82,15 @@ export function OwnerWords() {
     const initializePFold = async () => {
       // Prevent double initialization
       if (isInitialized) {
-        console.log('Already initialized, skipping');
+
         return;
       }
 
-      console.log('Loading scripts...');
+
       const scriptsReady = await loadAllScripts();
 
       if (!scriptsReady) {
-        console.log('Script loading encountered errors, but attempting to continue...');
+
       }
 
       // Small delay to ensure everything is ready
@@ -103,15 +103,14 @@ export function OwnerWords() {
       }
 
       const $ = (window as any).jQuery;
-      console.log('jQuery available:', !!$);
-      console.log('PFold available:', !!$.fn.pfold);
+
 
       const $container = $('#owner-pfold-container');
-      console.log('Container found:', $container.length);
+
 
       if ($container.length > 0 && $.fn.pfold && !isInitialized) {
         isInitialized = true;
-        console.log('Initializing PFold now...');
+
         const pfold = $container.pfold({
           easing: 'ease-in-out',
           folds: 3,
@@ -156,7 +155,7 @@ export function OwnerWords() {
         });
 
         pfoldInstance = pfold;
-        console.log('PFold initialized:', !!pfold);
+
 
         // Ensure clickme has proper CSS for clicking
         $container.find('span.clickme').css({
@@ -173,22 +172,22 @@ export function OwnerWords() {
 
         // Bind click events with more robust handling
         const clickHandler = function (e: any) {
-          console.log('Click detected on:', e.target);
+
           e.preventDefault();
           e.stopPropagation();
           // Hide initial content immediately when clicked
           $container.find('.uc-initial-content').css('visibility', 'hidden');
-          console.log('Calling unfold...');
+
           pfold.unfold();
         };
 
         $container.find('span.clickme').on('click', clickHandler);
         $container.find('.uc-initial-content').on('click', clickHandler);
 
-        console.log('Click handlers bound. Clickme elements:', $container.find('span.clickme').length);
+
 
         $container.find('span.close').on('click', function () {
-          console.log('Close clicked');
+
           $container.find('.uc-final-wrapper').css('visibility', 'hidden');
           pfold.fold();
         });
@@ -290,12 +289,27 @@ export function OwnerWords() {
               >
                 {/* Owner Image */}
                 <div className="relative w-full max-w-[240px] lg:max-w-xs aspect-square mx-auto lg:mx-0 shadow-2xl rounded-2xl overflow-hidden border-4 border-[#fff1d0]">
-                  <BlurImage
-                    src="/about us/owner_pic.png"
-                    alt="Rabuste Founder"
-                    fill
-                    className="object-cover object-top"
-                  />
+                  <motion.div
+                    style={{
+                      y: useTransform(
+                        useSpring(
+                          useScroll({ target: ref, offset: ["start end", "end start"] }).scrollYProgress,
+                          { stiffness: 400, damping: 90 }
+                        ),
+                        [0, 1],
+                        ["20%", "-20%"]
+                      ),
+                      scale: 1.5
+                    }}
+                    className="relative w-full h-full"
+                  >
+                    <BlurImage
+                      src="/about us/owner_pic.png"
+                      alt="Rabuste Founder"
+                      fill
+                      className="object-cover object-top"
+                    />
+                  </motion.div>
                 </div>
                 <div className="mt-4 text-center">
                   <h3 className="font-display text-xl lg:text-2xl font-bold text-[#404040]">

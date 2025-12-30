@@ -1,11 +1,14 @@
 import Navbar from "@/components/navbar/Navbar";
-import Image from "next/image";
+import FranchiseInfo from "@/components/sections/FranchiseInfo";
+import dynamic from "next/dynamic";
 import Hero from "@/components/hero/Hero";
 import WhatIsRobusta from "@/components/sections/WhatIsRobusta";
 import WhyRobusta from "@/components/sections/WhyRobusta";
-import ArtGallery from "@/components/sections/ArtGallery";
-import FestsAndWorkshops from "@/components/sections/FestsAndWorkshops";
-import FranchiseInfo from "@/components/sections/FranchiseInfo";
+
+// Lazy load heavy below-the-fold components
+const ArtGallery = dynamic(() => import("@/components/sections/ArtGallery"));
+const FestsAndWorkshops = dynamic(() => import("@/components/sections/FestsAndWorkshops"));
+const CustomerReviews = dynamic(() => import("@/components/sections/CustomerReviews"));
 import Footer from "@/components/ui/Footer";
 import MainMenu from "@/components/sections/MainMenu";
 import LaptopScrollAnimation from "@/components/animations/LaptopScrollAnimation";
@@ -49,6 +52,9 @@ export default function Home() {
 
         {/* Fests & Workshops Section */}
         <FestsAndWorkshops />
+
+        {/* Customer Reviews Section */}
+        <CustomerReviews />
 
         {/* Franchise Info Section */}
         <FranchiseInfo />

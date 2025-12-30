@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { HoverDistortion } from "@/components/effects/HoverDistortion";
@@ -67,24 +67,7 @@ export function WhatIsRobusta() {
         {/* Content Grid - Mobile: Stacked, Desktop: Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Desktop: Image on left */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="order-2 lg:order-1 lg:px-0"
-          >
-            <div className="relative w-full aspect-[3/2] lg:aspect-[4/3] overflow-hidden lg:rounded-lg">
-              <HoverDistortion
-                image1="/liquid distortion assets/img_one.jpg"
-                image2="/liquid distortion assets/img_two.jpg"
-                displacementImage="/liquid distortion assets/4.png"
-                intensity={0.5}
-                speedIn={1.6}
-                speedOut={1.2}
-                className="w-full h-full"
-              />
-            </div>
-          </motion.div>
+          <ImageWithParallax isInView={isInView} />
 
           {/* Text Content */}
           <motion.div
@@ -116,7 +99,47 @@ export function WhatIsRobusta() {
           </motion.div>
         </div>
       </div>
-    </section>
+    </section >
+  );
+}
+
+// Image with Parallax Component
+function ImageWithParallax({ isInView }: { isInView: boolean }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 400,
+    damping: 90
+  });
+
+  const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: -50 }}
+      animate={isInView ? { opacity: 1, x: 0 } : {}}
+      transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="order-2 lg:order-1 lg:px-0"
+    >
+      <div className="relative w-full aspect-[3/2] lg:aspect-[4/3] overflow-hidden lg:rounded-lg pointer-events-none lg:pointer-events-auto">
+        <motion.div style={{ y, scale: 1.15 }} className="relative w-full h-full">
+          <HoverDistortion
+            image1="/liquid distortion assets/img_one.jpg"
+            image2="/liquid distortion assets/img_two.jpg"
+            displacementImage="/liquid distortion assets/4.png"
+            intensity={0.5}
+            speedIn={1.6}
+            speedOut={1.2}
+            className="w-full h-full"
+          />
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
 

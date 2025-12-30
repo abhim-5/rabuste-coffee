@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import { useState, useRef } from "react";
+import Link from "next/link";
 
 const workshopItems = [
     { src: "/workshops/1.jpg", title: "Pottery Workshop" },
@@ -123,23 +124,40 @@ export default function FestsAndWorkshops() {
 
 // Reusable Image Component
 function WorkshopImage({ src, title, index }: { src: string; title: string; index: number }) {
+    const ref = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: ref,
+        offset: ["start end", "end start"]
+    });
+
+    const smoothProgress = useSpring(scrollYProgress, {
+        stiffness: 400,
+        damping: 90
+    });
+
+    const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
+
     return (
         <motion.div
+            ref={ref}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="relative aspect-square w-full overflow-hidden rounded-lg group cursor-pointer"
+            className="relative aspect-square w-full overflow-hidden rounded-lg cursor-pointer"
         >
-            <Image
-                src={src}
-                fill
-                alt={title}
-                className="object-cover transition-all duration-500 lg:group-hover:scale-110 lg:group-hover:blur-[2px]"
-            />
-            {/* Overlay with Text */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                <span className="text-[#f0f0f0] font-display text-3xl lg:text-4xl font-bold tracking-wide transform translate-y-0 lg:translate-y-4 lg:group-hover:translate-y-0 transition-all duration-500 drop-shadow-md text-center px-4">
+            <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
+                <Image
+                    src={src}
+                    fill
+                    alt={title}
+                    className="object-cover"
+                />
+            </motion.div>
+
+            {/* Overlay with Text - Always visible now or kept subtle? Keeping subtle gradient for readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90 flex items-center justify-center">
+                <span className="text-[#f0f0f0] font-display text-2xl lg:text-3xl font-bold tracking-wide drop-shadow-md text-center px-4">
                     {title}
                 </span>
             </div>
@@ -149,13 +167,14 @@ function WorkshopImage({ src, title, index }: { src: string; title: string; inde
 
 function JoinNowButton() {
     const [isHovered, setIsHovered] = useState(false);
-    const text = "Join Now";
+    const text = "Register Now";
 
     return (
-        <button
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+        <Link href="/workshops#upcoming">
+          <button
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
             suppressHydrationWarning
         >
             <span className="flex space-x-[2px]">
@@ -181,5 +200,6 @@ function JoinNowButton() {
                 ))}
             </span>
         </button>
+        </Link>
     );
 }
