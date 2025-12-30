@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { format } from "date-fns";
 import { Calendar, User } from "lucide-react";
 import { Workshop } from "@/types/menu";
 
@@ -63,16 +62,21 @@ export function WorkshopsSection({ workshops }: WorkshopsSectionProps) {
                                 <div className="flex items-center gap-2 text-[#57534e]">
                                     <Calendar className="w-4 h-4 text-[#8B6F47]" />
                                     <span className="font-sans text-sm">
-                                        {format(new Date(workshop.date), "MMMM d, yyyy")}
+                                        {new Date(workshop.date).toLocaleDateString("en-US", {
+                                            month: "long",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
                                     </span>
                                 </div>
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-[#f5f5f4] flex justify-between items-center">
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${workshop.attended
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-amber-100 text-amber-700"
-                                    }`}>
+                                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
+                                    workshop.attended 
+                                    ? "bg-green-100 text-green-700" 
+                                    : "bg-amber-100 text-amber-700"
+                                }`}>
                                     {workshop.attended ? "Completed" : "Upcoming"}
                                 </span>
                             </div>
