@@ -5,7 +5,6 @@ import { MenuItem, CartItem, CartState } from "@/types/menu";
 
 const CART_STORAGE_KEY = "rabuste-cart";
 
-// Helper to calculate subtotal for a cart item
 const calculateSubtotal = (
     menuItem: MenuItem,
     quantity: number,
@@ -13,7 +12,6 @@ const calculateSubtotal = (
 ): number => {
     let price = menuItem.price;
 
-    // Add variation price modifiers
     if (selectedVariations && menuItem.variations) {
         menuItem.variations.forEach((variation) => {
             const selectedOptionId = selectedVariations[variation.id];
@@ -36,7 +34,6 @@ export function useCart() {
         itemCount: 0,
     });
 
-    // Load cart from localStorage on mount
     useEffect(() => {
         const savedCart = localStorage.getItem(CART_STORAGE_KEY);
         if (savedCart) {
@@ -49,12 +46,10 @@ export function useCart() {
         }
     }, []);
 
-    // Save cart to localStorage whenever it changes
     useEffect(() => {
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }, [cart]);
 
-    // Add item to cart
     const addItem = useCallback(
         (
             menuItem: MenuItem,
@@ -71,7 +66,6 @@ export function useCart() {
                 let newItems: CartItem[];
 
                 if (existingItemIndex > -1) {
-                    // Item exists, update quantity
                     newItems = [...prevCart.items];
                     const newQuantity = newItems[existingItemIndex].quantity + quantity;
                     newItems[existingItemIndex] = {
@@ -80,7 +74,6 @@ export function useCart() {
                         subtotal: calculateSubtotal(menuItem, newQuantity, selectedVariations),
                     };
                 } else {
-                    // New item
                     const newItem: CartItem = {
                         menuItem,
                         quantity,
@@ -99,7 +92,6 @@ export function useCart() {
         []
     );
 
-    // Remove item from cart
     const removeItem = useCallback((index: number) => {
         setCart((prevCart) => {
             const newItems = prevCart.items.filter((_, i) => i !== index);
@@ -110,7 +102,6 @@ export function useCart() {
         });
     }, []);
 
-    // Update item quantity
     const updateQuantity = useCallback((index: number, quantity: number) => {
         if (quantity <= 0) {
             return;
@@ -132,7 +123,6 @@ export function useCart() {
         });
     }, []);
 
-    // Clear cart
     const clearCart = useCallback(() => {
         setCart({ items: [], total: 0, itemCount: 0 });
     }, []);

@@ -1,0 +1,90 @@
+                        <div className="space-y-3">
+                            {/* 1. Takeaway Scheduled Option - FIRST (Promoted) */}
+                            <label
+                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'takeaway-scheduled'
+                                        ? 'border-[#8B6F47] bg-[#8B6F47]/5'
+                                        : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
+                                    }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="orderType"
+                                    checked={orderType === "takeaway-scheduled"}
+                                    onChange={() => setOrderType("takeaway-scheduled")}
+                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
+                                />
+                                <div className="flex-1">
+                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
+                                        ⏰ Takeaway - Schedule Pickup (Recommended)
+                                    </p>
+                                    <p className="font-sans text-xs text-[#78716c] mb-3">
+                                        I'll collect my order after some time
+                                    </p>
+
+                                    {/* Time Selector - only show when this option is selected */}
+                                    {orderType === "takeaway-scheduled" && (
+                                        <select
+                                            value={scheduledTime}
+                                            onChange={(e) => setScheduledTime(e.target.value)}
+                                            className="w-full bg-white border border-[#8B6F47]/30 rounded-lg px-3 py-2 font-sans text-sm text-[#404040] focus:outline-none focus:ring-2 focus:ring-[#8B6F47]"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <option value="15">In 15 minutes</option>
+                                            <option value="30">In 30 minutes</option>
+                                            <option value="45">In 45 minutes</option>
+                                            <option value="60">In 1 hour</option>
+                                            <option value="90">In 1.5 hours</option>
+                                            <option value="120">In 2 hours</option>
+                                        </select>
+                                    )}
+                                </div>
+                            </label>
+
+                            {/* 2. Takeaway Now Option */}
+                            <label
+                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'takeaway-now'
+                                        ? 'border-[#8B6F47] bg-[#8B6F47]/5'
+                                        : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
+                                    }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="orderType"
+                                    checked={orderType === "takeaway-now"}
+                                    onChange={() => setOrderType("takeaway-now")}
+                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
+                                />
+                                <div className="flex-1">
+                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
+                                        🚗 Takeaway - Ready Now
+                                    </p>
+                                    <p className="font-sans text-xs text-[#78716c]">
+                                        I'm outside or nearby, prepare my order now
+                                    </p>
+                                </div>
+                            </label>
+
+                            {/* 3. Dine-in Option */}
+                            <label
+                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'dine-in'
+                                        ? 'border-[#8B6F47] bg-[#8B6F47]/5'
+                                        : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
+                                    }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="orderType"
+                                    checked={orderType === "dine-in"}
+                                    onChange={() => setOrderType("dine-in")}
+                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
+                                />
+                                <div className="flex-1">
+                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
+                                        🪑 Dine-In (Earn Points!)
+                                    </p>
+                                    <p className="font-sans text-xs text-[#78716c]">
+                                        Order from your table and earn reward points
+                                    </p>
+                                </div>
+                            </label>
+                        </div>

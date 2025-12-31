@@ -3,21 +3,14 @@
 import { useState } from "react";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/ui/Footer";
-import { DealOfTheDay } from "@/components/menu/DealOfTheDay";
+import { DealSection } from "@/components/menu/DealSection";
 import { MenuSection } from "@/components/menu/MenuSection";
 import { CoffeeDetail } from "@/components/menu/CoffeeDetail";
 import { Cart } from "@/components/cart/Cart";
 import { CartButton } from "@/components/cart/CartButton";
 import { useCart } from "@/hooks/useCart";
-import {
-    menuItems,
-    getMenuItemsByCategory,
-    getDealItems,
-    getRecommendedItems,
-    getMenuItemById,
-} from "@/data/menuData";
+import { menuItems, getDealItems } from "@/data/menuData";
 import { MenuItem } from "@/types/menu";
-import { motion } from "framer-motion";
 
 export default function MenuPage() {
     const { cart, addItem, removeItem, updateQuantity } = useCart();
@@ -25,22 +18,49 @@ export default function MenuPage() {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
+    const dealItems = getDealItems();
+
     const handleItemClick = (item: MenuItem) => {
         setSelectedItem(item);
         setIsDetailOpen(true);
     };
 
-    const handleAddToCart = (
+    const handleAddToCart = (item: MenuItem) => {
+        addItem(item, 1);
+    };
+
+    const handleUpdateQuantity = (item: MenuItem, change: number) => {
+        const cartItemIndex = cart.items.findIndex(
+            (cartItem) => cartItem.menuItem.id === item.id
+        );
+
+        if (cartItemIndex > -1) {
+            const currentQty = cart.items[cartItemIndex].quantity;
+            const newQty = currentQty + change;
+
+            if (newQty <= 0) {
+                removeItem(cartItemIndex);
+            } else {
+                updateQuantity(cartItemIndex, newQty);
+            }
+        }
+    };
+
+    const getCartQuantity = (itemId: string): number => {
+        const cartItem = cart.items.find((item) => item.menuItem.id === itemId);
+        return cartItem ? cartItem.quantity : 0;
+    };
+
+    const handleAddToCartWithVariations = (
         item: MenuItem,
         quantity: number,
         variations?: Record<string, string>
     ) => {
         addItem(item, quantity, variations);
-        // Optional: Show a toast notification here
     };
 
     const handleAddRecommendedItem = (itemId: string) => {
-        const item = getMenuItemById(itemId);
+        const item = menuItems.find((i) => i.id === itemId);
         if (item) {
             addItem(item, 1);
         }
@@ -50,129 +70,29 @@ export default function MenuPage() {
         setIsCartOpen(true);
     };
 
-    // Get items by category
-    const dealItems = getDealItems();
-    const coffeeItems = getMenuItemsByCategory("coffee");
-    const pizzaItems = getMenuItemsByCategory("pizza");
-    const pastriesItems = getMenuItemsByCategory("pastries");
-    const sandwichItems = getMenuItemsByCategory("sandwiches");
-    const beverageItems = getMenuItemsByCategory("beverages");
-    const dessertItems = getMenuItemsByCategory("desserts");
-    const recommendedItems = getRecommendedItems();
-
     return (
         <>
             <Navbar />
             <main className="min-h-screen pt-16 lg:pt-20 pb-20 lg:pb-8">
-                {/* Deal of the Day */}
-                <DealOfTheDay />
-
-                {/* Deals Section (if there are deal items) */}
-                {dealItems.length > 0 && (
-                    <MenuSection
-                        title="Today's Special Deals"
-                        items={dealItems}
-                        onItemClick={handleItemClick}
-                        onAddToCart={handleAddToCart}
-                    />
-                )}
-
-                {/* Separator */}
-                <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                    <hr className="border-t border-black/10" />
-                </div>
-
-                {/* Coffee Section */}
-                <MenuSection
-                    title="Coffee"
-                    items={coffeeItems}
+                {/* Deal of the Day Section with Cards */}
+                <DealSection
+                    dealItems={dealItems}
                     onItemClick={handleItemClick}
                     onAddToCart={handleAddToCart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    getCartQuantity={getCartQuantity}
                 />
 
-                {/* Separator */}
-                <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                    <hr className="border-t border-black/10" />
-                </div>
-
-                {/* Pizza Section */}
+                {/* Main Menu Section with Filters */}
                 <MenuSection
-                    title="Pizza"
-                    items={pizzaItems}
+                    title="Our Menu"
+                    items={menuItems}
                     onItemClick={handleItemClick}
                     onAddToCart={handleAddToCart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    getCartQuantity={getCartQuantity}
+                    showFilters={true}
                 />
-
-                {/* Separator */}
-                <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                    <hr className="border-t border-black/10" />
-                </div>
-
-                {/* Recommended Section */}
-                <MenuSection
-                    title="Recommended For You"
-                    items={recommendedItems}
-                    onItemClick={handleItemClick}
-                    onAddToCart={handleAddToCart}
-                />
-
-                {/* Separator */}
-                <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                    <hr className="border-t border-black/10" />
-                </div>
-
-                {/* Pastries Section */}
-                <MenuSection
-                    title="Pastries & Bakes"
-                    items={pastriesItems}
-                    onItemClick={handleItemClick}
-                    onAddToCart={handleAddToCart}
-                />
-
-                {/* Separator */}
-                <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                    <hr className="border-t border-black/10" />
-                </div>
-
-                {/* Sandwiches Section */}
-                {sandwichItems.length > 0 && (
-                    <>
-                        <MenuSection
-                            title="Sandwiches"
-                            items={sandwichItems}
-                            onItemClick={handleItemClick}
-                            onAddToCart={handleAddToCart}
-                        />
-                        <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                            <hr className="border-t border-black/10" />
-                        </div>
-                    </>
-                )}
-
-                {/* Beverages Section */}
-                {beverageItems.length > 0 && (
-                    <>
-                        <MenuSection
-                            title="Beverages"
-                            items={beverageItems}
-                            onItemClick={handleItemClick}
-                            onAddToCart={handleAddToCart}
-                        />
-                        <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                            <hr className="border-t border-black/10" />
-                        </div>
-                    </>
-                )}
-
-                {/* Desserts Section */}
-                {dessertItems.length > 0 && (
-                    <MenuSection
-                        title="Desserts"
-                        items={dessertItems}
-                        onItemClick={handleItemClick}
-                        onAddToCart={handleAddToCart}
-                    />
-                )}
 
                 {/* Footer */}
                 <Footer />
@@ -183,8 +103,10 @@ export default function MenuPage() {
                 item={selectedItem}
                 isOpen={isDetailOpen}
                 onClose={() => setIsDetailOpen(false)}
-                onAddToCart={handleAddToCart}
+                onAddToCart={handleAddToCartWithVariations}
+                onUpdateQuantity={handleUpdateQuantity}
                 onViewCart={handleViewCart}
+                currentCartQuantity={selectedItem ? getCartQuantity(selectedItem.id) : 0}
             />
 
             {/* Cart Drawer */}

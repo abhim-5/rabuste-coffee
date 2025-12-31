@@ -1,55 +1,45 @@
-// TypeScript types for menu and cart functionality
-// Designed to be backend-ready - interfaces match typical API responses
+export type MenuCategory = 
+  | "coffee" 
+  | "pizza" 
+  | "pastries" 
+  | "sandwiches" 
+  | "beverages" 
+  | "desserts";
+
+export interface VariationOption {
+  id: string;
+  name: string;
+  priceModifier: number;
+}
+
+export interface Variation {
+  id: string;
+  name: string;
+  required: boolean;
+  options: VariationOption[];
+}
 
 export interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: number;
-  originalPrice?: number; // For showing discounts
+  originalPrice?: number;
   image: string;
   category: MenuCategory;
   rating: number;
   reviewCount: number;
   isDealOfTheDay?: boolean;
-  tags?: string[];
-  variations?: ProductVariation[];
-  frequentlyBoughtWith?: string[]; // Array of MenuItem IDs
-  similarItems?: string[]; // Array of MenuItem IDs
+  variations?: Variation[];
+  frequentlyBoughtWith?: string[];
+  similarItems?: string[];
 }
-
-export interface ProductVariation {
-  id: string;
-  name: string;
-  options: {
-    id: string;
-    name: string;
-    priceModifier?: number; // Additional cost
-  }[];
-}
-
-export type MenuCategory = 
-  | "coffee"
-  | "pizza"
-  | "pastries"
-  | "sandwiches"
-  | "beverages"
-  | "desserts";
 
 export interface CartItem {
   menuItem: MenuItem;
   quantity: number;
-  selectedVariations?: Record<string, string>; // variationId -> optionId
   subtotal: number;
-}
-
-export interface DealOfTheDay {
-  id: string;
-  menuItemId: string;
-  discount: number; // percentage
-  expiresAt: Date;
-  title: string;
-  description: string;
+  selectedVariations?: Record<string, string>;
 }
 
 export interface CartState {
@@ -58,7 +48,47 @@ export interface CartState {
   itemCount: number;
 }
 
-// Profile & User Types
+export interface DealOfTheDay {
+  id: string;
+  title: string;
+  itemId: string;
+  discount: number;
+}
+
+export interface ArtPiece {
+  id: string;
+  title: string;
+  price: number;
+  artist: string;
+  purchaseDate: Date;
+  image: string;
+}
+
+export interface Workshop {
+  id: string;
+  title: string;
+  image: string;
+  host: string;
+  date: Date;
+  attended: boolean;
+}
+
+export interface OrderItem {
+  name: string;
+  image: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  id: string;
+  date: Date;
+  status: "delivered" | "preparing" | "pending" | "cancelled";
+  pointsEarned: number;
+  total: number;
+  items: OrderItem[];
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -66,42 +96,7 @@ export interface UserProfile {
   phone?: string;
   avatar?: string;
   memberSince: Date;
-  points: number;
   totalOrders: number;
   totalSpent: number;
+  points: number;
 }
-
-export interface Order {
-  id: string;
-  date: Date;
-  items: {
-    name: string;
-    image: string;
-    quantity: number;
-    price: number;
-  }[];
-  total: number;
-  status: OrderStatus;
-  pointsEarned: number;
-}
-
-export type OrderStatus = "delivered" | "preparing" | "pending" | "cancelled";
-
-export interface Workshop {
-  id: string;
-  title: string;
-  host: string;
-  date: Date;
-  image: string;
-  attended: boolean;
-}
-
-export interface ArtPiece {
-  id: string;
-  title: string;
-  artist: string;
-  image: string;
-  price: number;
-  purchaseDate: Date;
-}
-

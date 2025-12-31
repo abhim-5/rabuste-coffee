@@ -1,11 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ShoppingBag, Clock, Download } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Download } from "lucide-react";
 import Image from "next/image";
 import { CartItem } from "@/types/menu";
 import { useState } from "react";
-import { getRecommendedItems } from "@/data/menuData";
+import { menuItems } from "@/data/menuData";
 
 interface CartProps {
     isOpen: boolean;
@@ -18,6 +18,8 @@ interface CartProps {
     onAddRecommendedItem: (itemId: string) => void;
 }
 
+type OrderType = "dine-in" | "takeaway-now" | "takeaway-scheduled";
+
 export function Cart({
     isOpen,
     onClose,
@@ -28,8 +30,9 @@ export function Cart({
     onRemoveItem,
     onAddRecommendedItem,
 }: CartProps) {
-    const [pickupTime, setPickupTime] = useState<string>("30");
-    const recommendedItems = getRecommendedItems().slice(0, 3);
+    const [orderType, setOrderType] = useState<OrderType>("takeaway-scheduled");
+    const [scheduledTime, setScheduledTime] = useState<string>("30");
+    const recommendedItems = menuItems.filter(i => i.rating >= 4.8).slice(0, 3);
 
     const handlePayNow = () => {
         alert("Payment UI would be integrated here. This is a frontend mockup.");
@@ -43,7 +46,6 @@ export function Cart({
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -52,7 +54,6 @@ export function Cart({
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
                     />
 
-                    {/* Cart Drawer */}
                     <motion.div
                         initial={{ x: "100%" }}
                         animate={{ x: 0 }}
@@ -60,7 +61,6 @@ export function Cart({
                         transition={{ type: "spring", damping: 30, stiffness: 300 }}
                         className="fixed right-0 top-0 bottom-0 w-full lg:w-[480px] bg-[#fafaf9] shadow-2xl z-50 flex flex-col"
                     >
-                        {/* Header */}
                         <div className="bg-[#8B6F47] px-6 py-5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <ShoppingBag className="w-6 h-6 text-amber-50" />
@@ -81,7 +81,6 @@ export function Cart({
                             </button>
                         </div>
 
-                        {/* Cart Content */}
                         <div className="flex-1 overflow-y-auto p-6">
                             {items.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-center">
@@ -95,7 +94,6 @@ export function Cart({
                                 </div>
                             ) : (
                                 <>
-                                    {/* Cart Items */}
                                     <div className="space-y-4 mb-6">
                                         {items.map((cartItem, index) => (
                                             <motion.div
@@ -106,7 +104,6 @@ export function Cart({
                                                 className="bg-white rounded-xl p-4 shadow-sm border border-[#8B6F47]/20"
                                             >
                                                 <div className="flex gap-4">
-                                                    {/* Image */}
                                                     <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                                                         <Image
                                                             src={cartItem.menuItem.image}
@@ -116,13 +113,11 @@ export function Cart({
                                                         />
                                                     </div>
 
-                                                    {/* Details */}
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-serif text-base text-[#404040] mb-1 line-clamp-1">
                                                             {cartItem.menuItem.name}
                                                         </h3>
 
-                                                        {/* Selected Variations */}
                                                         {cartItem.selectedVariations && (
                                                             <div className="flex flex-wrap gap-1 mb-2">
                                                                 {Object.entries(cartItem.selectedVariations).map(
@@ -147,13 +142,11 @@ export function Cart({
                                                             </div>
                                                         )}
 
-                                                        {/* Price and Quantity */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-sans text-lg font-bold text-[#262626]">
                                                                 ₹{cartItem.subtotal}
                                                             </span>
 
-                                                            {/* Quantity Controls */}
                                                             <div className="flex items-center gap-2 bg-[#D8CBB8]/30 rounded-full px-2 py-1">
                                                                 <button
                                                                     onClick={() => {
@@ -186,7 +179,6 @@ export function Cart({
                                         ))}
                                     </div>
 
-                                    {/* You Might Also Like */}
                                     {recommendedItems.length > 0 && (
                                         <div className="mb-6">
                                             <h3 className="font-display text-lg font-bold text-[#404040] mb-3">
@@ -219,33 +211,110 @@ export function Cart({
                                         </div>
                                     )}
 
-                                    {/* Pickup Time */}
+                                    {/* Ordering Options */}
                                     <div className="mb-6">
-                                        <label className="flex items-center gap-2 font-sans text-sm font-semibold text-[#404040] mb-3">
-                                            <Clock className="w-4 h-4" />
-                                            Pickup/Delivery Time
-                                        </label>
-                                        <select
-                                            value={pickupTime}
-                                            onChange={(e) => setPickupTime(e.target.value)}
-                                            className="w-full bg-white border border-[#8B6F47]/30 rounded-lg px-4 py-3 font-sans text-sm text-[#404040] focus:outline-none focus:ring-2 focus:ring-[#8B6F47]"
-                                        >
-                                            <option value="15">15 minutes</option>
-                                            <option value="30">30 minutes</option>
-                                            <option value="45">45 minutes</option>
-                                            <option value="60">1 hour</option>
-                                            <option value="90">1.5 hours</option>
-                                            <option value="120">2 hours</option>
-                                        </select>
+                                        <h3 className="font-sans text-sm font-semibold text-[#404040] mb-3">
+                                            How would you like to order?
+                                        </h3>
+
+                                        <div className="space-y-3">
+                                            {/* 1. Takeaway Scheduled Option - FIRST (Promoted) */}
+                                            <label
+                                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'takeaway-scheduled'
+                                                    ? 'border-[#8B6F47] bg-[#8B6F47]/5'
+                                                    : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="orderType"
+                                                    checked={orderType === "takeaway-scheduled"}
+                                                    onChange={() => setOrderType("takeaway-scheduled")}
+                                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
+                                                        ⏰ Takeaway - Schedule Pickup (Recommended)
+                                                    </p>
+                                                    <p className="font-sans text-xs text-[#78716c] mb-3">
+                                                        I'll collect my order after some time
+                                                    </p>
+
+                                                    {/* Time Selector - only show when this option is selected */}
+                                                    {orderType === "takeaway-scheduled" && (
+                                                        <select
+                                                            value={scheduledTime}
+                                                            onChange={(e) => setScheduledTime(e.target.value)}
+                                                            className="w-full bg-white border border-[#8B6F47]/30 rounded-lg px-3 py-2 font-sans text-sm text-[#404040] focus:outline-none focus:ring-2 focus:ring-[#8B6F47]"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <option value="15">In 15 minutes</option>
+                                                            <option value="30">In 30 minutes</option>
+                                                            <option value="45">In 45 minutes</option>
+                                                            <option value="60">In 1 hour</option>
+                                                            <option value="90">In 1.5 hours</option>
+                                                            <option value="120">In 2 hours</option>
+                                                        </select>
+                                                    )}
+                                                </div>
+                                            </label>
+
+                                            {/* 2. Takeaway Now Option */}
+                                            <label
+                                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'takeaway-now'
+                                                    ? 'border-[#8B6F47] bg-[#8B6F47]/5'
+                                                    : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="orderType"
+                                                    checked={orderType === "takeaway-now"}
+                                                    onChange={() => setOrderType("takeaway-now")}
+                                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
+                                                        🚗 Takeaway - Ready Now
+                                                    </p>
+                                                    <p className="font-sans text-xs text-[#78716c]">
+                                                        I'm outside or nearby, prepare my order now
+                                                    </p>
+                                                </div>
+                                            </label>
+
+                                            {/* 3. Dine-in Option */}
+                                            <label
+                                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'dine-in'
+                                                    ? 'border-[#8B6F47] bg-[#8B6F47]/5'
+                                                    : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="orderType"
+                                                    checked={orderType === "dine-in"}
+                                                    onChange={() => setOrderType("dine-in")}
+                                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
+                                                        🪑 Dine-In (Earn Points!)
+                                                    </p>
+                                                    <p className="font-sans text-xs text-[#78716c]">
+                                                        Order from your table and earn reward points
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        </div>
+
                                     </div>
                                 </>
                             )}
                         </div>
 
-                        {/* Footer */}
                         {items.length > 0 && (
                             <div className="bg-white border-t border-[#8B6F47]/20 px-6 py-5">
-                                {/* Total */}
                                 <div className="flex items-center justify-between mb-4">
                                     <span className="font-serif text-xl text-[#404040]">Total</span>
                                     <span className="font-serif text-2xl font-bold text-[#262626]">
@@ -253,7 +322,6 @@ export function Cart({
                                     </span>
                                 </div>
 
-                                {/* Actions */}
                                 <div className="space-y-3">
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
