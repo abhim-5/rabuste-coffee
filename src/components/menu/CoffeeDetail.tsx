@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Star, Minus, Plus, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { MenuItem } from "@/types/menu";
-import { getMenuItemById } from "@/data/menuData";
+import { getMenuItemById, menuItems } from "@/data/menuData";
 
 interface CoffeeDetailProps {
     item: MenuItem | null;
@@ -15,6 +15,8 @@ interface CoffeeDetailProps {
     onUpdateQuantity: (item: MenuItem, change: number) => void;
     onViewCart: () => void;
     currentCartQuantity: number;
+    onRelatedItemClick?: (item: MenuItem) => void;
+    getCartQuantityForItem?: (itemId: string) => number;
 }
 
 export function CoffeeDetail({
@@ -25,6 +27,8 @@ export function CoffeeDetail({
     onUpdateQuantity,
     onViewCart,
     currentCartQuantity,
+    onRelatedItemClick,
+    getCartQuantityForItem,
 }: CoffeeDetailProps) {
     const [localQuantity, setLocalQuantity] = useState(1);
     const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
@@ -256,16 +260,18 @@ export function CoffeeDetail({
                                         <h4 className="font-display text-xl lg:text-2xl font-bold text-[#404040] mb-4">
                                             Frequently Bought Together
                                         </h4>
-                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                                             {item.frequentlyBoughtWith.map((itemId) => {
                                                 const relatedItem = getMenuItemById(itemId);
                                                 if (!relatedItem) return null;
+                                                const relatedQty = getCartQuantityForItem ? getCartQuantityForItem(relatedItem.id) : 0;
                                                 return (
                                                     <div
                                                         key={itemId}
-                                                        className="bg-white rounded-lg p-3 border border-[#8B6F47]/20"
+                                                        onClick={() => onRelatedItemClick?.(relatedItem)}
+                                                        className="bg-white rounded-lg p-3 border border-[#8B6F47]/20 cursor-pointer hover:shadow-md transition-shadow"
                                                     >
-                                                        <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-2">
+                                                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden mb-2">
                                                             <Image
                                                                 src={relatedItem.image}
                                                                 alt={relatedItem.name}
@@ -273,18 +279,148 @@ export function CoffeeDetail({
                                                                 className="object-cover"
                                                             />
                                                         </div>
-                                                        <p className="font-serif text-sm text-[#404040] line-clamp-1">
+                                                        <p className="font-serif text-sm text-[#404040] line-clamp-2 mb-1">
                                                             {relatedItem.name}
                                                         </p>
-                                                        <p className="font-sans text-sm font-bold text-[#262626]">
-                                                            ₹{relatedItem.price}
-                                                        </p>
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-baseline gap-1">
+                                                                <span className="font-sans text-sm font-bold text-[#262626]">
+                                                                    ₹{relatedItem.price}
+                                                                </span>
+                                                                {relatedItem.originalPrice && (
+                                                                    <span className="font-sans text-xs text-[#78716c] line-through">
+                                                                        ₹{relatedItem.originalPrice}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {relatedQty === 0 ? (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        onAddToCart(relatedItem, 1);
+                                                                    }}
+                                                                    className="bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-xs font-semibold px-2 py-1 rounded-md transition-colors"
+                                                                >
+                                                                    Add
+                                                                </button>
+                                                            ) : (
+                                                                <div className="flex items-center gap-1 bg-[#8B6F47] rounded-md px-1 py-0.5">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onUpdateQuantity(relatedItem, -1);
+                                                                        }}
+                                                                        className="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                                                                    >
+                                                                        <Minus className="w-3 h-3 text-white" />
+                                                                    </button>
+                                                                    <span className="font-sans text-xs font-bold text-white min-w-[14px] text-center">
+                                                                        {relatedQty}
+                                                                    </span>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onUpdateQuantity(relatedItem, 1);
+                                                                        }}
+                                                                        className="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                                                                    >
+                                                                        <Plus className="w-3 h-3 text-white" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
                                         </div>
                                     </div>
-                                )}
+                                                                )}
+
+                                {/* You May Also Like - Similar items from same category */}
+                                {(() => {
+                                    const similarItems = menuItems
+                                        .filter(i => i.category === item.category && i.id !== item.id)
+                                        .slice(0, 4);
+                                    if (similarItems.length === 0) return null;
+                                    return (
+                                        <div className="mb-6">
+                                            <h4 className="font-display text-xl lg:text-2xl font-bold text-[#404040] mb-4">
+                                                You May Also Like
+                                            </h4>
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                                {similarItems.map((similarItem) => {
+                                                    const similarQty = getCartQuantityForItem ? getCartQuantityForItem(similarItem.id) : 0;
+                                                    return (
+                                                        <div
+                                                            key={similarItem.id}
+                                                            onClick={() => onRelatedItemClick?.(similarItem)}
+                                                            className="bg-white rounded-lg p-3 border border-[#8B6F47]/20 cursor-pointer hover:shadow-md transition-shadow"
+                                                        >
+                                                            <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden mb-2">
+                                                                <Image
+                                                                    src={similarItem.image}
+                                                                    alt={similarItem.name}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                />
+                                                            </div>
+                                                            <p className="font-serif text-sm text-[#404040] line-clamp-2 mb-1">
+                                                                {similarItem.name}
+                                                            </p>
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex items-baseline gap-1">
+                                                                    <span className="font-sans text-sm font-bold text-[#262626]">
+                                                                        ₹{similarItem.price}
+                                                                    </span>
+                                                                    {similarItem.originalPrice && (
+                                                                        <span className="font-sans text-xs text-[#78716c] line-through">
+                                                                            ₹{similarItem.originalPrice}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {similarQty === 0 ? (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onAddToCart(similarItem, 1);
+                                                                        }}
+                                                                        className="bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-xs font-semibold px-2 py-1 rounded-md transition-colors"
+                                                                    >
+                                                                        Add
+                                                                    </button>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-1 bg-[#8B6F47] rounded-md px-1 py-0.5">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onUpdateQuantity(similarItem, -1);
+                                                                            }}
+                                                                            className="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                                                                        >
+                                                                            <Minus className="w-3 h-3 text-white" />
+                                                                        </button>
+                                                                        <span className="font-sans text-xs font-bold text-white min-w-[14px] text-center">
+                                                                            {similarQty}
+                                                                        </span>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onUpdateQuantity(similarItem, 1);
+                                                                            }}
+                                                                            className="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                                                                        >
+                                                                            <Plus className="w-3 h-3 text-white" />
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>

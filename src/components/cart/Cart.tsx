@@ -101,10 +101,10 @@ export function Cart({
                                                 initial={{ opacity: 0, x: 20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: -20 }}
-                                                className="bg-white rounded-xl p-4 shadow-sm border border-[#8B6F47]/20"
+                                                className="bg-white rounded-lg p-3 shadow-sm border border-[#8B6F47]/20"
                                             >
-                                                <div className="flex gap-4">
-                                                    <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                                <div className="flex gap-3 items-center">
+                                                    <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                                                         <Image
                                                             src={cartItem.menuItem.image}
                                                             alt={cartItem.menuItem.name}
@@ -114,12 +114,12 @@ export function Cart({
                                                     </div>
 
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="font-serif text-base text-[#404040] mb-1 line-clamp-1">
+                                                        <h3 className="font-serif text-sm text-[#404040] mb-1 line-clamp-1">
                                                             {cartItem.menuItem.name}
                                                         </h3>
 
                                                         {cartItem.selectedVariations && (
-                                                            <div className="flex flex-wrap gap-1 mb-2">
+                                                            <div className="flex flex-wrap gap-1 mb-1">
                                                                 {Object.entries(cartItem.selectedVariations).map(
                                                                     ([varId, optId]) => {
                                                                         const variation = cartItem.menuItem.variations?.find(
@@ -143,7 +143,7 @@ export function Cart({
                                                         )}
 
                                                         <div className="flex items-center justify-between">
-                                                            <span className="font-sans text-lg font-bold text-[#262626]">
+                                                            <span className="font-sans text-base font-bold text-[#262626]">
                                                                 ₹{cartItem.subtotal}
                                                             </span>
 
@@ -156,7 +156,7 @@ export function Cart({
                                                                             onUpdateQuantity(index, cartItem.quantity - 1);
                                                                         }
                                                                     }}
-                                                                    className="w-6 h-6 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
+                                                                    className="w-5 h-5 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
                                                                 >
                                                                     <Minus className="w-3 h-3 text-[#404040]" />
                                                                 </button>
@@ -167,7 +167,7 @@ export function Cart({
                                                                     onClick={() =>
                                                                         onUpdateQuantity(index, cartItem.quantity + 1)
                                                                     }
-                                                                    className="w-6 h-6 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
+                                                                    className="w-5 h-5 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
                                                                 >
                                                                     <Plus className="w-3 h-3 text-[#404040]" />
                                                                 </button>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, Coins } from "lucide-react";
+import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, Coins, X, Gift, Coffee, History, Plus, Minus, ShoppingBag, Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -16,6 +16,66 @@ const navItems = [
   { name: "Workshops", href: "/workshops", icon: Wrench },
 ];
 
+// Mock points transactions data
+const mockPointsTransactions = [
+  {
+    id: 1,
+    type: "earned",
+    title: "Welcome Bonus",
+    points: 100,
+    date: "Jan 1, 2026",
+    icon: Sparkles,
+  },
+  {
+    id: 2,
+    type: "earned",
+    title: "Order #1234",
+    points: 75,
+    date: "Dec 28, 2025",
+    icon: ShoppingBag,
+  },
+  {
+    id: 3,
+    type: "redeemed",
+    title: "Free Coffee Redeemed",
+    points: -50,
+    date: "Dec 25, 2025",
+    icon: Coffee,
+  },
+  {
+    id: 4,
+    type: "earned",
+    title: "Workshop Attendance",
+    points: 125,
+    date: "Dec 20, 2025",
+    icon: TrendingUp,
+  },
+];
+
+const totalPoints = 250;
+
+// Mock notifications data
+const mockNotifications = [
+  {
+    id: 1,
+    type: "welcome",
+    title: "Welcome to Rabuste! ☕",
+    message: "We're thrilled to have you here. Explore our artisanal coffee and exclusive workshops.",
+    time: "Just now",
+    unread: true,
+    icon: Coffee,
+  },
+  {
+    id: 2,
+    type: "offer",
+    title: "Special Offer! 🎉",
+    message: "Get 20% off on your first order. Use code: WELCOME20",
+    time: "2 hours ago",
+    unread: true,
+    icon: Gift,
+  },
+];
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -26,8 +86,47 @@ export default function Navbar() {
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>('');
   const [buttonRect, setButtonRect] = useState<DOMRect | undefined>();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [bellAnimating, setBellAnimating] = useState(false);
+  const [showPoints, setShowPoints] = useState(false);
   const loginButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const pointsRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  // Bell animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBellAnimating(true);
+      setTimeout(() => setBellAnimating(false), 1000);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (pointsRef.current && !pointsRef.current.contains(event.target as Node)) {
+        setShowPoints(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
+  const markAsRead = (id: number) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
 
   // Check if user is logged in from localStorage
   useEffect(() => {
@@ -190,39 +289,225 @@ export default function Navbar() {
             {/* Right Actions */}
             <div className="flex items-center gap-6 flex-shrink-0">
               {/* Notification Button */}
-              <motion.button
-                initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                transition={{ duration: 0.8, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ scale: 1.05, rotate: 15 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-2.5 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
-              >
-                <Bell className="w-5 h-5 transition-colors duration-500 text-amber-50" />
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 1.5 }}
-                  className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full"
-                />              </motion.button>
+              <div className="relative" ref={notificationRef}>
+                <motion.button
+                  initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
+                  animate={{ 
+                    x: 0, 
+                    opacity: 1, 
+                    filter: "blur(0px)",
+                    rotate: bellAnimating ? [0, -15, 15, -15, 15, 0] : 0
+                  }}
+                  transition={{ 
+                    duration: bellAnimating ? 0.5 : 0.8, 
+                    delay: bellAnimating ? 0 : 1.2, 
+                    ease: [0.22, 1, 0.36, 1] 
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2.5 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
+                >
+                  <Bell className="w-5 h-5 transition-colors duration-500 text-amber-50" />
+                  {unreadCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 1.5 }}
+                      className="absolute top-1 right-1 w-4 h-4 bg-amber-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                    >
+                      {unreadCount}
+                    </motion.span>
+                  )}
+                </motion.button>
+
+                {/* Notification Dropdown */}
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute right-0 top-14 w-80 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                    >
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/20 to-transparent">
+                        <h3 className="font-display text-lg font-semibold text-amber-50">Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Notifications List */}
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((notification, index) => {
+                            const IconComponent = notification.icon;
+                            return (
+                              <motion.div
+                                key={notification.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                onClick={() => markAsRead(notification.id)}
+                                className={`flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-amber-900/10 ${
+                                  notification.unread ? "bg-amber-900/5" : ""
+                                }`}
+                              >
+                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                                  notification.type === "welcome" ? "bg-amber-500/20" : "bg-green-500/20"
+                                }`}>
+                                  <IconComponent className={`w-5 h-5 ${
+                                    notification.type === "welcome" ? "text-amber-400" : "text-green-400"
+                                  }`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="font-sans text-sm font-semibold text-amber-50 line-clamp-1">
+                                      {notification.title}
+                                    </p>
+                                    {notification.unread && (
+                                      <span className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0 mt-1.5" />
+                                    )}
+                                  </div>
+                                  <p className="font-sans text-xs text-amber-100/70 line-clamp-2 mt-0.5">
+                                    {notification.message}
+                                  </p>
+                                  <p className="font-sans text-[10px] text-amber-100/50 mt-1">
+                                    {notification.time}
+                                  </p>
+                                </div>
+                              </motion.div>
+                            );
+                          })
+                        ) : (
+                          <div className="py-8 text-center">
+                            <Bell className="w-10 h-10 text-amber-900/30 mx-auto mb-2" />
+                            <p className="text-sm text-amber-100/50">No notifications</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="px-4 py-2 border-t border-amber-900/20 bg-gradient-to-r from-transparent to-amber-900/10">
+                        <button 
+                          onClick={() => setShowNotifications(false)}
+                          className="w-full text-center text-xs text-amber-400 hover:text-amber-300 font-medium py-1 transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Auth Section */}
               {isLoggedIn ? (
                 <div className="flex items-center gap-4">
-                  {/* Reward Points Icon */}
-                  <motion.button
-                    initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                    animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative p-2.5 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
-                  >
-                    <Coins className="w-5 h-5 text-amber-400" />
-                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                      250
-                    </span>
-                  </motion.button>
+                  {/* Reward Points */}
+                  <div className="relative" ref={pointsRef}>
+                    <motion.button
+                      initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
+                      animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+                      transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowPoints(!showPoints)}
+                      className="relative p-2.5 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
+                    >
+                      <Coins className="w-5 h-5 text-amber-400" />
+                      <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        {totalPoints}
+                      </span>
+                    </motion.button>
+
+                    {/* Points Dropdown */}
+                    <AnimatePresence>
+                      {showPoints && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="absolute right-0 top-14 w-80 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                        >
+                          {/* Header with Total Points */}
+                          <div className="px-4 py-4 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/30 to-amber-800/10">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs text-amber-100/60 font-medium uppercase tracking-wider">Your Balance</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Coins className="w-6 h-6 text-amber-400" />
+                                  <span className="font-display text-3xl font-bold text-amber-400">{totalPoints}</span>
+                                  <span className="text-amber-100/70 text-sm">points</span>
+                                </div>
+                              </div>
+                              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                <Sparkles className="w-6 h-6 text-amber-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Recent Transactions */}
+                          <div className="px-4 py-2 border-b border-amber-900/20">
+                            <p className="text-xs text-amber-100/50 font-medium uppercase tracking-wider">Recent Activity</p>
+                          </div>
+                          <div className="max-h-56 overflow-y-auto">
+                            {mockPointsTransactions.map((transaction, index) => {
+                              const IconComponent = transaction.icon;
+                              const isEarned = transaction.type === "earned";
+                              return (
+                                <motion.div
+                                  key={transaction.id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: index * 0.05 }}
+                                  className="flex items-center gap-3 px-4 py-3 hover:bg-amber-900/10 transition-colors"
+                                >
+                                  <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
+                                    isEarned ? "bg-green-500/20" : "bg-red-500/20"
+                                  }`}>
+                                    <IconComponent className={`w-4 h-4 ${isEarned ? "text-green-400" : "text-red-400"}`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-sans text-sm font-medium text-amber-50 line-clamp-1">
+                                      {transaction.title}
+                                    </p>
+                                    <p className="font-sans text-[10px] text-amber-100/50">
+                                      {transaction.date}
+                                    </p>
+                                  </div>
+                                  <div className={`flex items-center gap-0.5 font-semibold text-sm ${
+                                    isEarned ? "text-green-400" : "text-red-400"
+                                  }`}>
+                                    {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                                    {Math.abs(transaction.points)}
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Footer with View All */}
+                          <div className="px-4 py-3 border-t border-amber-900/20 bg-gradient-to-r from-transparent to-amber-900/10">
+                            <Link href="/points" onClick={() => setShowPoints(false)}>
+                              <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-sm font-semibold transition-colors">
+                                <History className="w-4 h-4" />
+                                View All Transactions
+                              </button>
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
 
                   {/* Profile Icon */}
                   <Link href="/profile">
@@ -319,35 +604,216 @@ export default function Navbar() {
           {/* Right Actions */}
           <div className="flex items-center gap-4">
             {/* Notification */}
-            <motion.button
-              initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-              transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              whileTap={{ scale: 0.9 }}
-              className={`relative p-2 rounded-full transition-colors duration-300 ${scrolled ? "hover:bg-amber-900/30" : "hover:bg-white/10"
-                }`}
-            >
-              <Bell className={`w-5 h-5 transition-colors duration-500 ${scrolled ? "text-amber-50" : "text-white"
-                }`} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full" />
-            </motion.button>
+            <div className="relative" ref={notificationRef}>
+              <motion.button
+                initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                animate={{ 
+                  y: 0, 
+                  opacity: 1, 
+                  filter: "blur(0px)",
+                  rotate: bellAnimating ? [0, -15, 15, -15, 15, 0] : 0
+                }}
+                transition={{ duration: bellAnimating ? 0.5 : 0.8, delay: bellAnimating ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`relative p-2 rounded-full transition-colors duration-300 ${scrolled ? "hover:bg-amber-900/30" : "hover:bg-white/10"
+                  }`}
+              >
+                <Bell className={`w-5 h-5 transition-colors duration-500 ${scrolled ? "text-amber-50" : "text-white"
+                  }`} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-amber-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </motion.button>
+
+              {/* Mobile Notification Dropdown */}
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute right-0 top-12 w-72 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/20 to-transparent">
+                      <h3 className="font-display text-base font-semibold text-amber-50">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Notifications List */}
+                    <div className="max-h-64 overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((notification, index) => {
+                          const IconComponent = notification.icon;
+                          return (
+                            <motion.div
+                              key={notification.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              onClick={() => markAsRead(notification.id)}
+                              className={`flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-amber-900/10 ${
+                                notification.unread ? "bg-amber-900/5" : ""
+                              }`}
+                            >
+                              <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
+                                notification.type === "welcome" ? "bg-amber-500/20" : "bg-green-500/20"
+                              }`}>
+                                <IconComponent className={`w-4 h-4 ${
+                                  notification.type === "welcome" ? "text-amber-400" : "text-green-400"
+                                }`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="font-sans text-sm font-semibold text-amber-50 line-clamp-1">
+                                    {notification.title}
+                                  </p>
+                                  {notification.unread && (
+                                    <span className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0 mt-1.5" />
+                                  )}
+                                </div>
+                                <p className="font-sans text-xs text-amber-100/70 line-clamp-2 mt-0.5">
+                                  {notification.message}
+                                </p>
+                                <p className="font-sans text-[10px] text-amber-100/50 mt-1">
+                                  {notification.time}
+                                </p>
+                              </div>
+                            </motion.div>
+                          );
+                        })
+                      ) : (
+                        <div className="py-8 text-center">
+                          <Bell className="w-10 h-10 text-amber-900/30 mx-auto mb-2" />
+                          <p className="text-sm text-amber-100/50">No notifications</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-4 py-2 border-t border-amber-900/20">
+                      <button 
+                        onClick={() => setShowNotifications(false)}
+                        className="w-full text-center text-xs text-amber-400 hover:text-amber-300 font-medium py-1 transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Auth Section */}
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
-                {/* Reward Points Icon */}
-                <motion.button
-                  initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-                  animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  whileTap={{ scale: 0.9 }}
-                  className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
-                >
-                  <Coins className="w-5 h-5 text-amber-400" />
-                  <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                    250
-                  </span>
-                </motion.button>
+                {/* Reward Points */}
+                <div className="relative" ref={pointsRef}>
+                  <motion.button
+                    initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                    animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowPoints(!showPoints)}
+                    className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
+                  >
+                    <Coins className="w-5 h-5 text-amber-400" />
+                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                      {totalPoints}
+                    </span>
+                  </motion.button>
+
+                  {/* Mobile Points Dropdown */}
+                  <AnimatePresence>
+                    {showPoints && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute right-0 top-12 w-72 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                      >
+                        {/* Header with Total Points */}
+                        <div className="px-4 py-3 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/30 to-amber-800/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-[10px] text-amber-100/60 font-medium uppercase tracking-wider">Your Balance</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <Coins className="w-5 h-5 text-amber-400" />
+                                <span className="font-display text-2xl font-bold text-amber-400">{totalPoints}</span>
+                                <span className="text-amber-100/70 text-xs">points</span>
+                              </div>
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                              <Sparkles className="w-5 h-5 text-amber-400" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recent Transactions */}
+                        <div className="px-4 py-1.5 border-b border-amber-900/20">
+                          <p className="text-[10px] text-amber-100/50 font-medium uppercase tracking-wider">Recent Activity</p>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto">
+                          {mockPointsTransactions.slice(0, 3).map((transaction, index) => {
+                            const IconComponent = transaction.icon;
+                            const isEarned = transaction.type === "earned";
+                            return (
+                              <motion.div
+                                key={transaction.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="flex items-center gap-3 px-4 py-2.5 hover:bg-amber-900/10 transition-colors"
+                              >
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                  isEarned ? "bg-green-500/20" : "bg-red-500/20"
+                                }`}>
+                                  <IconComponent className={`w-4 h-4 ${isEarned ? "text-green-400" : "text-red-400"}`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-sans text-sm font-medium text-amber-50 line-clamp-1">
+                                    {transaction.title}
+                                  </p>
+                                  <p className="font-sans text-[10px] text-amber-100/50">
+                                    {transaction.date}
+                                  </p>
+                                </div>
+                                <div className={`flex items-center gap-0.5 font-semibold text-sm ${
+                                  isEarned ? "text-green-400" : "text-red-400"
+                                }`}>
+                                  {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                                  {Math.abs(transaction.points)}
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Footer with View All */}
+                        <div className="px-4 py-2.5 border-t border-amber-900/20">
+                          <Link href="/points" onClick={() => setShowPoints(false)}>
+                            <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-sm font-semibold transition-colors">
+                              <History className="w-4 h-4" />
+                              View All Transactions
+                            </button>
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Profile Icon */}
                 <Link href="/profile">

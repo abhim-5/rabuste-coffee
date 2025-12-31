@@ -107,6 +107,10 @@ export default function MenuPage() {
                 onUpdateQuantity={handleUpdateQuantity}
                 onViewCart={handleViewCart}
                 currentCartQuantity={selectedItem ? getCartQuantity(selectedItem.id) : 0}
+                onRelatedItemClick={(item) => {
+                    setSelectedItem(item);
+                }}
+                getCartQuantityForItem={getCartQuantity}
             />
 
             {/* Cart Drawer */}

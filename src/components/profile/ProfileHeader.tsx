@@ -8,10 +8,11 @@ import { useState, useEffect, useRef } from "react";
 
 interface ProfileHeaderProps {
     user: UserProfile;
+    isEditing: boolean;
+    setIsEditing: (value: boolean) => void;
 }
 
-export function ProfileHeader({ user }: ProfileHeaderProps) {
-    const [isEditing, setIsEditing] = useState(false);
+export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderProps) {
     const [editedUser, setEditedUser] = useState(user);
     const [userEmail, setUserEmail] = useState('');
     const [userName, setUserName] = useState('');
@@ -62,19 +63,29 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
     };
     
     // Calculate real member duration from localStorage
-    const getMemberDuration = () => {
+    const getMemberDuration = (): string => {
         const memberSinceStr = localStorage.getItem('rabuste_member_since');
-        if (!memberSinceStr) return 0;
+        if (!memberSinceStr) return 'just now';
         
         const memberSince = new Date(memberSinceStr);
         const now = new Date();
-        const diffTime = now.getTime() - memberSince.getTime();
-        const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30));
+        const diffMs = now.getTime() - memberSince.getTime();
         
-        return diffMonths;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30));
+        const diffYears = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365));
+        
+        if (diffMinutes < 1) return 'just now';
+        if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+        if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+        if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
+        return `${diffYears} year${diffYears !== 1 ? 's' : ''}`;
     };
     
-    const [memberDuration, setMemberDuration] = useState(0);
+    const [memberDuration, setMemberDuration] = useState('');
     
     useEffect(() => {
         setMemberDuration(getMemberDuration());
@@ -274,13 +285,13 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                                 <div className="flex items-center justify-center lg:justify-start gap-2 text-amber-100 mt-3">
                                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                                     <span className="font-sans text-sm">
-                                        Member for {memberDuration} months
+                                        Member for {memberDuration || 'just now'}
                                     </span>
                                 </div>
                             </motion.div>
 
-                            {/* Edit/Save Buttons */}
-                            {isEditing ? (
+                            {/* Edit/Save Buttons - Only show when in edit mode */}
+                            {isEditing && (
                                 <div className="flex gap-3 mt-4 mx-auto lg:mx-0 w-fit">
                                     <motion.button
                                         initial={{ opacity: 0, y: 10 }}
@@ -307,19 +318,6 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                                         Cancel
                                     </motion.button>
                                 </div>
-                            ) : (
-                                <motion.button
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.6, delay: 0.4 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setIsEditing(true)}
-                                    className="mt-4 flex items-center gap-2 px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-full text-white font-sans text-sm font-semibold transition-all shadow-lg mx-auto lg:mx-0"
-                                >
-                                    <Edit2 className="w-4 h-4" />
-                                    Edit Profile
-                                </motion.button>
                             )}
                         </div>
                     </div>
@@ -361,9 +359,6 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                             </div>
                             <p className="font-display text-4xl font-bold text-white">
                                 {user.points.toLocaleString()}
-                            </p>
-                            <p className="font-sans text-xs text-amber-100 mt-1">
-                                ≈ ₹{Math.floor(user.points / 10)} in rewards
                             </p>
                         </motion.div>
 

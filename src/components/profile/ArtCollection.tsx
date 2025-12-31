@@ -1,15 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Palette, User as UserIcon, Calendar, IndianRupee } from "lucide-react";
+import { Palette, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { ArtPiece } from "@/types/menu";
 
 interface ArtCollectionProps {
     artPieces: ArtPiece[];
+    isDesktop?: boolean;
 }
 
-export function ArtCollection({ artPieces }: ArtCollectionProps) {
+export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionProps) {
+    const [showAll, setShowAll] = useState(false);
+
     const formatDate = (date: Date) => {
         return new Intl.DateTimeFormat("en-IN", {
             month: "short",
@@ -18,9 +22,90 @@ export function ArtCollection({ artPieces }: ArtCollectionProps) {
     };
 
     const totalValue = artPieces.reduce((sum, piece) => sum + piece.price, 0);
+    const displayedArt = showAll ? artPieces : artPieces.slice(0, isDesktop ? 4 : 2);
+
+    // Desktop version
+    if (isDesktop) {
+        return (
+            <div className="space-y-4">
+                {artPieces.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-2 gap-4">
+                            {displayedArt.map((piece, index) => (
+                                <motion.div
+                                    key={piece.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className="bg-[#F5F0EB] rounded-xl overflow-hidden hover:shadow-md transition-shadow group"
+                                >
+                                    <div className="flex gap-4 p-4">
+                                        <div className="relative h-24 w-24 flex-shrink-0 rounded-xl overflow-hidden">
+                                            <Image
+                                                src={piece.image}
+                                                alt={piece.title}
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                sizes="96px"
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                            <div>
+                                                <h3 className="font-sans text-base font-semibold text-[#262626] mb-1 line-clamp-1">
+                                                    {piece.title}
+                                                </h3>
+                                                <p className="font-sans text-sm text-[#78716c]">
+                                                    by {piece.artist}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-sans text-xs text-[#a8a29e]">
+                                                    {formatDate(piece.purchaseDate)}
+                                                </span>
+                                                <span className="font-display text-lg font-bold text-[#8B6F47]">
+                                                    ₹{piece.price.toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {artPieces.length > 4 && !showAll && (
+                            <button
+                                onClick={() => setShowAll(true)}
+                                className="w-full flex items-center justify-center gap-2 py-3 text-[#8B6F47] hover:text-[#6d5638] font-sans font-semibold text-sm transition-colors"
+                            >
+                                View all {artPieces.length} pieces
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        )}
+
+                        {showAll && artPieces.length > 4 && (
+                            <button
+                                onClick={() => setShowAll(false)}
+                                className="w-full flex items-center justify-center gap-2 py-3 text-[#78716c] hover:text-[#404040] font-sans font-semibold text-sm transition-colors"
+                            >
+                                Show less
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    <div className="text-center py-12">
+                        <Palette className="w-16 h-16 text-[#d6d3d1] mx-auto mb-4" />
+                        <p className="font-display text-xl text-[#404040] mb-2">No art pieces yet</p>
+                        <p className="font-sans text-sm text-[#78716c]">
+                            Explore our gallery to start your collection!
+                        </p>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
-        <section className="w-full py-12 lg:py-16" style={{ backgroundColor: "#D8CBB8" }}>
+        <section className="w-full py-8 lg:py-10" style={{ backgroundColor: "#D8CBB8" }}>
             <div className="mx-auto w-full px-4 lg:px-6 max-w-6xl">
                 {/* Section Header */}
                 <motion.div
@@ -28,88 +113,102 @@ export function ArtCollection({ artPieces }: ArtCollectionProps) {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
-                    className="mb-8"
+                    className="flex flex-col items-center mb-8"
                 >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
-                        <div className="flex items-center gap-3">
-                            <Palette className="w-7 h-7 text-[#8B6F47]" />
-                            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#404040]">
-                                Art Collection
-                            </h2>
-                        </div>
-                        {artPieces.length > 0 && (
-                            <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#8B6F47]/30">
-                                <p className="font-sans text-sm text-[#78716c]">
-                                    Total Value:{" "}
-                                    <span className="font-bold text-[#262626]">
-                                        ₹{totalValue.toLocaleString()}
-                                    </span>
-                                </p>
-                            </div>
-                        )}
+                    <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-3 text-center">
+                        Art Collection
+                    </h2>
+                    <div className="relative w-24 h-6 mb-3">
+                        <Image
+                            src="/title-separator.png"
+                            fill
+                            alt=""
+                            className="object-contain"
+                        />
                     </div>
-                    <p className="font-sans text-base text-[#78716c]">
-                        Your curated collection from our gallery
+                    <p className="font-sans text-sm text-[#78716c] text-center">
+                        {artPieces.length} pieces {artPieces.length > 0 && <>• <span className="font-semibold text-[#8B6F47]">₹{totalValue.toLocaleString()} spent</span></>}
                     </p>
                 </motion.div>
 
-                {/* Art Grid */}
+                {/* Art List - Single Column */}
                 {artPieces.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {artPieces.map((piece, index) => (
-                            <motion.div
-                                key={piece.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                whileHover={{ y: -8, scale: 1.02 }}
-                                className="group bg-white rounded-2xl overflow-hidden shadow-lg border border-[#8B6F47]/20 hover:shadow-2xl transition-all cursor-pointer"
+                    <div className="relative">
+                        <div className="space-y-3">
+                            {displayedArt.map((piece, index) => {
+                                const isSecondItem = index === 1 && !showAll && artPieces.length > 2;
+
+                                return (
+                                    <motion.div
+                                        key={piece.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                                        className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all ${isSecondItem ? 'relative border-0' : 'border border-[#8B6F47]/10'}`}
+                                    >
+                                        {/* Gradient overlay for second item */}
+                                        {isSecondItem && (
+                                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-[#D8CBB8] z-10 pointer-events-none" />
+                                        )}
+
+                                        <div className="flex items-center gap-4 p-4">
+                                            <div className="relative h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden">
+                                                <Image
+                                                    src={piece.image}
+                                                    alt={piece.title}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="80px"
+                                                />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-sans text-sm font-semibold text-[#262626] mb-1 line-clamp-1">
+                                                    {piece.title}
+                                                </h3>
+                                                <p className="font-sans text-xs text-[#78716c] mb-1">
+                                                    by {piece.artist}
+                                                </p>
+                                                <p className="font-sans text-xs text-[#a8a29e]">
+                                                    {formatDate(piece.purchaseDate)}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex-shrink-0 text-right">
+                                                <span className="font-sans text-sm font-bold text-[#8B6F47]">
+                                                    ₹{piece.price.toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+
+                        {/* View More Button */}
+                        {artPieces.length > 2 && !showAll && (
+                            <motion.button
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                onClick={() => setShowAll(true)}
+                                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/60 hover:bg-white/80 text-[#8B6F47] font-sans text-sm font-medium rounded-full transition-colors"
                             >
-                                {/* Art Image */}
-                                <div className="relative w-full aspect-square overflow-hidden">
-                                    <Image
-                                        src={piece.image}
-                                        alt={piece.title}
-                                        fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                    {/* Overlay on Hover */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <button className="w-full bg-white/90 hover:bg-white text-[#404040] font-sans font-semibold py-2 rounded-lg transition-colors">
-                                            View in Gallery
-                                        </button>
-                                    </div>
-                                </div>
+                                View all {artPieces.length} pieces
+                                <ChevronRight className="w-3 h-3" />
+                            </motion.button>
+                        )}
 
-                                {/* Art Details */}
-                                <div className="p-5">
-                                    <h3 className="font-serif text-xl font-semibold text-[#404040] mb-2 line-clamp-1">
-                                        {piece.title}
-                                    </h3>
-
-                                    <div className="space-y-2 mb-4">
-                                        <div className="flex items-center gap-2 text-[#78716c]">
-                                            <UserIcon className="w-4 h-4" />
-                                            <span className="font-sans text-sm">{piece.artist}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-[#78716c]">
-                                            <Calendar className="w-4 h-4" />
-                                            <span className="font-sans text-sm">
-                                                Purchased {formatDate(piece.purchaseDate)}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-1 pt-3 border-t border-[#8B6F47]/20">
-                                        <IndianRupee className="w-5 h-5 text-[#262626]" />
-                                        <span className="font-serif text-xl font-bold text-[#262626]">
-                                            {piece.price.toLocaleString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                        {showAll && artPieces.length > 2 && (
+                            <motion.button
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                onClick={() => setShowAll(false)}
+                                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/60 hover:bg-white/80 text-[#78716c] font-sans text-sm font-medium rounded-full transition-colors"
+                            >
+                                Show less
+                            </motion.button>
+                        )}
                     </div>
                 ) : (
                     <motion.div

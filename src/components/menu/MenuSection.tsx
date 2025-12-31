@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { MenuItem, MenuCategory } from "@/types/menu";
 import { CoffeeCard } from "./CoffeeCard";
 
@@ -43,17 +44,27 @@ export function MenuSection({
     return (
         <section className="relative w-full py-8 lg:py-12" style={{ backgroundColor: "#D8CBB8" }}>
             <div className="mx-auto w-full px-4 lg:px-6 max-w-7xl">
-                {/* Section Header */}
+                {/* Section Header - Styled like WhyRobusta */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
-                    className="mb-6 lg:mb-8"
+                    className="flex flex-col items-center mb-6 lg:mb-8"
                 >
-                    <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#404040] text-center mb-4">
+                    <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#262626] text-center mb-4">
                         {title}
                     </h2>
+                    {/* Title Separator */}
+                    <div className="relative w-28 h-6 lg:w-36 lg:h-8">
+                        <Image
+                            src="/title-separator.png"
+                            fill
+                            alt="Decorative separator"
+                            className="object-contain"
+                            sizes="(max-width: 768px) 112px, 144px"
+                        />
+                    </div>
                 </motion.div>
 
                 {/* Category Filters - Grid instead of scroll */}
@@ -93,14 +104,18 @@ export function MenuSection({
 
                                 return (
                                     <div key={category.id}>
-                                        <motion.h3
+                                        <motion.div
                                             initial={{ opacity: 0, x: -20 }}
                                             whileInView={{ opacity: 1, x: 0 }}
                                             viewport={{ once: true }}
-                                            className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-6"
+                                            className="flex items-center gap-3 mb-6"
                                         >
-                                            {category.label}
-                                        </motion.h3>
+                                            <div className="h-[2px] w-8 bg-[#8B6F47]"></div>
+                                            <h3 className="font-display text-2xl lg:text-3xl font-bold text-[#262626]">
+                                                {category.label}
+                                            </h3>
+                                            <div className="h-[2px] flex-1 bg-[#8B6F47]/30"></div>
+                                        </motion.div>
                                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                                             {categoryItems.map((item, index) => (
                                                 <motion.div

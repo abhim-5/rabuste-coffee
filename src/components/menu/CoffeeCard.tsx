@@ -47,7 +47,7 @@ export function CoffeeCard({
             whileHover={{ y: -4 }}
             transition={{ duration: 0.3 }}
             onClick={() => onCardClick(item)}
-            className="relative bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-md hover:shadow-xl cursor-pointer border border-[#8B6F47]/20 transition-all"
+            className="relative bg-white/80 backdrop-blur-sm rounded-lg overflow-hidden shadow-md hover:shadow-xl cursor-pointer border border-[#8B6F47]/20 transition-all"
         >
             {/* Deal Badge */}
             {item.isDealOfTheDay && (
@@ -64,8 +64,8 @@ export function CoffeeCard({
                 </div>
             )}
 
-            {/* Image */}
-            <div className="relative w-full aspect-[4/5] lg:aspect-[3/2] overflow-hidden">
+            {/* Image - Taller for visual appeal */}
+            <div className="relative w-full aspect-[3/4] md:aspect-[4/5] lg:aspect-[3/4] overflow-hidden">
                 <Image
                     src={item.image}
                     alt={item.name}
@@ -74,68 +74,60 @@ export function CoffeeCard({
                 />
             </div>
 
-            {/* Content */}
-            <div className="p-4 lg:p-3">
-                {/* Name */}
-                <h3 className="font-serif text-lg lg:text-xl text-[#404040] mb-2 lg:mb-1 line-clamp-1">
-                    {item.name}
-                </h3>
-
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-3 lg:mb-2">
-                    <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                        <span className="font-sans text-sm text-[#404040] font-semibold">
-                            {item.rating}
-                        </span>
+            {/* Content - Fixed height for uniform cards */}
+            <div className="p-3 h-[100px] flex flex-col justify-between">
+                {/* Name and Rating Row */}
+                <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-serif text-base md:text-lg text-[#262626] leading-snug line-clamp-2 flex-1 font-semibold">
+                        {item.name}
+                    </h3>
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                        <span className="font-sans text-xs font-semibold text-[#404040]">{item.rating}</span>
                     </div>
-                    <span className="font-sans text-xs text-[#78716c]">
-                        ({item.reviewCount})
-                    </span>
                 </div>
 
-                {/* Price and Add Button */}
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-baseline gap-2 flex-shrink min-w-0">
-                        <span className="font-serif text-lg lg:text-2xl text-[#262626] font-bold truncate">
+                {/* Price and Add Button Row */}
+                <div className="flex items-center justify-between gap-2 mt-auto">
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <span className="font-sans text-lg md:text-xl text-[#5d4e37] font-bold">
                             ₹{item.price}
                         </span>
                         {item.originalPrice && (
-                            <span className="font-sans text-xs lg:text-sm text-[#78716c] line-through">
+                            <span className="font-sans text-xs text-[#78716c] line-through">
                                 ₹{item.originalPrice}
                             </span>
                         )}
                     </div>
 
-                    {/* Smart Add Button / Quantity Controls */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 w-[80px]">
                         {cartQuantity === 0 ? (
                             <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={handleAdd}
-                                className="bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-xs lg:text-sm font-semibold px-4 lg:px-6 py-2 rounded-full transition-colors shadow-md"
+                                className="w-full bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-xs font-semibold px-2 py-1.5 rounded-md transition-colors shadow-md"
                             >
                                 Add
                             </motion.button>
                         ) : (
                             <motion.div
-                                initial={{ scale: 0.8 }}
+                                initial={{ scale: 0.95 }}
                                 animate={{ scale: 1 }}
-                                className="flex items-center gap-1.5 lg:gap-2 bg-[#8B6F47] rounded-full px-2 lg:px-3 py-1.5 lg:py-2 shadow-md"
+                                className="flex items-center justify-between bg-[#8B6F47] rounded-md px-1 py-1 shadow-md"
                             >
                                 <button
                                     onClick={handleDecrement}
-                                    className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
+                                    className="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
                                 >
                                     <Minus className="w-3 h-3 text-white" />
                                 </button>
-                                <span className="font-sans text-sm lg:text-base font-bold text-white min-w-[20px] lg:min-w-[24px] text-center">
+                                <span className="font-sans text-xs font-bold text-white min-w-[16px] text-center">
                                     {cartQuantity}
                                 </span>
                                 <button
                                     onClick={handleIncrement}
-                                    className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
+                                    className="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
                                 >
                                     <Plus className="w-3 h-3 text-white" />
                                 </button>
