@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { MenuItem, DealOfTheDay, ProductVariation } from "@/types/menu";
 
 // Product Variations
@@ -38,6 +39,17 @@ export const menuItems: MenuItem[] = [
     id: "coffee-001",
     name: "Classic Robusta Espresso",
     description: "Our signature double-shot espresso crafted from premium Robusta beans. Bold, intense, and perfectly balanced with notes of dark chocolate and hazelnut.",
+=======
+import { MenuItem, MenuCategory, DealOfTheDay } from "@/types/menu";
+
+// Menu Items
+export const menuItems: MenuItem[] = [
+  // Coffee
+  {
+    id: "coffee-1",
+    name: "Classic Robusta Espresso",
+    description: "Bold and strong espresso made from premium Robusta beans, perfect for a quick energy boost.",
+>>>>>>> 0a026f9 (Polished the menu page)
     price: 80,
     originalPrice: 100,
     image: "/main-menu/menu1a.jpg",
@@ -45,6 +57,7 @@ export const menuItems: MenuItem[] = [
     rating: 4.8,
     reviewCount: 234,
     isDealOfTheDay: true,
+<<<<<<< HEAD
     tags: ["espresso", "bold", "signature"],
     variations: coffeeVariations,
     frequentlyBoughtWith: ["pastries-001", "coffee-002"],
@@ -56,10 +69,41 @@ export const menuItems: MenuItem[] = [
     description: "Velvety espresso layered with steamed milk and topped with rich caramel drizzle. A sweet indulgence for coffee lovers.",
     price: 120,
     originalPrice: 150,
+=======
+    variations: [
+      {
+        id: "size",
+        name: "Size",
+        required: true,
+        options: [
+          { id: "small", name: "Small", priceModifier: 0 },
+          { id: "medium", name: "Medium", priceModifier: 20 },
+          { id: "large", name: "Large", priceModifier: 40 },
+        ],
+      },
+      {
+        id: "temperature",
+        name: "Temperature",
+        required: true,
+        options: [
+          { id: "hot", name: "Hot", priceModifier: 0 },
+          { id: "iced", name: "Iced", priceModifier: 10 },
+        ],
+      },
+    ],
+    frequentlyBoughtWith: ["pastry-1", "dessert-1"],
+  },
+  {
+    id: "coffee-2",
+    name: "Caramel Macchiato",
+    description: "Smooth espresso with steamed milk and caramel drizzle, a sweet indulgence.",
+    price: 120,
+>>>>>>> 0a026f9 (Polished the menu page)
     image: "/main-menu/menu2a.jpg",
     category: "coffee",
     rating: 4.9,
     reviewCount: 189,
+<<<<<<< HEAD
     tags: ["sweet", "caramel", "popular"],
     variations: coffeeVariations,
     frequentlyBoughtWith: ["pastries-002", "desserts-001"],
@@ -69,11 +113,41 @@ export const menuItems: MenuItem[] = [
     id: "coffee-003",
     name: "Cappuccino Supreme",
     description: "Traditional Italian cappuccino with equal parts espresso, steamed milk, and velvety milk foam. Dusted with cocoa powder.",
+=======
+    variations: [
+      {
+        id: "size",
+        name: "Size",
+        required: true,
+        options: [
+          { id: "small", name: "Small", priceModifier: 0 },
+          { id: "medium", name: "Medium", priceModifier: 20 },
+          { id: "large", name: "Large", priceModifier: 40 },
+        ],
+      },
+      {
+        id: "milk",
+        name: "Milk Type",
+        required: false,
+        options: [
+          { id: "regular", name: "Regular", priceModifier: 0 },
+          { id: "oat", name: "Oat", priceModifier: 15 },
+          { id: "almond", name: "Almond", priceModifier: 15 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "coffee-3",
+    name: "Cappuccino Supreme",
+    description: "Perfect blend of espresso and frothed milk with a dusting of cocoa.",
+>>>>>>> 0a026f9 (Polished the menu page)
     price: 100,
     image: "/main-menu/menu3a.jpg",
     category: "coffee",
     rating: 4.7,
     reviewCount: 156,
+<<<<<<< HEAD
     tags: ["classic", "foam", "italian"],
     variations: coffeeVariations,
     frequentlyBoughtWith: ["pastries-003"],
@@ -129,10 +203,52 @@ export const menuItems: MenuItem[] = [
     id: "pizza-001",
     name: "Margherita Classic",
     description: "Traditional Italian pizza with fresh mozzarella, San Marzano tomatoes, and fragrant basil on our wood-fired crust.",
+=======
+  },
+  {
+    id: "coffee-4",
+    name: "Mocha Fusion",
+    description: "Rich chocolate mixed with espresso and steamed milk, topped with whipped cream.",
+    price: 130,
+    image: "/main-menu/menu2b.jpg",
+    category: "coffee",
+    rating: 4.8,
+    reviewCount: 198,
+    isDealOfTheDay: true,
+  },
+  {
+    id: "coffee-5",
+    name: "Vanilla Latte",
+    description: "Creamy latte with a hint of vanilla sweetness.",
+    price: 110,
+    image: "/main-menu/menu1b.jpg",
+    category: "coffee",
+    rating: 4.6,
+    reviewCount: 145,
+  },
+  {
+    id: "coffee-6",
+    name: "Cold Brew Special",
+    description: "Smooth cold brew steeped for 18 hours, served over ice.",
+    price: 140,
+    originalPrice: 160,
+    image: "/main-menu/menu3b.jpg",
+    category: "coffee",
+    rating: 4.9,
+    reviewCount: 223,
+  },
+
+  // Pizza
+  {
+    id: "pizza-1",
+    name: "Margherita Classic",
+    description: "Traditional pizza with fresh mozzarella, tomato sauce, and basil.",
+>>>>>>> 0a026f9 (Polished the menu page)
     price: 250,
     image: "/main-menu/menu1a.jpg",
     category: "pizza",
     rating: 4.7,
+<<<<<<< HEAD
     reviewCount: 98,
     tags: ["vegetarian", "classic", "italian"],
     frequentlyBoughtWith: ["beverages-001", "coffee-001"],
@@ -157,10 +273,29 @@ export const menuItems: MenuItem[] = [
     id: "pizza-003",
     name: "Veggie Delight",
     description: "Colorful medley of bell peppers, mushrooms, olives, onions, and tomatoes on a bed of melted mozzarella.",
+=======
+    reviewCount: 167,
+  },
+  {
+    id: "pizza-2",
+    name: "Pepperoni Supremo",
+    description: "Loaded with pepperoni, cheese, and Italian herbs.",
+    price: 280,
+    image: "/main-menu/menu2a.jpg",
+    category: "pizza",
+    rating: 4.8,
+    reviewCount: 201,
+  },
+  {
+    id: "pizza-3",
+    name: "Veggie Delight",
+    description: "Fresh vegetables with mozzarella and homemade tomato sauce.",
+>>>>>>> 0a026f9 (Polished the menu page)
     price: 260,
     image: "/main-menu/menu3a.jpg",
     category: "pizza",
     rating: 4.6,
+<<<<<<< HEAD
     reviewCount: 87,
     tags: ["vegetarian", "healthy", "colorful"],
     frequentlyBoughtWith: ["beverages-001"],
@@ -242,10 +377,97 @@ export const menuItems: MenuItem[] = [
     id: "desserts-001",
     name: "Tiramisu",
     description: "Classic Italian dessert with layers of coffee-soaked ladyfingers and mascarpone cream. Dusted with cocoa.",
+=======
+    reviewCount: 134,
+  },
+
+  // Pastries
+  {
+    id: "pastry-1",
+    name: "Butter Croissant",
+    description: "Flaky, buttery croissant baked fresh daily.",
+    price: 60,
+    image: "/main-menu/menu1b.jpg",
+    category: "pastries",
+    rating: 4.9,
+    reviewCount: 289,
+  },
+  {
+    id: "pastry-2",
+    name: "Chocolate Danish",
+    description: "Rich chocolate filling wrapped in flaky pastry.",
+    price: 70,
+    image: "/main-menu/menu2b.jpg",
+    category: "pastries",
+    rating: 4.8,
+    reviewCount: 176,
+  },
+  {
+    id: "pastry-3",
+    name: "Almond Croissant",
+    description: "Croissant filled with almond cream and topped with sliced almonds.",
+    price: 75,
+    image: "/main-menu/menu3b.jpg",
+    category: "pastries",
+    rating: 4.7,
+    reviewCount: 145,
+  },
+
+  // Sandwiches
+  {
+    id: "sandwich-1",
+    name: "Club Sandwich",
+    description: "Triple-decker with chicken, bacon, lettuce, and tomato.",
+    price: 180,
+    image: "/main-menu/menu1a.jpg",
+    category: "sandwiches",
+    rating: 4.6,
+    reviewCount: 112,
+  },
+  {
+    id: "sandwich-2",
+    name: "Veggie Panini",
+    description: "Grilled vegetables with pesto and mozzarella.",
+    price: 150,
+    image: "/main-menu/menu2a.jpg",
+    category: "sandwiches",
+    rating: 4.5,
+    reviewCount: 98,
+  },
+
+  // Beverages
+  {
+    id: "beverage-1",
+    name: "Fresh Orange Juice",
+    description: "Freshly squeezed orange juice, no added sugar.",
+    price: 80,
+    image: "/main-menu/menu1a.jpg",
+    category: "beverages",
+    rating: 4.7,
+    reviewCount: 156,
+  },
+  {
+    id: "beverage-2",
+    name: "Iced Tea",
+    description: "Refreshing iced tea with lemon and mint.",
+    price: 60,
+    image: "/main-menu/menu2a.jpg",
+    category: "beverages",
+    rating: 4.5,
+    reviewCount: 123,
+  },
+
+  // Desserts
+  {
+    id: "dessert-1",
+    name: "Tiramisu",
+    description: "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone.",
+>>>>>>> 0a026f9 (Polished the menu page)
     price: 150,
     image: "/main-menu/menu3a.jpg",
     category: "desserts",
     rating: 4.9,
+<<<<<<< HEAD
     reviewCount: 145,
     tags: ["italian", "coffee", "creamy"],
     frequentlyBoughtWith: ["coffee-001", "coffee-003"],
@@ -291,12 +513,26 @@ export const menuItems: MenuItem[] = [
     tags: ["vegetarian", "fresh", "lunch"],
     frequentlyBoughtWith: ["beverages-001"],
     similarItems: ["sandwiches-001"],
+=======
+    reviewCount: 245,
+  },
+  {
+    id: "dessert-2",
+    name: "Chocolate Brownie",
+    description: "Rich, fudgy brownie served warm with vanilla ice cream.",
+    price: 120,
+    image: "/main-menu/menu3b.jpg",
+    category: "desserts",
+    rating: 4.8,
+    reviewCount: 187,
+>>>>>>> 0a026f9 (Polished the menu page)
   },
 ];
 
 // Deal of the Day
 export const dealsOfTheDay: DealOfTheDay[] = [
   {
+<<<<<<< HEAD
     id: "deal-001",
     menuItemId: "coffee-001",
     discount: 20,
@@ -315,11 +551,31 @@ export const dealsOfTheDay: DealOfTheDay[] = [
 ];
 
 // Helper functions to get items by ID (prepares for API integration)
+=======
+    id: "deal-1",
+    title: "Espresso",
+    itemId: "coffee-1",
+    discount: 20,
+  },
+  {
+    id: "deal-2",
+    title: "Mocha Fusion",
+    itemId: "coffee-4",
+    discount: 15,
+  },
+];
+
+// Helper Functions
+>>>>>>> 0a026f9 (Polished the menu page)
 export const getMenuItemById = (id: string): MenuItem | undefined => {
   return menuItems.find((item) => item.id === id);
 };
 
+<<<<<<< HEAD
 export const getMenuItemsByCategory = (category: string): MenuItem[] => {
+=======
+export const getMenuItemsByCategory = (category: MenuCategory): MenuItem[] => {
+>>>>>>> 0a026f9 (Polished the menu page)
   return menuItems.filter((item) => item.category === category);
 };
 
@@ -328,6 +584,9 @@ export const getDealItems = (): MenuItem[] => {
 };
 
 export const getRecommendedItems = (): MenuItem[] => {
+<<<<<<< HEAD
   // For now, return items with high ratings
+=======
+>>>>>>> 0a026f9 (Polished the menu page)
   return menuItems.filter((item) => item.rating >= 4.8).slice(0, 6);
 };
