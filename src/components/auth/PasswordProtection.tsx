@@ -83,7 +83,7 @@ export default function PasswordProtection({ children }: { children: React.React
                   color: '#000000',
                   WebkitTextFillColor: '#000000',
                   opacity: 1
-                }}
+                } as React.CSSProperties}
               />
               {error && (
                 <p className="mt-2 text-sm text-red-600 animate-shake">
