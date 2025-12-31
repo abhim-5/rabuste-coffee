@@ -1,18 +1,126 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Camera, Edit2, Award, ShoppingBag, Coins } from "lucide-react";
+import { Camera, Edit2, Award, ShoppingBag, Coins, Save, X, Upload, Lock } from "lucide-react";
 import Image from "next/image";
 import { UserProfile } from "@/types/menu";
+import { useState, useEffect, useRef } from "react";
 
 interface ProfileHeaderProps {
     user: UserProfile;
 }
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
-    const memberDuration = Math.floor(
-        (new Date().getTime() - user.memberSince.getTime()) / (1000 * 60 * 60 * 24 * 30)
-    );
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedUser, setEditedUser] = useState(user);
+    const [userEmail, setUserEmail] = useState('');
+    const [userName, setUserName] = useState('');
+    const [profileImage, setProfileImage] = useState<string>('');
+    const [passwordData, setPasswordData] = useState({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [passwordError, setPasswordError] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Load user data from localStorage
+    useEffect(() => {
+        const email = localStorage.getItem('rabuste_user_email') || '';
+        const name = localStorage.getItem('rabuste_user_name') || 'Guest User';
+        const savedImage = localStorage.getItem('rabuste_user_image') || '';
+        
+        setUserEmail(email);
+        setUserName(name);
+        setProfileImage(savedImage);
+        
+        setEditedUser({
+            ...user,
+            name: name,
+            email: email,
+        });
+    }, []);
+
+    // Generate initials from first name
+    const generateInitials = (name: string) => {
+        if (!name || name.trim() === '') return 'GU'; // Guest User
+        const firstName = name.trim().split(' ')[0];
+        return firstName.slice(0, 2).toUpperCase();
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const imageData = reader.result as string;
+                setProfileImage(imageData);
+                localStorage.setItem('rabuste_user_image', imageData);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    
+    // Calculate real member duration from localStorage
+    const getMemberDuration = () => {
+        const memberSinceStr = localStorage.getItem('rabuste_member_since');
+        if (!memberSinceStr) return 0;
+        
+        const memberSince = new Date(memberSinceStr);
+        const now = new Date();
+        const diffTime = now.getTime() - memberSince.getTime();
+        const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30));
+        
+        return diffMonths;
+    };
+    
+    const [memberDuration, setMemberDuration] = useState(0);
+    
+    useEffect(() => {
+        setMemberDuration(getMemberDuration());
+    }, []);
+
+    const handleSave = () => {
+        // Validate password if changing
+        if (passwordData.oldPassword || passwordData.newPassword || passwordData.confirmPassword) {
+            const savedPassword = localStorage.getItem('rabuste_user_password');
+            
+            if (passwordData.oldPassword !== savedPassword) {
+                setPasswordError('Previous password is incorrect');
+                return;
+            }
+            
+            if (passwordData.newPassword.length < 8) {
+                setPasswordError('New password must be at least 8 characters');
+                return;
+            }
+            
+            if (passwordData.newPassword !== passwordData.confirmPassword) {
+                setPasswordError('Passwords do not match');
+                return;
+            }
+            
+            // Save new password
+            localStorage.setItem('rabuste_user_password', passwordData.newPassword);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('rabuste_user_name', editedUser.name);
+        setUserName(editedUser.name);
+        setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        setPasswordError('');
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setEditedUser({
+            ...editedUser,
+            name: userName,
+        });
+        setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        setPasswordError('');
+        setIsEditing(false);
+    };
 
     return (
         <section
@@ -44,26 +152,66 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                             className="relative group"
                         >
                             <div className="relative w-32 h-32 lg:w-40 lg:h-40">
-                                <Image
-                                    src={user.avatar || "/main-menu/menu1a.jpg"}
-                                    alt={user.name}
-                                    fill
-                                    className="rounded-full object-cover border-4 border-white/30 shadow-xl"
+                                {profileImage ? (
+                                    <Image
+                                        src={profileImage}
+                                        alt={userName}
+                                        fill
+                                        className="rounded-full object-cover border-4 border-white/30 shadow-xl"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full rounded-full border-4 border-white/30 shadow-xl flex items-center justify-center bg-gradient-to-br from-[#8B6F47] to-[#6d5638] text-white text-4xl font-bold">
+                                        {generateInitials(userName)}
+                                    </div>
+                                )}
+                                
+                                {/* Hidden file input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
                                 />
-                                {/* Camera Icon Overlay */}
-                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                    <Camera className="w-8 h-8 text-white" />
-                                </div>
+                                
+                                {/* Upload/Remove buttons - Only show in edit mode */}
+                                {isEditing && (
+                                    <>
+                                        {/* Upload Image Button */}
+                                        <motion.button
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ delay: 0.4, type: "spring" }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="absolute -bottom-2 -right-2 bg-white text-[#8B6F47] p-3 rounded-full shadow-lg border-2 border-amber-500/30"
+                                            title="Upload Image"
+                                        >
+                                            <Upload className="w-5 h-5" />
+                                        </motion.button>
+                                        
+                                        {/* Remove Image Button - Only show if user has uploaded an image */}
+                                        {profileImage && (
+                                            <motion.button
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ delay: 0.5, type: "spring" }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => {
+                                                    setProfileImage('');
+                                                    localStorage.removeItem('rabuste_user_image');
+                                                }}
+                                                className="absolute -bottom-2 -left-2 bg-red-500 text-white p-3 rounded-full shadow-lg border-2 border-red-400/30"
+                                                title="Remove Image"
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </motion.button>
+                                        )}
+                                    </>
+                                )}
                             </div>
-                            {/* Member Badge */}
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ delay: 0.4, type: "spring" }}
-                                className="absolute -top-2 -right-2 bg-amber-500 text-white p-2 rounded-full shadow-lg"
-                            >
-                                <Award className="w-5 h-5" />
-                            </motion.div>
                         </motion.div>
 
                         {/* User Info */}
@@ -73,16 +221,57 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.6, delay: 0.3 }}
                             >
-                                <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-2">
-                                    {user.name}
-                                </h1>
-                                <p className="font-sans text-base lg:text-lg text-amber-100 mb-1">
-                                    {user.email}
-                                </p>
-                                {user.phone && (
-                                    <p className="font-sans text-sm text-amber-200/80 mb-3">{user.phone}</p>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        value={editedUser.name}
+                                        onChange={(e) => setEditedUser({ ...editedUser, name: e.target.value })}
+                                        className="font-display text-3xl lg:text-4xl font-bold text-white mb-2 bg-white/10 border border-amber-500/30 rounded-lg px-4 py-2 w-full"
+                                    />
+                                ) : (
+                                    <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-2">
+                                        {userName}
+                                    </h1>
                                 )}
-                                <div className="flex items-center justify-center lg:justify-start gap-2 text-amber-100">
+                                <p className="font-sans text-base lg:text-lg text-amber-100 mb-1">
+                                    {userEmail}
+                                </p>
+                                
+                                {/* Password Change Fields */}
+                                {isEditing && (
+                                    <div className="mt-4 space-y-3 w-full max-w-md">
+                                        <div className="flex items-center gap-2 text-amber-100 mb-2">
+                                            <Lock className="w-4 h-4" />
+                                            <span className="text-sm font-semibold">Change Password</span>
+                                        </div>
+                                        <input
+                                            type="password"
+                                            placeholder="Previous Password"
+                                            value={passwordData.oldPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+                                            className="w-full px-4 py-2.5 bg-white/10 border border-amber-500/30 rounded-lg text-white placeholder-amber-200/50 focus:outline-none focus:border-amber-500"
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="New Password"
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                            className="w-full px-4 py-2.5 bg-white/10 border border-amber-500/30 rounded-lg text-white placeholder-amber-200/50 focus:outline-none focus:border-amber-500"
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Confirm New Password"
+                                            value={passwordData.confirmPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                            className="w-full px-4 py-2.5 bg-white/10 border border-amber-500/30 rounded-lg text-white placeholder-amber-200/50 focus:outline-none focus:border-amber-500"
+                                        />
+                                        {passwordError && (
+                                            <p className="text-red-400 text-sm">{passwordError}</p>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                <div className="flex items-center justify-center lg:justify-start gap-2 text-amber-100 mt-3">
                                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                                     <span className="font-sans text-sm">
                                         Member for {memberDuration} months
@@ -90,18 +279,48 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                                 </div>
                             </motion.div>
 
-                            {/* Edit Button */}
-                            <motion.button
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.4 }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="mt-4 flex items-center gap-2 px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-full text-white font-sans text-sm font-semibold transition-all shadow-lg mx-auto lg:mx-0"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                                Edit Profile
-                            </motion.button>
+                            {/* Edit/Save Buttons */}
+                            {isEditing ? (
+                                <div className="flex gap-3 mt-4 mx-auto lg:mx-0 w-fit">
+                                    <motion.button
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.6, delay: 0.4 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={handleSave}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-green-600/80 hover:bg-green-600 backdrop-blur-sm border border-green-500/30 rounded-full text-white font-sans text-sm font-semibold transition-all shadow-lg"
+                                    >
+                                        <Save className="w-4 h-4" />
+                                        Save
+                                    </motion.button>
+                                    <motion.button
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.6, delay: 0.4 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={handleCancel}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-red-600/80 hover:bg-red-600 backdrop-blur-sm border border-red-500/30 rounded-full text-white font-sans text-sm font-semibold transition-all shadow-lg"
+                                    >
+                                        <X className="w-4 h-4" />
+                                        Cancel
+                                    </motion.button>
+                                </div>
+                            ) : (
+                                <motion.button
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.4 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setIsEditing(true)}
+                                    className="mt-4 flex items-center gap-2 px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-full text-white font-sans text-sm font-semibold transition-all shadow-lg mx-auto lg:mx-0"
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                    Edit Profile
+                                </motion.button>
+                            )}
                         </div>
                     </div>
 

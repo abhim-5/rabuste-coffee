@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench } from "lucide-react";
+import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, Coins } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import AuthModal from "@/components/auth/AuthModal";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
@@ -19,8 +20,57 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This will be connected to auth later
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [buttonRect, setButtonRect] = useState<DOMRect | undefined>();
+  const loginButtonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+
+  // Check if user is logged in from localStorage
+  useEffect(() => {
+    const authStatus = localStorage.getItem('rabuste_auth');
+    const email = localStorage.getItem('rabuste_user_email');
+    const image = localStorage.getItem('rabuste_user_image');
+    const name = localStorage.getItem('rabuste_user_name') || '';
+    if (authStatus === 'true' && email) {
+      setIsLoggedIn(true);
+      setUserEmail(email);
+      setUserProfileImage(image || null);
+      setUserName(name);
+    }
+  }, []);
+
+  const handleLogin = (email: string, password: string, name?: string, profileImage?: string) => {
+    // Save auth state
+    localStorage.setItem('rabuste_auth', 'true');
+    localStorage.setItem('rabuste_user_email', email);
+    localStorage.setItem('rabuste_user_password', password);
+    if (name) {
+      localStorage.setItem('rabuste_user_name', name);
+    }
+    if (profileImage) {
+      localStorage.setItem('rabuste_user_image', profileImage);
+    }
+    // Save registration date if not already set
+    if (!localStorage.getItem('rabuste_member_since')) {
+      localStorage.setItem('rabuste_member_since', new Date().toISOString());
+    }
+    setIsLoggedIn(true);
+    setUserEmail(email);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('rabuste_auth');
+    localStorage.removeItem('rabuste_user_email');
+    localStorage.removeItem('rabuste_user_password');
+    localStorage.removeItem('rabuste_user_name');
+    localStorage.removeItem('rabuste_user_image');
+    setIsLoggedIn(false);
+    setUserEmail('');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,6 +94,13 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  // Helper to generate initials
+  const getInitials = (name: string) => {
+    if (!name || name.trim() === '') return 'GU';
+    const firstName = name.trim().split(' ')[0];
+    return firstName.slice(0, 2).toUpperCase();
+  };
 
   return (
     <>
@@ -131,7 +188,7 @@ export default function Navbar() {
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="flex items-center gap-6 flex-shrink-0">
               {/* Notification Button */}
               <motion.button
                 initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
@@ -147,37 +204,74 @@ export default function Navbar() {
                   animate={{ scale: 1 }}
                   transition={{ delay: 1.5 }}
                   className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full"
-                />
-              </motion.button>
+                />              </motion.button>
 
-              {/* Profile/Login Button */}
-              <Link href="/profile">
-                {isLoggedIn ? (
+              {/* Auth Section */}
+              {isLoggedIn ? (
+                <div className="flex items-center gap-4">
+                  {/* Reward Points Icon */}
                   <motion.button
                     initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
                     animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative p-2.5 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
                   >
-                    <User className="w-4 h-4" />
-                    <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Profile</span>
+                    <Coins className="w-5 h-5 text-amber-400" />
+                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                      250
+                    </span>
                   </motion.button>
-                ) : (
-                  <motion.button
-                    initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                    animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
-                  >
-                    <User className="w-4 h-4" />
-                    <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Login</span>
-                  </motion.button>
-                )}
-              </Link>
+
+                  {/* Profile Icon */}
+                  <Link href="/profile">
+                    <motion.button
+                      initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
+                      animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+                      transition={{ duration: 0.6, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="rounded-full transition-all duration-300"
+                    >
+                      {userProfileImage ? (
+                        <Image
+                          src={userProfileImage}
+                          alt="Profile"
+                          width={32}
+                          height={32}
+                          className="rounded-full object-cover w-8 h-8 border-2 border-amber-500/30"
+                        />
+                      ) : userName ? (
+                        <span className="rounded-full bg-gradient-to-br from-[#8B6F47] to-[#6d5638] text-white font-bold flex items-center justify-center w-8 h-8 text-sm">
+                          {getInitials(userName)}
+                        </span>
+                      ) : (
+                        <div className="p-2 rounded-full bg-amber-500">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                    </motion.button>
+                  </Link>
+                </div>
+              ) : (
+                <motion.button
+                  ref={loginButtonRef}
+                  initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
+                  animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ scale: 1.02, borderColor: "rgba(255, 255, 255, 1)" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={(e) => {
+                    setButtonRect((e.target as HTMLButtonElement).getBoundingClientRect());
+                    setShowAuthModal(true);
+                  }}
+                  className="flex items-center gap-2 px-7 py-3 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="font-sans text-sm font-semibold tracking-[0.2em] uppercase">Login</span>
+                </motion.button>
+              )}
             </div>
           </div>
         </div>
@@ -223,7 +317,7 @@ export default function Navbar() {
           </Link>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* Notification */}
             <motion.button
               initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
@@ -238,30 +332,67 @@ export default function Navbar() {
               <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full" />
             </motion.button>
 
-            {/* Profile/Login */}
-            <Link href="/profile">
-              {isLoggedIn ? (
+            {/* Auth Section */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                {/* Reward Points Icon */}
                 <motion.button
                   initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
                   animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold"
+                  transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
                 >
-                  <User className="w-5 h-5" />
+                  <Coins className="w-5 h-5 text-amber-400" />
+                  <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                    250
+                  </span>
                 </motion.button>
-              ) : (
-                <motion.button
-                  initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-                  animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold tracking-[0.2em] uppercase"
-                >
-                  Login
-                </motion.button>
-              )}
-            </Link>
+
+                {/* Profile Icon */}
+                <Link href="/profile">
+                  <motion.button
+                    initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                    animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    whileTap={{ scale: 0.95 }}
+                    className="rounded-full"
+                  >
+                    {userProfileImage ? (
+                      <Image
+                        src={userProfileImage}
+                        alt="Profile"
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover w-8 h-8 border-2 border-amber-500/30"
+                      />
+                    ) : userName ? (
+                      <span className="rounded-full bg-gradient-to-br from-[#8B6F47] to-[#6d5638] text-white font-bold flex items-center justify-center w-8 h-8 text-sm">
+                        {getInitials(userName)}
+                      </span>
+                    ) : (
+                      <div className="p-2 rounded-full bg-amber-500">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                    )}
+                  </motion.button>
+                </Link>
+              </div>
+            ) : (
+              <motion.button
+                initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  setButtonRect((e.target as HTMLButtonElement).getBoundingClientRect());
+                  setShowAuthModal(true);
+                }}
+                className="px-5 py-2.5 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white text-sm font-semibold tracking-[0.2em] uppercase"
+              >
+                Login
+              </motion.button>
+            )}
           </div>
         </div>
       </motion.div >
@@ -328,6 +459,14 @@ export default function Navbar() {
           })}
         </div>
       </motion.nav >
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        onLogin={handleLogin}
+        buttonRect={buttonRect}
+      />
     </>
   );
 }
