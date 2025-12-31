@@ -5,10 +5,6 @@ import { MenuItem, CartItem, CartState } from "@/types/menu";
 
 const CART_STORAGE_KEY = "rabuste-cart";
 
-<<<<<<< HEAD
-// Helper to calculate subtotal for a cart item
-=======
->>>>>>> 0a026f9 (Polished the menu page)
 const calculateSubtotal = (
     menuItem: MenuItem,
     quantity: number,
@@ -16,10 +12,6 @@ const calculateSubtotal = (
 ): number => {
     let price = menuItem.price;
 
-<<<<<<< HEAD
-    // Add variation price modifiers
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     if (selectedVariations && menuItem.variations) {
         menuItem.variations.forEach((variation) => {
             const selectedOptionId = selectedVariations[variation.id];
@@ -42,10 +34,6 @@ export function useCart() {
         itemCount: 0,
     });
 
-<<<<<<< HEAD
-    // Load cart from localStorage on mount
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     useEffect(() => {
         const savedCart = localStorage.getItem(CART_STORAGE_KEY);
         if (savedCart) {
@@ -58,18 +46,10 @@ export function useCart() {
         }
     }, []);
 
-<<<<<<< HEAD
-    // Save cart to localStorage whenever it changes
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     useEffect(() => {
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }, [cart]);
 
-<<<<<<< HEAD
-    // Add item to cart
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     const addItem = useCallback(
         (
             menuItem: MenuItem,
@@ -86,10 +66,6 @@ export function useCart() {
                 let newItems: CartItem[];
 
                 if (existingItemIndex > -1) {
-<<<<<<< HEAD
-                    // Item exists, update quantity
-=======
->>>>>>> 0a026f9 (Polished the menu page)
                     newItems = [...prevCart.items];
                     const newQuantity = newItems[existingItemIndex].quantity + quantity;
                     newItems[existingItemIndex] = {
@@ -98,10 +74,6 @@ export function useCart() {
                         subtotal: calculateSubtotal(menuItem, newQuantity, selectedVariations),
                     };
                 } else {
-<<<<<<< HEAD
-                    // New item
-=======
->>>>>>> 0a026f9 (Polished the menu page)
                     const newItem: CartItem = {
                         menuItem,
                         quantity,
@@ -120,10 +92,6 @@ export function useCart() {
         []
     );
 
-<<<<<<< HEAD
-    // Remove item from cart
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     const removeItem = useCallback((index: number) => {
         setCart((prevCart) => {
             const newItems = prevCart.items.filter((_, i) => i !== index);
@@ -134,10 +102,6 @@ export function useCart() {
         });
     }, []);
 
-<<<<<<< HEAD
-    // Update item quantity
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     const updateQuantity = useCallback((index: number, quantity: number) => {
         if (quantity <= 0) {
             return;
@@ -159,10 +123,6 @@ export function useCart() {
         });
     }, []);
 
-<<<<<<< HEAD
-    // Clear cart
-=======
->>>>>>> 0a026f9 (Polished the menu page)
     const clearCart = useCallback(() => {
         setCart({ items: [], total: 0, itemCount: 0 });
     }, []);
