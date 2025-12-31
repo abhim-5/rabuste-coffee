@@ -120,40 +120,6 @@ export function CustomerReviews() {
                 >
                     {/* Radial gradient vignette */}
                     <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/5 to-black/20" />
-
-                    {/* Animated grain texture */}
-                    <div className="absolute inset-0 opacity-30 mix-blend-overlay">
-                        <div className="grain-texture h-full w-full" />
-                    </div>
-
-                    {/* Floating coffee bean decorations */}
-                    <motion.div
-                        animate={{
-                            y: [0, -20, 0],
-                            rotate: [0, 5, 0],
-                        }}
-                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-20 left-10 opacity-10"
-                    >
-                        <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
-                            <ellipse cx="50" cy="50" rx="35" ry="48" fill="#404040" transform="rotate(-15 50 50)" />
-                            <path d="M50 20 Q30 50 50 80" stroke="#8B4513" strokeWidth="3" fill="none" />
-                        </svg>
-                    </motion.div>
-
-                    <motion.div
-                        animate={{
-                            y: [0, 20, 0],
-                            rotate: [0, -5, 0],
-                        }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute bottom-20 right-10 opacity-10"
-                    >
-                        <svg width="140" height="140" viewBox="0 0 100 100" fill="none">
-                            <ellipse cx="50" cy="50" rx="40" ry="52" fill="#404040" transform="rotate(20 50 50)" />
-                            <path d="M50 15 Q25 50 50 85" stroke="#8B4513" strokeWidth="3" fill="none" />
-                        </svg>
-                    </motion.div>
                 </motion.div>
 
                 <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8">
@@ -397,26 +363,7 @@ export function CustomerReviews() {
                     </div>
                 </div>
 
-                {/* CSS for grain texture */}
-                <style jsx>{`
-        @keyframes grain {
-          0%, 100% { transform: translate(0, 0); }
-          10% { transform: translate(-5%, -10%); }
-          20% { transform: translate(-15%, 5%); }
-          30% { transform: translate(7%, -25%); }
-          40% { transform: translate(-5%, 25%); }
-          50% { transform: translate(-15%, 10%); }
-          60% { transform: translate(15%, 0%); }
-          70% { transform: translate(0%, 15%); }
-          80% { transform: translate(3%, 35%); }
-          90% { transform: translate(-10%, 10%); }
-        }
-        
-        .grain-texture {
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-          animation: grain 8s steps(10) infinite;
-        }
-      `}</style>
+
             </section>
         </>
     );

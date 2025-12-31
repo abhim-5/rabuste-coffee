@@ -41,20 +41,16 @@ export default function FestsAndWorkshops() {
 
                     {/* Mobile Description: Placed before subheading as requested */}
                     <p className="max-w-2xl text-center text-lg text-[#575757] font-serif mt-6 mb-2 px-2 lg:hidden">
-                        Rabuste Cafe organizes inclusive workshops to promote artisanship and celebrate
-                        creativity. Join us to learn directly from master craftsmen and experience
-                        the joy of making.
+                        Rabuste Cafe organizes inclusive workshops to promote artisanship and celebrate creativity. Join us to learn directly from master craftsmen and experience the joy of making.
                     </p>
 
-                    {/* Join Now Button (Mobile only) */}
+                    {/* Register Now Button (Mobile only) - At the top */}
                     <div className="lg:hidden mt-4 mb-2">
                         <JoinNowButton />
                     </div>
 
                     {/* Subheading */}
-                    <h3 className="font-serif text-xl lg:text-2xl text-[#3d3d3d] mt-6 font-medium italic">
-                        Our Past Workshops
-                    </h3>
+                    <h3 className="font-serif text-xl lg:text-2xl text-[#3d3d3d] mt-6 font-medium italic">Our Past Workshops</h3>
 
                     {/* Marquee Text - Both Mobile and Desktop */}
                     <div className="w-full overflow-hidden mt-6 mb-4">
@@ -103,18 +99,24 @@ export default function FestsAndWorkshops() {
                         ))}
                     </div>
 
-                    {/* Join Now Button */}
-                    <div className="mt-4">
+                    {/* Buttons */}
+                    <div className="mt-4 flex gap-6">
                         <JoinNowButton />
+                        <OrganizeNowButton />
                     </div>
                 </div>
 
                 {/* Mobile Layout (Original Stack) - Preserving 2x3 Grid */}
                 <div className="lg:hidden flex flex-col items-center w-full">
-                    <div className="grid grid-cols-2 gap-4 w-full mb-0">
+                    <div className="grid grid-cols-2 gap-4 w-full mb-4">
                         {workshopItems.map((item, index) => (
                             <WorkshopImage key={`mobile-${index}`} src={item.src} title={item.title} index={index} />
                         ))}
+                    </div>
+                    
+                    {/* Organize Now Button (Mobile only) - At the bottom */}
+                    <div className="mt-4">
+                        <OrganizeNowButton />
                     </div>
                 </div>
             </div>
@@ -144,19 +146,19 @@ function WorkshopImage({ src, title, index }: { src: string; title: string; inde
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="relative aspect-square w-full overflow-hidden rounded-lg cursor-pointer"
+            className="relative aspect-square w-full overflow-hidden rounded-lg cursor-pointer group"
         >
             <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
                 <Image
                     src={src}
                     fill
                     alt={title}
-                    className="object-cover"
+                    className="object-cover transition-all duration-500 ease-in-out lg:group-hover:blur-[2px] lg:group-hover:scale-110"
                 />
             </motion.div>
 
-            {/* Overlay with Text - Always visible now or kept subtle? Keeping subtle gradient for readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90 flex items-center justify-center">
+            {/* Overlay with Text - Hidden on desktop, visible on hover. Always visible on mobile */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-90 transition-opacity duration-500">
                 <span className="text-[#f0f0f0] font-display text-2xl lg:text-3xl font-bold tracking-wide drop-shadow-md text-center px-4">
                     {title}
                 </span>
@@ -171,6 +173,45 @@ function JoinNowButton() {
 
     return (
         <Link href="/workshops#upcoming">
+          <button
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            suppressHydrationWarning
+        >
+            <span className="flex space-x-[2px]">
+                {text.split("").map((char, index) => (
+                    <motion.span
+                        key={index}
+                        animate={
+                            isHovered
+                                ? {
+                                    y: [0, -4, 0],
+                                    transition: {
+                                        duration: 0.4,
+                                        delay: index * 0.05,
+                                        ease: "easeInOut",
+                                    },
+                                }
+                                : { y: 0 }
+                        }
+                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#4a4a4a]"
+                    >
+                        {char === " " ? "\u00A0" : char}
+                    </motion.span>
+                ))}
+            </span>
+        </button>
+        </Link>
+    );
+}
+
+function OrganizeNowButton() {
+    const [isHovered, setIsHovered] = useState(false);
+    const text = "Organize Now";
+
+    return (
+        <Link href="/workshops#request-custom-workshop">
           <button
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}

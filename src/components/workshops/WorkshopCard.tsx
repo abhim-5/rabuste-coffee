@@ -52,7 +52,7 @@ export function WorkshopCard({
             style={{
                 top: `${20 + (index * 5)}px`,
                 height: '100vh',
-                marginBottom: '-5vh',
+                marginBottom: index === 0 ? '-5vh' : '-5vh',
                 zIndex: index + 1
             }}
         >
@@ -177,9 +177,10 @@ export function WorkshopCard({
                                         <h4 className="font-oswald text-sm uppercase tracking-widest font-bold">Workshop Details</h4>
                                         <button
                                             onClick={() => setActiveReviewWorkshopId(null)}
-                                            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+                                            className="w-10 h-10 rounded-full bg-white hover:bg-white/90 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-md"
+                                            aria-label="Close reviews"
                                         >
-                                            <X className="w-5 h-5" />
+                                            <X className="w-6 h-6 text-[#8B6F47]" />
                                         </button>
                                     </div>
 
@@ -204,11 +205,20 @@ export function WorkshopCard({
                                         </div>
 
                                         <div className="border-t border-[#8B6F47]/20 pt-6">
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <MessageSquare className="w-5 h-5 text-[#8B6F47]" />
-                                                <h4 className="font-oswald text-sm uppercase tracking-widest text-[#404040] font-bold">
-                                                    Participant Reviews
-                                                </h4>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <MessageSquare className="w-5 h-5 text-[#8B6F47]" />
+                                                    <h4 className="font-oswald text-sm uppercase tracking-widest text-[#404040] font-bold">
+                                                        Participant Reviews
+                                                    </h4>
+                                                </div>
+                                                <button
+                                                    onClick={() => setActiveReviewWorkshopId(null)}
+                                                    className="w-8 h-8 rounded-full bg-[#8B6F47] hover:bg-[#6F4E28] text-white flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
+                                                    aria-label="Close reviews"
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
                                             </div>
 
                                             <div className="space-y-4">

@@ -680,7 +680,7 @@ function WorkshopDetailModal({ workshop, onClose }: any) {
   );
 }
 
-// Enhanced Statistics Section - More Informative with Better Visualization
+// Enhanced Statistics Section - Premium Design
 function ImpactSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -688,42 +688,45 @@ function ImpactSection() {
     {
       number: 587,
       suffix: "+",
-      label: "Happy Participants",
+      label: "Lives Transformed",
       icon: Users,
-      description: "Coffee lovers trained"
+      description: "Passionate coffee enthusiasts trained to craft excellence",
+      color: "from-[#8B6F47] to-[#6F4E28]" // Coffee brown
     },
     {
       number: 64,
       suffix: "+",
-      label: "Workshops Conducted",
+      label: "Workshops Hosted",
       icon: Coffee,
-      description: "Successful sessions"
+      description: "Immersive experiences brewing creativity & connection",
+      color: "from-[#D4A574] to-[#B8864F]" // Warm caramel
     },
     {
       number: 98,
       suffix: "%",
-      label: "Satisfaction Rate",
+      label: "Pure Satisfaction",
       icon: Heart,
-      description: "Would recommend"
+      description: "Participants who'd return for another cup of learning",
+      color: "from-[#B8704F] to-[#9A5538]" // Terracotta copper
     },
     {
       number: 4.9,
       suffix: "/5",
-      label: "Average Rating",
+      label: "Excellence Rating",
       icon: Star,
-      description: "From all reviews"
+      description: "Consistently exceptional experiences, one workshop at a time",
+      color: "from-[#C89B5F] to-[#A67C45]" // Golden brown
     },
   ];
 
-  const achievements = [
-    { value: "15+", icon: Award, label: "Awards Won" },
-    { value: "8+", icon: Coffee, label: "Master Baristas" },
-    { value: "73%", icon: Heart, label: "Repeat Attendees" },
-    { value: "42+", icon: Sparkles, label: "Unique Workshops" },
-  ];
-
   return (
-    <section ref={sectionRef} className="relative py-12 lg:py-20 overflow-hidden">
+    <section ref={sectionRef} className="relative py-16 lg:py-24 overflow-hidden bg-gradient-to-br from-[#F5EFE6] via-[#E8DBC8] to-[#D8CBB8]">
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-[#8B6F47] rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-[#8B6F47] rounded-full blur-3xl" />
+      </div>
+
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <motion.div
@@ -733,8 +736,20 @@ function ImpactSection() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center mb-16"
         >
-          <h2 className="font-display text-5xl lg:text-6xl font-bold text-[#404040] mb-6 text-center">
-            Our Impact
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="inline-block mb-4"
+          >
+            <span className="px-6 py-2 bg-gradient-to-r from-[#8B6F47] to-[#6F4E28] text-white text-xs font-bold tracking-[0.3em] uppercase rounded-full shadow-lg">
+              Our Story in Numbers
+            </span>
+          </motion.div>
+
+          <h2 className="font-display text-4xl lg:text-6xl font-bold text-[#2A2A2A] mb-6 text-center bg-gradient-to-r from-[#404040] to-[#2A2A2A] bg-clip-text text-transparent">
+            Brewing Community,<br className="hidden lg:block" /> One Workshop at a Time
           </h2>
 
           {/* Coffee Bean Divider */}
@@ -743,7 +758,7 @@ function ImpactSection() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: false }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-32 h-8 lg:w-40 lg:h-10 mb-6"
+            className="relative w-32 h-8 lg:w-40 lg:h-10 mb-8"
           >
             <Image
               src="/title-separator.png"
@@ -758,9 +773,10 @@ function ImpactSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-xl lg:text-2xl font-serif text-[#404040]/70 text-center max-w-2xl"
+            className="text-lg lg:text-xl font-serif text-[#404040]/80 text-center max-w-3xl leading-relaxed italic"
           >
-            Numbers that speak about our commitment to excellence
+            "Every workshop is a journey. Every participant, a story. Together, we've created a community 
+            where coffee isn't just a drink—it's a canvas for creativity, connection, and craft."
           </motion.p>
         </motion.div>
 
@@ -770,7 +786,7 @@ function ImpactSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto mb-12"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
         >
           {stats.map((stat, index) => {
             const Icon = stat.icon;
@@ -785,25 +801,28 @@ function ImpactSection() {
                   duration: 0.6,
                   ease: [0.22, 1, 0.36, 1]
                 }}
-                className="bg-white/90 backdrop-blur-sm p-8 rounded-sm shadow-lg hover:shadow-xl transition-shadow duration-300"
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="group relative text-center"
               >
-                {/* Icon */}
-                <div className="mb-6">
-                  <Icon className={`w-12 h-12 ${stat.suffix === '/5' ? 'text-amber-500' : 'text-[#8B6F47]'}`} />
+                {/* Icon with Gradient Background */}
+                <div className="mb-6 inline-block">
+                  <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${stat.color} rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
                 </div>
 
                 {/* Number */}
-                <p className={`text-5xl lg:text-6xl font-display font-bold mb-3 ${stat.suffix === '/5' ? 'text-amber-500' : 'text-[#8B6F47]'}`}>
+                <p className={`text-5xl lg:text-6xl font-display font-bold mb-3 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`}>
                   {stat.number}{stat.suffix}
                 </p>
 
                 {/* Label */}
-                <p className="text-lg font-serif text-[#404040] font-semibold mb-2">
+                <p className="text-xl font-display font-bold text-[#2A2A2A] mb-3 uppercase tracking-wide">
                   {stat.label}
                 </p>
 
                 {/* Description */}
-                <p className="text-sm text-[#404040]/60 font-serif">
+                <p className="text-sm font-serif text-[#404040]/70 leading-relaxed max-w-xs mx-auto">
                   {stat.description}
                 </p>
               </motion.div>
@@ -811,47 +830,44 @@ function ImpactSection() {
           })}
         </motion.div>
 
-        {/* Achievements Bar */}
+        {/* Testimonial Quote Section */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="max-w-7xl mx-auto"
+          className="max-w-5xl mx-auto mt-16"
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-sm p-8 lg:p-12 shadow-lg">
-            <h3 className="font-display text-3xl lg:text-4xl font-bold text-[#404040] mb-10 text-center">
-              Our Achievements
-            </h3>
+          <div className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-2xl border-2 border-[#8B6F47]/20">
+            {/* Quote Icon */}
+            <Quote className="absolute top-6 left-6 w-12 h-12 text-[#8B6F47]/20" />
+            
+            <div className="relative z-10">
+              <p className="text-2xl lg:text-3xl font-serif text-[#2A2A2A] italic leading-relaxed text-center mb-6">
+                "These workshops aren't just about coffee—they're about discovering your passion, 
+                connecting with like-minded souls, and creating memories that last a lifetime."
+              </p>
+              
+              <div className="flex items-center justify-center gap-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-[#8B6F47]/20">
+                  <Image
+                    src="/about us/owner_pic.png"
+                    alt="Vaibhav Sutaria"
+                    width={64}
+                    height={64}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <div>
+                  <p className="font-display text-lg font-bold text-[#2A2A2A]">Rabuste Coffee</p>
+                  <p className="text-sm font-serif text-[#404040]/70">Founder & Master Barista</p>
+                </div>
+              </div>
+            </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {achievements.map((achievement, index) => {
-                const Icon = achievement.icon;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: false }}
-                    transition={{
-                      delay: 0.7 + index * 0.1,
-                      duration: 0.5,
-                      ease: [0.22, 1, 0.36, 1]
-                    }}
-                    className="text-center"
-                  >
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-[#E8DBC8] rounded-full mb-4">
-                      <Icon className="w-10 h-10 text-[#8B6F47]" />
-                    </div>
-                    <p className="text-3xl font-display font-bold text-[#8B6F47] mb-2">
-                      {achievement.value}
-                    </p>
-                    <p className="text-sm font-serif text-[#404040]/70">
-                      {achievement.label}
-                    </p>
-                  </motion.div>
-                );
-              })}
+            {/* Decorative Coffee Beans */}
+            <div className="absolute bottom-6 right-6 opacity-10">
+              <Coffee className="w-20 h-20 text-[#8B6F47]" />
             </div>
           </div>
         </motion.div>
@@ -881,7 +897,7 @@ function RequestWorkshopSection({ pageScrollProgress }: any) {
   ];
 
   return (
-    <section ref={sectionRef} className="relative w-full py-20 lg:py-32 overflow-hidden">
+    <section id="request-custom-workshop" ref={sectionRef} className="relative w-full py-20 lg:py-32 overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
           {/* Left Column: The Pitch */}
