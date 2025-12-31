@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Cormorant_Garamond, Inter, Oswald } from "next/font/google";
 import "./globals.css";
+import PasswordProtection from "@/components/auth/PasswordProtection";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -52,7 +53,9 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${oswald.variable} antialiased`}
       >
-        {children}
+        <PasswordProtection>
+          {children}
+        </PasswordProtection>
       </body>
     </html>
   );
