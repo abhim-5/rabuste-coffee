@@ -1,11 +1,20 @@
 "use client";
 
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ShoppingBag, Download } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { CartItem } from "@/types/menu";
-import { useState } from "react";
 import { menuItems } from "@/data/menuData";
+
+const galleryItems = [
+  { id: 1, name: 'Dawn Chorus', price: 12999 },
+  { id: 2, name: 'Midnight Falls', price: 15999 },
+  { id: 3, name: 'Wetland Companions', price: 18999 },
+  { id: 4, name: 'Monsoon Transit', price: 21999 },
+  { id: 5, name: 'Summer Garden', price: 16999 },
+  { id: 6, name: 'Bamboo Sanctuary', price: 19999 },
+];
 
 interface CartProps {
     isOpen: boolean;
@@ -30,16 +39,31 @@ export function Cart({
     onRemoveItem,
     onAddRecommendedItem,
 }: CartProps) {
-    const [orderType, setOrderType] = useState<OrderType>("takeaway-scheduled");
-    const [scheduledTime, setScheduledTime] = useState<string>("30");
-    const recommendedItems = menuItems.filter(i => i.rating >= 4.8).slice(0, 3);
+    const [orderType, setOrderType] = React.useState<OrderType>("dine-in");
+    
+    // Check if cart contains any gallery items
+    const hasGalleryItems = items.some(item => item.menuItem.id.startsWith('gallery-'));
+    const hasMenuItems = items.some(item => !item.menuItem.id.startsWith('gallery-'));
+    
+    // Get gallery items not in cart (only if cart has gallery items)
+    const cartArtIds = items.map(item => {
+        const match = item.menuItem.id.match(/gallery-(\d+)/);
+        return match ? parseInt(match[1]) : null;
+    }).filter(id => id !== null);
+    
+    const recommendedArtworks = hasGalleryItems 
+        ? galleryItems.filter(art => !cartArtIds.includes(art.id))
+        : [];
+    
+    // Get menu items not in cart (only if cart has menu items)
+    const cartMenuIds = items.map(item => item.menuItem.id).filter(id => !id.startsWith('gallery-'));
+    const recommendedMenuItems = hasMenuItems
+        ? menuItems.filter(item => !cartMenuIds.includes(item.id)).slice(0, 3)
+        : [];
 
-    const handlePayNow = () => {
-        alert("Payment UI would be integrated here. This is a frontend mockup.");
-    };
-
-    const handleDownloadBill = () => {
-        alert("Bill download functionality would be implemented here.");
+    const handleConfirmBooking = () => {
+        const bookingNumber = Math.floor(100000 + Math.random() * 900000);
+        alert(`Booking Confirmed!\n\nYour Booking Number: ${bookingNumber}\n\nPlease visit Rabuste Coffee and show this number at the counter.\nPay in cash and collect your artwork.\n\nThank you!`);
     };
 
     return (
@@ -59,25 +83,26 @@ export function Cart({
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                        className="fixed right-0 top-0 bottom-0 w-full lg:w-[480px] bg-[#fafaf9] shadow-2xl z-50 flex flex-col"
+                        className="fixed right-0 top-0 bottom-0 w-full lg:w-[480px] shadow-2xl z-50 flex flex-col"
+                        style={{ backgroundColor: "#D8CBB8" }}
                     >
-                        <div className="bg-[#8B6F47] px-6 py-5 flex items-center justify-between">
+                        <div className="px-6 py-5 flex items-center justify-between border-b-[0.5px] border-[#8B6F47]" style={{ backgroundColor: "#D8CBB8" }}>
                             <div className="flex items-center gap-3">
-                                <ShoppingBag className="w-6 h-6 text-amber-50" />
+                                <ShoppingBag className="w-6 h-6 text-[#8B6F47]" />
                                 <div>
-                                    <h2 className="font-display text-2xl font-bold text-amber-50">
+                                    <h2 className="font-display text-2xl font-bold text-[#262626]">
                                         Your Cart
                                     </h2>
-                                    <p className="font-sans text-sm text-amber-100">
+                                    <p className="font-sans text-sm text-[#8B6F47]">
                                         {itemCount} {itemCount === 1 ? "item" : "items"}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                                className="p-2 border-[0.5px] border-[#8B6F47] hover:bg-[#8B6F47] hover:text-white transition-colors"
                             >
-                                <X className="w-6 h-6 text-amber-50" />
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
 
@@ -101,10 +126,10 @@ export function Cart({
                                                 initial={{ opacity: 0, x: 20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: -20 }}
-                                                className="bg-white rounded-lg p-3 shadow-sm border border-[#8B6F47]/20"
+                                                className="bg-white p-3 border-[0.5px] border-[#8B6F47] shadow-sm"
                                             >
                                                 <div className="flex gap-3 items-center">
-                                                    <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                                                    <div className="relative w-16 h-16 overflow-hidden flex-shrink-0 bg-gray-100">
                                                         <Image
                                                             src={cartItem.menuItem.image}
                                                             alt={cartItem.menuItem.name}
@@ -132,7 +157,7 @@ export function Cart({
                                                                         return (
                                                                             <span
                                                                                 key={varId}
-                                                                                className="font-sans text-xs text-[#78716c] bg-[#D8CBB8]/30 px-2 py-0.5 rounded"
+                                                                                className="font-sans text-xs text-[#262626] bg-[#D8CBB8]/50 px-2 py-0.5 border-[0.5px] border-[#8B6F47]"
                                                                             >
                                                                                 {option.name}
                                                                             </span>
@@ -143,11 +168,11 @@ export function Cart({
                                                         )}
 
                                                         <div className="flex items-center justify-between">
-                                                            <span className="font-sans text-base font-bold text-[#262626]">
+                                                            <span className="font-sans text-base font-bold text-green-700">
                                                                 ₹{cartItem.subtotal}
                                                             </span>
 
-                                                            <div className="flex items-center gap-2 bg-[#D8CBB8]/30 rounded-full px-2 py-1">
+                                                            <div className="flex items-center gap-2">
                                                                 <button
                                                                     onClick={() => {
                                                                         if (cartItem.quantity === 1) {
@@ -156,7 +181,7 @@ export function Cart({
                                                                             onUpdateQuantity(index, cartItem.quantity - 1);
                                                                         }
                                                                     }}
-                                                                    className="w-5 h-5 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
+                                                                    className="w-6 h-6 border-[0.5px] border-[#8B6F47] hover:bg-[#8B6F47] hover:text-white flex items-center justify-center transition-colors"
                                                                 >
                                                                     <Minus className="w-3 h-3 text-[#404040]" />
                                                                 </button>
@@ -167,7 +192,7 @@ export function Cart({
                                                                     onClick={() =>
                                                                         onUpdateQuantity(index, cartItem.quantity + 1)
                                                                     }
-                                                                    className="w-5 h-5 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
+                                                                    className="w-6 h-6 border-[0.5px] border-[#8B6F47] hover:bg-[#8B6F47] hover:text-white flex items-center justify-center transition-colors"
                                                                 >
                                                                     <Plus className="w-3 h-3 text-[#404040]" />
                                                                 </button>
@@ -179,19 +204,54 @@ export function Cart({
                                         ))}
                                     </div>
 
-                                    {recommendedItems.length > 0 && (
+                                    {recommendedArtworks.length > 0 && (
                                         <div className="mb-6">
                                             <h3 className="font-display text-lg font-bold text-[#404040] mb-3">
                                                 You Might Also Like
                                             </h3>
                                             <div className="grid grid-cols-3 gap-2">
-                                                {recommendedItems.map((item) => (
+                                                {recommendedArtworks.map((art) => (
+                                                    <div
+                                                        key={art.id}
+                                                        className="bg-white p-2 border-[0.5px] border-[#8B6F47]"
+                                                    >
+                                                        <div className="relative w-full aspect-square overflow-hidden mb-1 bg-gray-100">
+                                                            <Image
+                                                                src={`/gallery/${art.id}.jpg`}
+                                                                alt={art.name}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        </div>
+                                                        <p className="font-sans text-xs text-[#404040] line-clamp-1">
+                                                            {art.name}
+                                                        </p>
+                                                        <p className="font-sans text-xs font-bold text-green-700">
+                                                            ₹{art.price.toLocaleString('en-IN')}
+                                                        </p>
+                                                        <button
+                                                            onClick={() => onAddRecommendedItem(`gallery-${art.id}`)}
+                                                            className="w-full mt-2 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-[10px] sm:text-xs px-2 py-1.5 transition-colors"
+                                                        >
+                                                            Add to Cart
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {hasMenuItems && !hasGalleryItems && recommendedMenuItems.length > 0 && (
+                                        <div className="mb-6">
+                                            <h3 className="font-display text-lg font-bold text-[#404040] mb-3">
+                                                You Might Also Like
+                                            </h3>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {recommendedMenuItems.map((item) => (
                                                     <div
                                                         key={item.id}
-                                                        onClick={() => onAddRecommendedItem(item.id)}
-                                                        className="bg-white rounded-lg p-2 cursor-pointer hover:shadow-md transition-shadow border border-[#8B6F47]/20"
+                                                        className="bg-white p-2 border-[0.5px] border-[#8B6F47]"
                                                     >
-                                                        <div className="relative w-full aspect-square rounded-md overflow-hidden mb-1">
+                                                        <div className="relative w-full aspect-square overflow-hidden mb-1 bg-gray-100">
                                                             <Image
                                                                 src={item.image}
                                                                 alt={item.name}
@@ -202,146 +262,170 @@ export function Cart({
                                                         <p className="font-sans text-xs text-[#404040] line-clamp-1">
                                                             {item.name}
                                                         </p>
-                                                        <p className="font-sans text-xs font-bold text-[#262626]">
-                                                            ₹{item.price}
+                                                        <p className="font-sans text-xs font-bold text-green-700">
+                                                            ₹{item.price.toLocaleString('en-IN')}
                                                         </p>
+                                                        <button
+                                                            onClick={() => onAddRecommendedItem(item.id)}
+                                                            className="w-full mt-2 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-[10px] sm:text-xs px-2 py-1.5 transition-colors"
+                                                        >
+                                                            Add to Cart
+                                                        </button>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Ordering Options */}
-                                    <div className="mb-6">
-                                        <h3 className="font-sans text-sm font-semibold text-[#404040] mb-3">
-                                            How would you like to order?
-                                        </h3>
-
-                                        <div className="space-y-3">
-                                            {/* 1. Takeaway Scheduled Option - FIRST (Promoted) */}
-                                            <label
-                                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'takeaway-scheduled'
-                                                    ? 'border-[#8B6F47] bg-[#8B6F47]/5'
-                                                    : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
-                                                    }`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="orderType"
-                                                    checked={orderType === "takeaway-scheduled"}
-                                                    onChange={() => setOrderType("takeaway-scheduled")}
-                                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
-                                                        ⏰ Takeaway - Schedule Pickup (Recommended)
-                                                    </p>
-                                                    <p className="font-sans text-xs text-[#78716c] mb-3">
-                                                        I'll collect my order after some time
-                                                    </p>
-
-                                                    {/* Time Selector - only show when this option is selected */}
-                                                    {orderType === "takeaway-scheduled" && (
-                                                        <select
-                                                            value={scheduledTime}
-                                                            onChange={(e) => setScheduledTime(e.target.value)}
-                                                            className="w-full bg-white border border-[#8B6F47]/30 rounded-lg px-3 py-2 font-sans text-sm text-[#404040] focus:outline-none focus:ring-2 focus:ring-[#8B6F47]"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
-                                                            <option value="15">In 15 minutes</option>
-                                                            <option value="30">In 30 minutes</option>
-                                                            <option value="45">In 45 minutes</option>
-                                                            <option value="60">In 1 hour</option>
-                                                            <option value="90">In 1.5 hours</option>
-                                                            <option value="120">In 2 hours</option>
-                                                        </select>
-                                                    )}
-                                                </div>
+                                    {hasMenuItems && !hasGalleryItems && (
+                                        <div className="mb-6">
+                                            <label className="block font-sans text-sm font-semibold text-[#404040] mb-3">
+                                                How would you like to order?
                                             </label>
+                                            <div className="space-y-3">
+                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${
+                                                    orderType === "takeaway-scheduled"
+                                                        ? "border-[#8B6F47] bg-white"
+                                                        : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
+                                                }`}>
+                                                    <input
+                                                        type="radio"
+                                                        name="orderType"
+                                                        checked={orderType === "takeaway-scheduled"}
+                                                        onChange={() => setOrderType("takeaway-scheduled")}
+                                                        className="mt-1"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-lg">🕐</span>
+                                                            <span className="font-sans text-sm font-semibold text-[#404040]">
+                                                                Takeaway - Schedule Pickup (Recommended)
+                                                            </span>
+                                                        </div>
+                                                        <p className="font-sans text-xs text-[#78716c] mb-2">
+                                                            I'll collect my order after some time
+                                                        </p>
+                                                        {orderType === "takeaway-scheduled" && (
+                                                            <select className="w-full p-2 border-[0.5px] border-[#8B6F47] font-sans text-sm bg-white text-black">
+                                                                <option>In 15 minutes</option>
+                                                                <option>In 30 minutes</option>
+                                                                <option>In 1 hour</option>
+                                                                <option>In 1.5 hours</option>
+                                                                <option>In 2 hours</option>
+                                                            </select>
+                                                        )}
+                                                    </div>
+                                                </label>
 
-                                            {/* 2. Takeaway Now Option */}
-                                            <label
-                                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'takeaway-now'
-                                                    ? 'border-[#8B6F47] bg-[#8B6F47]/5'
-                                                    : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
-                                                    }`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="orderType"
-                                                    checked={orderType === "takeaway-now"}
-                                                    onChange={() => setOrderType("takeaway-now")}
-                                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
-                                                        🚗 Takeaway - Ready Now
-                                                    </p>
-                                                    <p className="font-sans text-xs text-[#78716c]">
-                                                        I'm outside or nearby, prepare my order now
-                                                    </p>
-                                                </div>
-                                            </label>
+                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${
+                                                    orderType === "takeaway-now"
+                                                        ? "border-[#8B6F47] bg-white"
+                                                        : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
+                                                }`}>
+                                                    <input
+                                                        type="radio"
+                                                        name="orderType"
+                                                        checked={orderType === "takeaway-now"}
+                                                        onChange={() => setOrderType("takeaway-now")}
+                                                        className="mt-1"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-lg">🚗</span>
+                                                            <span className="font-sans text-sm font-semibold text-[#404040]">
+                                                                Takeaway - Ready Now
+                                                            </span>
+                                                        </div>
+                                                        <p className="font-sans text-xs text-[#78716c]">
+                                                            I'm outside or nearby, prepare my order now
+                                                        </p>
+                                                    </div>
+                                                </label>
 
-                                            {/* 3. Dine-in Option */}
-                                            <label
-                                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${orderType === 'dine-in'
-                                                    ? 'border-[#8B6F47] bg-[#8B6F47]/5'
-                                                    : 'border-[#8B6F47]/20 bg-white hover:border-[#8B6F47]/40'
-                                                    }`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="orderType"
-                                                    checked={orderType === "dine-in"}
-                                                    onChange={() => setOrderType("dine-in")}
-                                                    className="mt-1 w-5 h-5 text-[#8B6F47] focus:ring-[#8B6F47]"
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="font-sans text-base font-semibold text-[#404040] mb-1">
-                                                        🪑 Dine-In (Earn Points!)
-                                                    </p>
-                                                    <p className="font-sans text-xs text-[#78716c]">
-                                                        Order from your table and earn reward points
-                                                    </p>
-                                                </div>
-                                            </label>
+                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${
+                                                    orderType === "dine-in"
+                                                        ? "border-[#8B6F47] bg-white"
+                                                        : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
+                                                }`}>
+                                                    <input
+                                                        type="radio"
+                                                        name="orderType"
+                                                        checked={orderType === "dine-in"}
+                                                        onChange={() => setOrderType("dine-in")}
+                                                        className="mt-1"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-lg">🏠</span>
+                                                            <span className="font-sans text-sm font-semibold text-[#404040]">
+                                                                Dine-In (Earn Points!)
+                                                            </span>
+                                                        </div>
+                                                        <p className="font-sans text-xs text-[#78716c]">
+                                                            Order from your table and earn reward points
+                                                        </p>
+                                                    </div>
+                                                </label>
+                                            </div>
                                         </div>
-
-                                    </div>
+                                    )}
                                 </>
                             )}
                         </div>
 
                         {items.length > 0 && (
-                            <div className="bg-white border-t border-[#8B6F47]/20 px-6 py-5">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="font-serif text-xl text-[#404040]">Total</span>
-                                    <span className="font-serif text-2xl font-bold text-[#262626]">
-                                        ₹{total}
-                                    </span>
-                                </div>
+                            <div className="border-t-[0.5px] border-[#8B6F47] px-6 py-5" style={{ backgroundColor: "#D8CBB8" }}>
+                                {hasMenuItems && !hasGalleryItems && (
+                                    <>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="font-serif text-xl text-[#404040]">Total</span>
+                                            <span className="font-serif text-2xl font-bold text-green-700">
+                                                ₹{total}
+                                            </span>
+                                        </div>
+                                        
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="w-full mb-3 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 transition-colors shadow-lg border-[0.5px] border-[#8B6F47]"
+                                        >
+                                            Pay Now
+                                        </motion.button>
 
-                                <div className="space-y-3">
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handlePayNow}
-                                        className="w-full bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 rounded-full transition-colors shadow-lg"
-                                    >
-                                        Pay Now
-                                    </motion.button>
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="w-full bg-white hover:bg-gray-50 text-[#8B6F47] font-sans font-semibold px-6 py-4 transition-colors shadow-lg border-[0.5px] border-[#8B6F47] flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Download Bill
+                                        </motion.button>
+                                    </>
+                                )}
 
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handleDownloadBill}
-                                        className="w-full bg-[#D8CBB8] hover:bg-[#c9bca9] text-[#404040] font-sans font-semibold px-6 py-4 rounded-full transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Download className="w-5 h-5" />
-                                        Download Bill
-                                    </motion.button>
-                                </div>
+                                {hasGalleryItems && (
+                                    <>
+                                        <div className="mb-4 p-4 bg-white border-[0.5px] border-[#8B6F47]">
+                                            <p className="font-sans text-sm text-[#404040] mb-2">
+                                                <strong>Payment Method:</strong> Cash at Café
+                                            </p>
+                                            <p className="font-sans text-xs text-[#78716c]">
+                                                Visit Rabuste Coffee, show your booking number, pay in cash, and collect your artwork.
+                                            </p>
+                                        </div>
+
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={handleConfirmBooking}
+                                            className="w-full bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 transition-colors shadow-lg border-[0.5px] border-[#8B6F47]"
+                                        >
+                                            Confirm Booking
+                                        </motion.button>
+                                    </>
+                                )}
                             </div>
                         )}
                     </motion.div>

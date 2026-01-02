@@ -169,7 +169,7 @@ export default function ProfilePage() {
     return (
         <>
             <Navbar />
-            <main className="min-h-screen bg-[#F5F0EB]">
+            <main className="min-h-screen" style={{ backgroundColor: "#D8CBB8" }}>
                 {/* Mobile Layout - Same as before */}
                 <div className="lg:hidden pt-16 pb-20">
                     <ProfileHeader 

@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pre-deploy": "node scripts/pre-deploy-check.js",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.89.0",
     "@types/react-google-recaptcha": "^2.1.9",
     "clsx": "^2.1.1",

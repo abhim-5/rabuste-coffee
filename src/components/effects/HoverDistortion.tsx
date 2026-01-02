@@ -148,7 +148,7 @@ export const HoverDistortion = forwardRef<HoverDistortionRef, HoverDistortionPro
           }
         }
       } catch (error) {
-        console.error("Error loading hover effect:", error);
+        // Error loading hover effect, skip initialization
       }
     };
 

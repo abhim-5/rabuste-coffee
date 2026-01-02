@@ -41,7 +41,7 @@ export function useCart() {
                 const parsedCart: CartState = JSON.parse(savedCart);
                 setCart(parsedCart);
             } catch (error) {
-                console.error("Failed to parse cart from localStorage:", error);
+                // Failed to parse cart, will use default empty state
             }
         }
     }, []);

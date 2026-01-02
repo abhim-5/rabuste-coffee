@@ -44,20 +44,20 @@ function CountdownTimer() {
             animate={{ opacity: 1 }}
             className="flex items-baseline justify-center gap-2"
         >
-            <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-amber-200 self-center" />
-            <span className="font-sans text-base lg:text-lg text-amber-100">
+            <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-[#8B6F47] self-center" />
+            <span className="font-sans text-base lg:text-lg text-[#262626] font-semibold">
                 Ends in
             </span>
             <motion.span
                 key={timeLeft.seconds}
                 initial={{ opacity: 0.6 }}
                 animate={{ opacity: 1 }}
-                className="font-display text-xl lg:text-2xl font-bold text-white tracking-wide"
+                className="font-serif text-xl lg:text-2xl font-bold text-[#8B6F47] tracking-wide"
             >
                 {String(timeLeft.hours).padStart(2, '0')}
-                <span className="text-amber-300 animate-pulse">:</span>
+                <span className="text-[#262626] animate-pulse">:</span>
                 {String(timeLeft.minutes).padStart(2, '0')}
-                <span className="text-amber-300 animate-pulse">:</span>
+                <span className="text-[#262626] animate-pulse">:</span>
                 {String(timeLeft.seconds).padStart(2, '0')}
             </motion.span>
         </motion.div>
@@ -74,44 +74,31 @@ export function DealSection({
     if (dealItems.length === 0) return null;
 
     return (
-        <section className="relative w-full py-8 lg:py-12" style={{ backgroundColor: "#8B6F47" }}>
+        <section className="relative w-full py-8 lg:py-12" style={{ backgroundColor: "#b8a890" }}>
             <div className="mx-auto w-full px-4 lg:px-6 max-w-7xl">
-                {/* Header - Styled like WhyRobusta */}
+                {/* Header - Matching product grid style */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                     className="flex flex-col items-center mb-8"
                 >
-                    <div className="flex items-center gap-3 mb-3">
-                        <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-amber-200" />
-                        <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-amber-50">
-                            Deal of the Day
-                        </h2>
-                        <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-amber-200" />
-                    </div>
-                    
-                    {/* Title Separator */}
-                    <div className="relative w-28 h-6 lg:w-36 lg:h-8 mb-4">
-                        <Image
-                            src="/title-separator.png"
-                            fill
-                            alt="Decorative separator"
-                            className="object-contain brightness-200"
-                            sizes="(max-width: 768px) 112px, 144px"
-                        />
+                    <div className="flex items-center justify-center py-4 border-t-[0.5px] border-b-[0.5px] border-[#8B6F47] w-full mb-6">
+                        <div className="flex items-center gap-2 lg:gap-3">
+                            <Sparkles className="w-5 h-5 lg:w-7 lg:h-7 text-amber-600 fill-amber-600 animate-pulse" />
+                            <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-[#262626] uppercase tracking-[0.1em] sm:tracking-[0.15em] lg:tracking-[0.2em] mx-2 sm:mx-4 whitespace-nowrap">
+                                Deal of the Day
+                            </h2>
+                            <Sparkles className="w-5 h-5 lg:w-7 lg:h-7 text-amber-600 fill-amber-600 animate-pulse" />
+                        </div>
                     </div>
 
-                    {/* Countdown Timer - Red for urgency */}
+                    {/* Countdown Timer */}
                     <CountdownTimer />
-                    
-                    <p className="font-sans text-sm lg:text-base text-amber-100 mt-3">
-                        Limited time offers - grab them while they last!
-                    </p>
                 </motion.div>
 
                 {/* Deal Items Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-6">
                     {dealItems.map((item, index) => (
                         <motion.div
                             key={item.id}

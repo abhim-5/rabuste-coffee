@@ -31,11 +31,40 @@ const oswald = Oswald({
 
 
 export const metadata: Metadata = {
-  title: "Rabuste Coffee",
-  description: "Experience premium coffee, curated art gallery, inspiring workshops, and franchise opportunities at Rabuste.",
+  title: "Rabuste Coffee - Surat's 1st Dark Roast Robusta Cafe",
+  description: "Experience premium coffee, curated art gallery, inspiring workshops, and franchise opportunities at Rabuste. Surat's first and only dark roast robusta cafe offering bold, intense flavors.",
+  keywords: ["Rabuste Coffee", "Dark Roast Coffee", "Robusta Coffee", "Surat Cafe", "Coffee Shop Surat", "Premium Coffee", "Art Gallery", "Coffee Workshops"],
+  authors: [{ name: "Rabuste Coffee" }],
+  creator: "Rabuste Coffee",
+  publisher: "Rabuste Coffee",
+  openGraph: {
+    title: "Rabuste Coffee - Surat's 1st Dark Roast Robusta Cafe",
+    description: "Experience Surat's 1st & Only Dark Roast Robusta Cafe. The boldest coffee in town, crafted for those who demand intensity and flavor.",
+    type: "website",
+    locale: "en_US",
+    siteName: "Rabuste Coffee",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rabuste Coffee - Surat's 1st Dark Roast Robusta Cafe",
+    description: "Experience premium dark roast robusta coffee, art gallery, and workshops at Rabuste.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: "/Rabuste logo.png",
+    apple: "/Rabuste logo.png",
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

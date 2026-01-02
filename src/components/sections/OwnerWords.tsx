@@ -42,7 +42,6 @@ export function OwnerWords() {
         };
 
         script.onerror = () => {
-          console.error(`Failed to load ${id}`);
           reject(new Error(`Failed to load ${src}`));
         };
 
@@ -73,7 +72,6 @@ export function OwnerWords() {
 
         return true;
       } catch (error) {
-        console.error('Error loading scripts:', error);
         return false;
       }
     };
@@ -98,7 +96,6 @@ export function OwnerWords() {
 
       // Check if jQuery and PFold are now available
       if (!(window as any).jQuery || !(window as any).jQuery.fn.pfold) {
-        console.error('Scripts still not available after loading attempts');
         return;
       }
 
@@ -191,8 +188,6 @@ export function OwnerWords() {
           $container.find('.uc-final-wrapper').css('visibility', 'hidden');
           pfold.fold();
         });
-      } else {
-        console.error('Container or PFold not available');
       }
     };
 

@@ -24,7 +24,7 @@ export function Hero() {
         {!isVideoLoaded && <Preloader />}
       </AnimatePresence>
       <section className="relative z-30 min-h-[92vh] w-full overflow-hidden bg-black">
-        {/* Background video */}
+        {/* Background video with optimization */}
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover"
@@ -34,6 +34,8 @@ export function Hero() {
           muted
           loop
           playsInline
+          preload="auto"
+          poster="/video-poster.jpg"
         />
 
         {/* Overlays */}

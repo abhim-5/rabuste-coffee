@@ -147,10 +147,10 @@ const stats = {
 
 // Rewards available
 const rewards = [
-  { id: 1, name: "Free Coffee", points: 50, image: "/main-menu/coffee-1.jpg" },
-  { id: 2, name: "Free Pastry", points: 75, image: "/main-menu/pastry-1.jpg" },
-  { id: 3, name: "10% Off Order", points: 100, image: "/main-menu/coffee-2.jpg" },
-  { id: 4, name: "Free Workshop Entry", points: 300, image: "/workshop/workshop-1.jpg" },
+  { id: 1, name: "Free Coffee", points: 50, image: "/about us/1.jpg" },
+  { id: 2, name: "Free Pastry", points: 75, image: "/about us/2.jpg" },
+  { id: 3, name: "10% Off Order", points: 100, image: "/about us/3.jpg" },
+  { id: 4, name: "Free Workshop Entry", points: 300, image: "/main-menu/menu1a.jpg" },
 ];
 
 const filterOptions = ["All", "Earned", "Redeemed", "Orders", "Bonuses", "Workshops"];
@@ -172,327 +172,502 @@ export default function PointsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#F5F0EB] pt-16 lg:pt-20 pb-20 lg:pb-8">
-        {/* Hero Section */}
-        <section className="relative py-12 lg:py-16 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#2d2520] to-[#1a1a1a]" />
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-20 left-20 w-40 h-40 bg-amber-500 rounded-full blur-3xl" />
-            <div className="absolute bottom-20 right-20 w-60 h-60 bg-amber-600 rounded-full blur-3xl" />
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
+      <main className="min-h-screen" style={{ backgroundColor: "#D8CBB8" }}>
+        {/* Mobile Layout */}
+        <div className="lg:hidden pt-16 pb-20">
+          <div className="container mx-auto px-4 py-8">
+            {/* Points Balance Card - Mobile */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-8"
+              className="bg-white rounded-3xl shadow-lg p-6 mb-6"
             >
-              <h1 className="font-display text-4xl lg:text-5xl font-bold text-amber-50 mb-2">
-                Reward Points
-              </h1>
-              <p className="text-amber-100/70 font-sans">
-                Track your earnings and redeem exclusive rewards
-              </p>
-            </motion.div>
-
-            {/* Points Balance Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="max-w-2xl mx-auto"
-            >
-              <div className="bg-gradient-to-br from-amber-900/40 to-amber-800/20 backdrop-blur-xl border border-amber-500/20 rounded-3xl p-6 lg:p-8">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  {/* Current Balance */}
-                  <div className="text-center lg:text-left">
-                    <p className="text-amber-100/60 text-sm font-medium uppercase tracking-wider mb-1">
-                      Current Balance
-                    </p>
-                    <div className="flex items-center justify-center lg:justify-start gap-3">
-                      <div className="w-14 h-14 rounded-full bg-amber-500/30 flex items-center justify-center">
-                        <Coins className="w-8 h-8 text-amber-400" />
-                      </div>
-                      <div>
-                        <span className="font-display text-5xl lg:text-6xl font-bold text-amber-400">
-                          {stats.totalPoints}
-                        </span>
-                        <span className="text-amber-100/70 text-lg ml-2">points</span>
-                      </div>
-                    </div>
+              <div className="text-center">
+                <p className="text-[#78716c] text-sm font-medium uppercase tracking-wider mb-2">
+                  Current Balance
+                </p>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+                    <Coins className="w-8 h-8 text-amber-600" />
                   </div>
-
-                  {/* Tier Progress */}
-                  <div className="w-full lg:w-auto">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-amber-400" />
-                        <span className="text-amber-50 font-semibold">{stats.tier}</span>
-                      </div>
-                      <span className="text-amber-100/50 text-sm">{stats.nextTier}</span>
-                    </div>
-                    <div className="w-full lg:w-48 h-2 bg-amber-900/30 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: "50%" }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
-                      />
-                    </div>
-                    <p className="text-amber-100/50 text-xs mt-1 text-right">
-                      {stats.pointsToNextTier} pts to {stats.nextTier}
-                    </p>
+                  <div>
+                    <span className="font-display text-5xl font-bold text-amber-600">
+                      {stats.totalPoints}
+                    </span>
+                    <span className="text-[#78716c] text-lg ml-2">points</span>
                   </div>
+                </div>
+
+                {/* Tier Progress */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-4 h-4 text-amber-600" />
+                      <span className="text-[#262626] font-semibold text-sm">{stats.tier}</span>
+                    </div>
+                    <span className="text-[#78716c] text-sm">{stats.nextTier}</span>
+                  </div>
+                  <div className="w-full h-2 bg-[#F5F0EB] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: "50%" }}
+                      transition={{ duration: 1, delay: 0.3 }}
+                      className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+                    />
+                  </div>
+                  <p className="text-[#78716c] text-xs mt-1 text-right">
+                    {stats.pointsToNextTier} pts to {stats.nextTier}
+                  </p>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-amber-500/20">
-                  <div className="text-center">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#e7e5e4]">
+                  <div>
                     <div className="flex items-center justify-center gap-2 mb-1">
-                      <TrendingUp className="w-4 h-4 text-green-400" />
-                      <span className="text-green-400 font-semibold">+{stats.totalEarned}</span>
+                      <TrendingUp className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600 font-bold">+{stats.totalEarned}</span>
                     </div>
-                    <p className="text-amber-100/50 text-xs">Total Earned</p>
+                    <p className="text-[#78716c] text-xs">Total Earned</p>
                   </div>
-                  <div className="text-center">
+                  <div>
                     <div className="flex items-center justify-center gap-2 mb-1">
-                      <TrendingDown className="w-4 h-4 text-red-400" />
-                      <span className="text-red-400 font-semibold">-{stats.totalRedeemed}</span>
+                      <TrendingDown className="w-4 h-4 text-red-500" />
+                      <span className="text-red-500 font-bold">-{stats.totalRedeemed}</span>
                     </div>
-                    <p className="text-amber-100/50 text-xs">Total Redeemed</p>
+                    <p className="text-[#78716c] text-xs">Total Redeemed</p>
                   </div>
                 </div>
               </div>
             </motion.div>
-          </div>
-        </section>
 
-        {/* Ways to Earn Section */}
-        <section className="py-10 lg:py-12">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-8"
-            >
-              <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#3d3226] mb-2">
+            {/* Ways to Earn */}
+            <div className="mb-6">
+              <h2 className="font-display text-xl font-bold text-[#262626] mb-4 text-center">
                 Ways to Earn Points
               </h2>
-              <div className="flex items-center justify-center gap-4">
-                <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#8B6F47]" />
-                <Zap className="w-5 h-5 text-[#8B6F47]" />
-                <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#8B6F47]" />
-              </div>
-            </motion.div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              {[
-                { icon: ShoppingBag, title: "Orders", desc: "1 point per ₹10", color: "amber" },
-                { icon: Gift, title: "Referrals", desc: "+200 points each", color: "green" },
-                { icon: Calendar, title: "Workshops", desc: "+125 points", color: "blue" },
-                { icon: Sparkles, title: "Bonuses", desc: "Special rewards", color: "purple" },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow text-center"
-                >
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: ShoppingBag, title: "Orders", desc: "1 point per ₹10", color: "amber" },
+                  { icon: Gift, title: "Referrals", desc: "+200 points", color: "green" },
+                  { icon: Calendar, title: "Workshops", desc: "+125 points", color: "blue" },
+                  { icon: Sparkles, title: "Bonuses", desc: "Special rewards", color: "purple" },
+                ].map((item) => (
                   <div
-                    className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-3 ${
-                      item.color === "amber"
-                        ? "bg-amber-100 text-amber-600"
-                        : item.color === "green"
-                        ? "bg-green-100 text-green-600"
-                        : item.color === "blue"
-                        ? "bg-blue-100 text-blue-600"
-                        : "bg-purple-100 text-purple-600"
-                    }`}
+                    key={item.title}
+                    className="bg-white rounded-2xl p-4 shadow-sm text-center"
                   >
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-[#3d3226] mb-1">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-[#78716c]">{item.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Available Rewards */}
-        <section className="py-10 lg:py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-8"
-            >
-              <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#3d3226] mb-2">
-                Redeem Your Points
-              </h2>
-              <div className="flex items-center justify-center gap-4">
-                <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#8B6F47]" />
-                <Target className="w-5 h-5 text-[#8B6F47]" />
-                <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#8B6F47]" />
-              </div>
-            </motion.div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              {rewards.map((reward, index) => (
-                <motion.div
-                  key={reward.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -4 }}
-                  className="bg-[#F5F0EB] rounded-2xl overflow-hidden group cursor-pointer"
-                >
-                  <div className="relative h-28 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10" />
-                    <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      <Coins className="w-3 h-3" />
-                      {reward.points}
-                    </div>
-                    <Image
-                      src={reward.image}
-                      alt={reward.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-display text-sm font-semibold text-[#3d3226]">
-                      {reward.name}
-                    </h3>
-                    <button
-                      className={`mt-2 w-full py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                        stats.totalPoints >= reward.points
-                          ? "bg-[#8B6F47] text-white hover:bg-[#6d5638]"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    <div
+                      className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center mb-2 ${
+                        item.color === "amber"
+                          ? "bg-amber-100 text-amber-600"
+                          : item.color === "green"
+                          ? "bg-green-100 text-green-600"
+                          : item.color === "blue"
+                          ? "bg-blue-100 text-blue-600"
+                          : "bg-purple-100 text-purple-600"
                       }`}
-                      disabled={stats.totalPoints < reward.points}
                     >
-                      {stats.totalPoints >= reward.points ? "Redeem" : "Not Enough Points"}
-                    </button>
+                      <item.icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-sans text-sm font-semibold text-[#262626] mb-1">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-[#78716c]">{item.desc}</p>
                   </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Transaction History */}
-        <section className="py-10 lg:py-12">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8"
-            >
-              <div className="text-center lg:text-left">
-                <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#3d3226]">
-                  Transaction History
-                </h2>
-                <p className="text-[#78716c] text-sm mt-1">
-                  Your complete points activity
-                </p>
+                ))}
               </div>
+            </div>
 
-              {/* Filter Dropdown */}
-              <div className="relative">
+            {/* Redeem Rewards - Mobile */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-bold text-[#262626]">
+                  Redeem Rewards
+                </h2>
+                <Target className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {rewards.map((reward) => (
+                  <div
+                    key={reward.id}
+                    className="bg-white border-[0.5px] border-[#8B6F47] rounded-2xl overflow-hidden shadow-sm"
+                  >
+                    <div className="relative h-32 overflow-hidden bg-[#F5F0EB]">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10" />
+                      <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        <Coins className="w-3 h-3" />
+                        {reward.points}
+                      </div>
+                      <Image
+                        src={reward.image}
+                        alt={reward.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-sans text-sm font-semibold text-[#262626] mb-2">
+                        {reward.name}
+                      </h3>
+                      <button
+                        className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors border-[0.5px] ${
+                          stats.totalPoints >= reward.points
+                            ? "bg-[#8B6F47] text-white border-[#8B6F47] hover:bg-[#6d5638]"
+                            : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                        }`}
+                        disabled={stats.totalPoints < reward.points}
+                      >
+                        {stats.totalPoints >= reward.points ? "Redeem Now" : "Need More Points"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Transactions */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-bold text-[#262626]">
+                  Recent Activity
+                </h2>
                 <button
                   onClick={() => setShowFilterMenu(!showFilterMenu)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-[#e7e5e4] hover:border-[#8B6F47] transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 bg-white rounded-full border-[0.5px] border-[#8B6F47] text-sm text-[#262626] font-medium whitespace-nowrap"
                 >
-                  <Filter className="w-4 h-4 text-[#8B6F47]" />
-                  <span className="text-sm font-medium text-[#3d3226]">{filter}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-[#78716c] transition-transform ${
-                      showFilterMenu ? "rotate-180" : ""
-                    }`}
-                  />
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden sm:inline">{filter}</span>
                 </button>
+              </div>
 
-                <AnimatePresence>
-                  {showFilterMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 top-12 w-40 bg-white rounded-xl shadow-lg border border-[#e7e5e4] overflow-hidden z-20"
+              {showFilterMenu && (
+                <div className="mb-4 bg-white rounded-xl shadow-sm border-[0.5px] border-[#8B6F47] overflow-hidden">
+                  {filterOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setFilter(option);
+                        setShowFilterMenu(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-sm ${
+                        filter === option
+                          ? "bg-[#8B6F47] text-white"
+                          : "text-[#262626] hover:bg-[#F5F0EB]"
+                      }`}
                     >
-                      {filterOptions.map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            setFilter(option);
-                            setShowFilterMenu(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                            filter === option
-                              ? "bg-[#8B6F47] text-white"
-                              : "text-[#3d3226] hover:bg-[#F5F0EB]"
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {filteredTransactions.slice(0, 5).map((transaction) => {
+                  const IconComponent = transaction.icon;
+                  const isEarned = transaction.type === "earned";
+
+                  return (
+                    <div
+                      key={transaction.id}
+                      className="bg-white rounded-2xl p-4 shadow-sm border-[0.5px] border-[#8B6F47]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                            isEarned ? "bg-green-100" : "bg-red-100"
                           }`}
                         >
-                          {option}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                          <IconComponent
+                            className={`w-5 h-5 ${isEarned ? "text-green-600" : "text-red-500"}`}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-sans font-semibold text-sm text-[#262626]">
+                            {transaction.title}
+                          </h3>
+                          <p className="text-xs text-[#78716c]">{transaction.description}</p>
+                          <p className="text-xs text-[#a8a29e] mt-1">
+                            {transaction.date} • {transaction.time}
+                          </p>
+                        </div>
+                        <p
+                          className={`font-bold text-lg flex-shrink-0 ${
+                            isEarned ? "text-green-600" : "text-red-500"
+                          }`}
+                        >
+                          {isEarned ? "+" : ""}
+                          {transaction.points}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </motion.div>
+            </div>
+          </div>
+        </div>
 
-            {/* Transactions List */}
-            <div className="max-w-3xl mx-auto space-y-3">
-              {filteredTransactions.map((transaction, index) => {
-                const IconComponent = transaction.icon;
-                const isEarned = transaction.type === "earned";
+        {/* Desktop Layout - Similar to Profile Page */}
+        <div className="hidden lg:block pt-28 pb-12">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex gap-8 items-start">
+              {/* Left Sidebar */}
+              <motion.aside
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                className="w-80 flex-shrink-0 self-start"
+              >
+                <div className="sticky top-28 space-y-6">
+                  {/* Points Balance Card */}
+                  <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="h-28 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 relative">
+                      <div className="absolute inset-0 opacity-20">
+                        <div className="absolute top-4 right-4 w-20 h-20 bg-amber-300 rounded-full blur-2xl" />
+                        <div className="absolute bottom-4 left-4 w-16 h-16 bg-amber-200 rounded-full blur-xl" />
+                      </div>
+                      <div className="relative h-full flex items-center justify-center">
+                        <Coins className="w-16 h-16 text-white" />
+                      </div>
+                    </div>
 
-                return (
-                  <motion.div
-                    key={transaction.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Icon */}
-                      <div
-                        className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                          isEarned ? "bg-green-100" : "bg-red-100"
-                        }`}
-                      >
-                        <IconComponent
-                          className={`w-6 h-6 ${isEarned ? "text-green-600" : "text-red-500"}`}
-                        />
+                    {/* Content */}
+                    <div className="px-6 pb-6">
+                      <div className="text-center -mt-8 mb-4">
+                        <div className="inline-block bg-white rounded-2xl shadow-lg px-6 py-3">
+                          <p className="text-[#78716c] text-xs uppercase tracking-wider mb-1">
+                            Your Balance
+                          </p>
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="font-display text-4xl font-bold text-amber-600">
+                              {stats.totalPoints}
+                            </span>
+                            <span className="text-[#78716c] text-sm">pts</span>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-sans font-semibold text-[#3d3226]">
+                      {/* Tier Info */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-4 h-4 text-amber-600" />
+                            <span className="text-[#262626] font-semibold text-sm">{stats.tier}</span>
+                          </div>
+                          <span className="text-[#78716c] text-xs">{stats.nextTier}</span>
+                        </div>
+                        <div className="w-full h-2 bg-[#F5F0EB] rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: "50%" }}
+                            transition={{ duration: 1, delay: 0.3 }}
+                            className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+                          />
+                        </div>
+                        <p className="text-[#78716c] text-xs mt-1 text-right">
+                          {stats.pointsToNextTier} pts to next tier
+                        </p>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center p-3 bg-green-50 rounded-xl">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <TrendingUp className="w-4 h-4 text-green-600" />
+                            <span className="text-green-600 font-bold text-lg">+{stats.totalEarned}</span>
+                          </div>
+                          <p className="text-[#78716c] text-xs">Earned</p>
+                        </div>
+                        <div className="text-center p-3 bg-red-50 rounded-xl">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <TrendingDown className="w-4 h-4 text-red-500" />
+                            <span className="text-red-500 font-bold text-lg">-{stats.totalRedeemed}</span>
+                          </div>
+                          <p className="text-[#78716c] text-xs">Used</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ways to Earn Quick Card */}
+                  <div className="bg-white rounded-2xl shadow-sm p-5">
+                    <h3 className="font-display text-lg font-bold text-[#262626] mb-4">
+                      Earn Points
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        { icon: ShoppingBag, title: "Orders", desc: "1 pt per ₹10" },
+                        { icon: Gift, title: "Referrals", desc: "+200 pts" },
+                        { icon: Calendar, title: "Workshops", desc: "+125 pts" },
+                        { icon: Sparkles, title: "Bonuses", desc: "Special" },
+                      ].map((item) => (
+                        <div key={item.title} className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <item.icon className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-[#262626]">{item.title}</p>
+                            <p className="text-xs text-[#78716c]">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.aside>
+
+              {/* Main Content */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="flex-1 space-y-6"
+              >
+                {/* Available Rewards Section */}
+                <div className="bg-white rounded-3xl shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="font-display text-2xl font-bold text-[#262626]">
+                      Redeem Rewards
+                    </h2>
+                    <Target className="w-6 h-6 text-amber-600" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {rewards.map((reward) => (
+                      <div
+                        key={reward.id}
+                        className="border-[0.5px] border-[#8B6F47] rounded-2xl overflow-hidden group cursor-pointer hover:shadow-md transition-shadow"
+                      >
+                        <div className="relative h-32 overflow-hidden bg-[#F5F0EB]">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10" />
+                          <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            <Coins className="w-3 h-3" />
+                            {reward.points}
+                          </div>
+                          <Image
+                            src={reward.image}
+                            alt={reward.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                        <div className="p-3 bg-white">
+                          <h3 className="font-sans text-sm font-semibold text-[#262626] mb-2">
+                            {reward.name}
+                          </h3>
+                          <button
+                            className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors border-[0.5px] ${
+                              stats.totalPoints >= reward.points
+                                ? "bg-[#8B6F47] text-white border-[#8B6F47] hover:bg-[#6d5638]"
+                                : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                            }`}
+                            disabled={stats.totalPoints < reward.points}
+                          >
+                            {stats.totalPoints >= reward.points ? "Redeem Now" : "Need More Points"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Transaction History */}
+                <div className="bg-white rounded-3xl shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="font-display text-2xl font-bold text-[#262626]">
+                        Transaction History
+                      </h2>
+                      <p className="text-sm text-[#78716c] mt-1">
+                        Your complete points activity
+                      </p>
+                    </div>
+
+                    {/* Filter Dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowFilterMenu(!showFilterMenu)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#F5F0EB] rounded-xl border-[0.5px] border-[#8B6F47] hover:bg-[#e7e0d5] transition-colors"
+                      >
+                        <Filter className="w-4 h-4 text-[#8B6F47]" />
+                        <span className="text-sm font-medium text-[#262626]">{filter}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-[#78716c] transition-transform ${
+                            showFilterMenu ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      <AnimatePresence>
+                        {showFilterMenu && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute right-0 top-12 w-40 bg-white rounded-xl shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20"
+                          >
+                            {filterOptions.map((option) => (
+                              <button
+                                key={option}
+                                onClick={() => {
+                                  setFilter(option);
+                                  setShowFilterMenu(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                                  filter === option
+                                    ? "bg-[#8B6F47] text-white"
+                                    : "text-[#262626] hover:bg-[#F5F0EB]"
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* Transactions List */}
+                  <div className="space-y-3">
+                    {filteredTransactions.map((transaction) => {
+                      const IconComponent = transaction.icon;
+                      const isEarned = transaction.type === "earned";
+
+                      return (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center gap-4 p-4 rounded-2xl border-[0.5px] border-[#e7e5e4] hover:border-[#8B6F47] hover:shadow-sm transition-all"
+                        >
+                          <div
+                            className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                              isEarned ? "bg-green-100" : "bg-red-100"
+                            }`}
+                          >
+                            <IconComponent
+                              className={`w-6 h-6 ${isEarned ? "text-green-600" : "text-red-500"}`}
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-sans font-semibold text-[#262626]">
                               {transaction.title}
                             </h3>
                             <p className="text-sm text-[#78716c] line-clamp-1">
                               {transaction.description}
                             </p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-[#a8a29e]">
+                              <Calendar className="w-3 h-3" />
+                              <span>{transaction.date}</span>
+                              <span>•</span>
+                              <span>{transaction.time}</span>
+                            </div>
                           </div>
+
                           <div className="text-right flex-shrink-0">
                             <p
-                              className={`font-bold text-lg ${
+                              className={`font-bold text-xl ${
                                 isEarned ? "text-green-600" : "text-red-500"
                               }`}
                             >
@@ -502,28 +677,22 @@ export default function PointsPage() {
                             <p className="text-xs text-[#a8a29e]">points</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-[#a8a29e]">
-                          <Calendar className="w-3 h-3" />
-                          <span>{transaction.date}</span>
-                          <span>•</span>
-                          <span>{transaction.time}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                      );
+                    })}
 
-              {filteredTransactions.length === 0 && (
-                <div className="text-center py-12">
-                  <Coins className="w-16 h-16 text-[#d6d3d1] mx-auto mb-4" />
-                  <p className="text-[#78716c] font-medium">No transactions found</p>
-                  <p className="text-sm text-[#a8a29e]">Try a different filter</p>
+                    {filteredTransactions.length === 0 && (
+                      <div className="text-center py-12">
+                        <Coins className="w-16 h-16 text-[#d6d3d1] mx-auto mb-4" />
+                        <p className="text-[#78716c] font-medium">No transactions found</p>
+                        <p className="text-sm text-[#a8a29e]">Try a different filter</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </motion.div>
             </div>
           </div>
-        </section>
+        </div>
 
         <Footer />
       </main>

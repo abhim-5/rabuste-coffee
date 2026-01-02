@@ -105,16 +105,16 @@ export function CoffeeDetail({
                     transition={{ type: "spring", damping: 30, stiffness: 300 }}
                     className="fixed inset-x-0 bottom-0 lg:inset-0 lg:flex lg:items-center lg:justify-center z-50 pointer-events-none"
                 >
-                    <div className="bg-[#fafaf9] lg:bg-white rounded-t-3xl lg:rounded-2xl max-h-[90vh] lg:max-h-[85vh] w-full lg:max-w-4xl overflow-hidden shadow-2xl pointer-events-auto">
-                        <div className="sticky top-0 bg-[#fafaf9] lg:bg-white z-10 px-4 lg:px-6 py-4 border-b border-[#8B6F47]/20 flex items-center justify-between">
-                            <h2 className="font-display text-xl lg:text-2xl font-bold text-[#404040]">
+                    <div className="rounded-2xl max-h-[90vh] lg:max-h-[85vh] w-full lg:max-w-4xl overflow-hidden shadow-2xl pointer-events-auto border-[0.5px] border-[#8B6F47]" style={{ backgroundColor: "#D8CBB8" }}>
+                        <div className="sticky top-0 z-10 px-4 lg:px-6 py-4 border-b-[0.5px] border-[#8B6F47] flex items-center justify-between" style={{ backgroundColor: "#D8CBB8" }}>
+                            <h2 className="font-serif text-xl lg:text-2xl font-bold text-[#262626]">
                                 Product Details
                             </h2>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-full hover:bg-[#D8CBB8]/30 transition-colors"
+                                className="p-2 rounded-full hover:bg-[#c9baa7] transition-colors border-[0.5px] border-[#8B6F47]"
                             >
-                                <X className="w-6 h-6 text-[#404040]" />
+                                <X className="w-6 h-6 text-[#262626]" />
                             </button>
                         </div>
 
@@ -156,17 +156,17 @@ export function CoffeeDetail({
                                         </div>
 
                                         <div className="flex items-baseline gap-3 mb-6">
-                                            <span className="font-serif text-3xl text-[#262626] font-bold">
+                                            <span className="font-serif text-3xl text-green-700 font-bold">
                                                 ₹{calculatePrice()}
                                             </span>
                                             {item.originalPrice && (
-                                                <span className="font-sans text-lg text-[#78716c] line-through">
+                                                <span className="font-sans text-lg text-gray-500 line-through">
                                                     ₹{item.originalPrice}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <p className="font-sans text-base text-[#404040] mb-6 leading-relaxed">
+                                        <p className="font-sans text-base text-gray-700 mb-6 leading-relaxed">
                                             {item.description}
                                         </p>
 
@@ -174,7 +174,7 @@ export function CoffeeDetail({
                                             <div className="space-y-4 mb-6">
                                                 {item.variations.map((variation) => (
                                                     <div key={variation.id}>
-                                                        <label className="font-sans text-sm font-semibold text-[#404040] mb-2 block">
+                                                        <label className="font-serif text-sm font-semibold text-[#262626] mb-2 block">
                                                             {variation.name}
                                                         </label>
                                                         <div className="flex flex-wrap gap-2">
@@ -187,10 +187,11 @@ export function CoffeeDetail({
                                                                             [variation.id]: option.id,
                                                                         }))
                                                                     }
-                                                                    className={`px-4 py-2 rounded-full font-sans text-sm transition-all ${selectedVariations[variation.id] === option.id
-                                                                        ? "bg-[#8B6F47] text-white shadow-md"
-                                                                        : "bg-[#D8CBB8]/30 text-[#404040] hover:bg-[#D8CBB8]/50"
-                                                                        }`}
+                                                                    className={`px-4 py-2 font-sans text-sm transition-all border-[0.5px] ${
+                                                                        selectedVariations[variation.id] === option.id
+                                                                            ? "bg-[#8B6F47] text-white border-[#8B6F47] shadow-md"
+                                                                            : "bg-white/50 text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
+                                                                    }`}
                                                                 >
                                                                     {option.name}
                                                                     {option.priceModifier &&
@@ -244,7 +245,7 @@ export function CoffeeDetail({
                                                             whileHover={{ scale: 1.02 }}
                                                             whileTap={{ scale: 0.98 }}
                                                             onClick={handleViewCart}
-                                                            className="flex-1 bg-[#D8CBB8] hover:bg-[#c9bca9] text-[#404040] font-sans font-semibold px-6 py-3 rounded-full transition-colors shadow-md"
+                                                            className="flex-1 bg-[#D8CBB8] hover:bg-[#c9bca9] text-[#404040] font-sans font-semibold px-6 py-3 rounded-full transition-colors shadow-md border-[0.5px] border-[#8B6F47]"
                                                         >
                                                             View Cart
                                                         </motion.button>

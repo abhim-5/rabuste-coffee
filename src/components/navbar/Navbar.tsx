@@ -329,15 +329,15 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute right-0 top-14 w-80 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                      className="absolute right-0 top-14 w-80 bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
                     >
                       {/* Header */}
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/20 to-transparent">
-                        <h3 className="font-display text-lg font-semibold text-amber-50">Notifications</h3>
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[#8B6F47] bg-[#D8CBB8]">
+                        <h3 className="font-display text-lg font-semibold text-[#262626]">Notifications</h3>
                         {unreadCount > 0 && (
                           <button
                             onClick={markAllAsRead}
-                            className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors"
+                            className="text-xs text-[#8B6F47] hover:text-[#6B5537] font-medium transition-colors"
                           >
                             Mark all read
                           </button>
@@ -356,30 +356,30 @@ export default function Navbar() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 onClick={() => markAsRead(notification.id)}
-                                className={`flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-amber-900/10 ${
-                                  notification.unread ? "bg-amber-900/5" : ""
+                                className={`flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-[#8B6F47]/10 ${
+                                  notification.unread ? "bg-white" : ""
                                 }`}
                               >
                                 <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                                  notification.type === "welcome" ? "bg-amber-500/20" : "bg-green-500/20"
+                                  notification.type === "welcome" ? "bg-[#8B6F47]" : "bg-green-600"
                                 }`}>
                                   <IconComponent className={`w-5 h-5 ${
-                                    notification.type === "welcome" ? "text-amber-400" : "text-green-400"
+                                    notification.type === "welcome" ? "text-white" : "text-white"
                                   }`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between gap-2">
-                                    <p className="font-sans text-sm font-semibold text-amber-50 line-clamp-1">
+                                    <p className="font-sans text-sm font-semibold text-[#262626] line-clamp-1">
                                       {notification.title}
                                     </p>
                                     {notification.unread && (
-                                      <span className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0 mt-1.5" />
+                                      <span className="w-2 h-2 bg-[#8B6F47] rounded-full flex-shrink-0 mt-1.5" />
                                     )}
                                   </div>
-                                  <p className="font-sans text-xs text-amber-100/70 line-clamp-2 mt-0.5">
+                                  <p className="font-sans text-xs text-[#262626]/70 line-clamp-2 mt-0.5">
                                     {notification.message}
                                   </p>
-                                  <p className="font-sans text-[10px] text-amber-100/50 mt-1">
+                                  <p className="font-sans text-[10px] text-[#8B6F47]/60 mt-1">
                                     {notification.time}
                                   </p>
                                 </div>
@@ -388,17 +388,17 @@ export default function Navbar() {
                           })
                         ) : (
                           <div className="py-8 text-center">
-                            <Bell className="w-10 h-10 text-amber-900/30 mx-auto mb-2" />
-                            <p className="text-sm text-amber-100/50">No notifications</p>
+                            <Bell className="w-10 h-10 text-[#8B6F47]/30 mx-auto mb-2" />
+                            <p className="text-sm text-[#262626]/50">No notifications</p>
                           </div>
                         )}
                       </div>
 
                       {/* Footer */}
-                      <div className="px-4 py-2 border-t border-amber-900/20 bg-gradient-to-r from-transparent to-amber-900/10">
+                      <div className="px-4 py-2 border-t border-[#8B6F47] bg-[#D8CBB8]">
                         <button 
                           onClick={() => setShowNotifications(false)}
-                          className="w-full text-center text-xs text-amber-400 hover:text-amber-300 font-medium py-1 transition-colors"
+                          className="w-full text-center text-xs text-[#8B6F47] hover:text-[#6B5537] font-medium py-1 transition-colors"
                         >
                           Close
                         </button>
@@ -436,28 +436,28 @@ export default function Navbar() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="absolute right-0 top-14 w-80 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                          className="absolute right-0 top-14 w-80 bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
                         >
                           {/* Header with Total Points */}
-                          <div className="px-4 py-4 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/30 to-amber-800/10">
+                          <div className="px-4 py-4 border-b border-[#8B6F47] bg-white">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-xs text-amber-100/60 font-medium uppercase tracking-wider">Your Balance</p>
+                                <p className="text-xs text-[#8B6F47]/60 font-medium uppercase tracking-wider">Your Balance</p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <Coins className="w-6 h-6 text-amber-400" />
-                                  <span className="font-display text-3xl font-bold text-amber-400">{totalPoints}</span>
-                                  <span className="text-amber-100/70 text-sm">points</span>
+                                  <Coins className="w-6 h-6 text-[#8B6F47]" />
+                                  <span className="font-display text-3xl font-bold text-[#8B6F47]">{totalPoints}</span>
+                                  <span className="text-[#262626]/70 text-sm">points</span>
                                 </div>
                               </div>
-                              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
-                                <Sparkles className="w-6 h-6 text-amber-400" />
+                              <div className="w-12 h-12 rounded-full bg-[#8B6F47] flex items-center justify-center">
+                                <Sparkles className="w-6 h-6 text-white" />
                               </div>
                             </div>
                           </div>
 
                           {/* Recent Transactions */}
-                          <div className="px-4 py-2 border-b border-amber-900/20">
-                            <p className="text-xs text-amber-100/50 font-medium uppercase tracking-wider">Recent Activity</p>
+                          <div className="px-4 py-2 border-b border-[#8B6F47]">
+                            <p className="text-xs text-[#8B6F47]/60 font-medium uppercase tracking-wider">Recent Activity</p>
                           </div>
                           <div className="max-h-56 overflow-y-auto">
                             {mockPointsTransactions.map((transaction, index) => {
@@ -469,23 +469,23 @@ export default function Navbar() {
                                   initial={{ opacity: 0, x: -20 }}
                                   animate={{ opacity: 1, x: 0 }}
                                   transition={{ delay: index * 0.05 }}
-                                  className="flex items-center gap-3 px-4 py-3 hover:bg-amber-900/10 transition-colors"
+                                  className="flex items-center gap-3 px-4 py-3 hover:bg-[#8B6F47]/10 transition-colors"
                                 >
                                   <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
-                                    isEarned ? "bg-green-500/20" : "bg-red-500/20"
+                                    isEarned ? "bg-green-600" : "bg-red-600"
                                   }`}>
-                                    <IconComponent className={`w-4 h-4 ${isEarned ? "text-green-400" : "text-red-400"}`} />
+                                    <IconComponent className={`w-4 h-4 ${isEarned ? "text-white" : "text-white"}`} />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-sans text-sm font-medium text-amber-50 line-clamp-1">
+                                    <p className="font-sans text-sm font-medium text-[#262626] line-clamp-1">
                                       {transaction.title}
                                     </p>
-                                    <p className="font-sans text-[10px] text-amber-100/50">
+                                    <p className="font-sans text-[10px] text-[#8B6F47]/60">
                                       {transaction.date}
                                     </p>
                                   </div>
                                   <div className={`flex items-center gap-0.5 font-semibold text-sm ${
-                                    isEarned ? "text-green-400" : "text-red-400"
+                                    isEarned ? "text-green-700" : "text-red-600"
                                   }`}>
                                     {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                                     {Math.abs(transaction.points)}
@@ -496,9 +496,9 @@ export default function Navbar() {
                           </div>
 
                           {/* Footer with View All */}
-                          <div className="px-4 py-3 border-t border-amber-900/20 bg-gradient-to-r from-transparent to-amber-900/10">
+                          <div className="px-4 py-3 border-t border-[#8B6F47] bg-[#D8CBB8]">
                             <Link href="/points" onClick={() => setShowPoints(false)}>
-                              <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-sm font-semibold transition-colors">
+                              <button className="w-full flex items-center justify-center gap-2 py-2 bg-[#8B6F47] hover:bg-[#6B5537] text-white text-sm font-semibold transition-colors">
                                 <History className="w-4 h-4" />
                                 View All Transactions
                               </button>
@@ -636,15 +636,15 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute right-0 top-12 w-72 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
-                  >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/20 to-transparent">
-                      <h3 className="font-display text-base font-semibold text-amber-50">Notifications</h3>
+                      className="absolute -right-10 top-14 w-[90vw] max-w-[280px] bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
+                    >
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-2.5 py-2 border-b border-[#8B6F47] bg-[#D8CBB8]">
+                        <h3 className="font-display text-sm font-semibold text-[#262626] truncate mr-2">Notifications</h3>
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
-                          className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors"
+                          className="text-[11px] text-[#8B6F47] hover:text-[#6B5537] font-medium transition-colors whitespace-nowrap flex-shrink-0"
                         >
                           Mark all read
                         </button>
@@ -663,30 +663,30 @@ export default function Navbar() {
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.1 }}
                               onClick={() => markAsRead(notification.id)}
-                              className={`flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-amber-900/10 ${
-                                notification.unread ? "bg-amber-900/5" : ""
+                              className={`flex gap-2 px-2.5 py-2 cursor-pointer transition-colors hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 ${
+                                notification.unread ? "bg-white" : ""
                               }`}
                             >
-                              <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
-                                notification.type === "welcome" ? "bg-amber-500/20" : "bg-green-500/20"
+                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                notification.type === "welcome" ? "bg-[#8B6F47]" : "bg-green-600"
                               }`}>
-                                <IconComponent className={`w-4 h-4 ${
-                                  notification.type === "welcome" ? "text-amber-400" : "text-green-400"
+                                <IconComponent className={`w-3.5 h-3.5 ${
+                                  notification.type === "welcome" ? "text-white" : "text-white"
                                 }`} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2">
-                                  <p className="font-sans text-sm font-semibold text-amber-50 line-clamp-1">
+                                <div className="flex items-start justify-between gap-1">
+                                  <p className="font-sans text-sm font-semibold text-[#262626] line-clamp-1 break-words">
                                     {notification.title}
                                   </p>
                                   {notification.unread && (
-                                    <span className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0 mt-1.5" />
+                                    <span className="w-2 h-2 bg-[#8B6F47] rounded-full flex-shrink-0 mt-1.5" />
                                   )}
                                 </div>
-                                <p className="font-sans text-xs text-amber-100/70 line-clamp-2 mt-0.5">
+                                <p className="font-sans text-xs text-[#262626]/70 line-clamp-2 mt-0.5 break-words">
                                   {notification.message}
                                 </p>
-                                <p className="font-sans text-[10px] text-amber-100/50 mt-1">
+                                <p className="font-sans text-[10px] text-[#8B6F47]/60 mt-0.5">
                                   {notification.time}
                                 </p>
                               </div>
@@ -695,17 +695,17 @@ export default function Navbar() {
                         })
                       ) : (
                         <div className="py-8 text-center">
-                          <Bell className="w-10 h-10 text-amber-900/30 mx-auto mb-2" />
-                          <p className="text-sm text-amber-100/50">No notifications</p>
+                          <Bell className="w-10 h-10 text-[#8B6F47]/30 mx-auto mb-2" />
+                          <p className="text-sm text-[#262626]/50">No notifications</p>
                         </div>
                       )}
                     </div>
 
                     {/* Footer */}
-                    <div className="px-4 py-2 border-t border-amber-900/20">
+                    <div className="px-2.5 py-1.5 border-t border-[#8B6F47]">
                       <button 
                         onClick={() => setShowNotifications(false)}
-                        className="w-full text-center text-xs text-amber-400 hover:text-amber-300 font-medium py-1 transition-colors"
+                        className="w-full text-center text-xs text-[#8B6F47] hover:text-[#6B5537] font-medium py-1 transition-colors"
                       >
                         Close
                       </button>
@@ -742,28 +742,28 @@ export default function Navbar() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 top-12 w-72 bg-[#1a1a1a] border border-amber-900/30 rounded-2xl shadow-2xl overflow-hidden z-50"
+                        className="absolute right-0 top-12 w-[90vw] max-w-[280px] bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
                       >
                         {/* Header with Total Points */}
-                        <div className="px-4 py-3 border-b border-amber-900/20 bg-gradient-to-r from-amber-900/30 to-amber-800/10">
+                        <div className="px-4 py-3 border-b border-[#8B6F47] bg-white">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] text-amber-100/60 font-medium uppercase tracking-wider">Your Balance</p>
+                              <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Your Balance</p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <Coins className="w-5 h-5 text-amber-400" />
-                                <span className="font-display text-2xl font-bold text-amber-400">{totalPoints}</span>
-                                <span className="text-amber-100/70 text-xs">points</span>
+                                <Coins className="w-5 h-5 text-[#8B6F47]" />
+                                <span className="font-display text-2xl font-bold text-[#8B6F47]">{totalPoints}</span>
+                                <span className="text-[#262626]/70 text-xs">points</span>
                               </div>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                              <Sparkles className="w-5 h-5 text-amber-400" />
+                            <div className="w-10 h-10 rounded-full bg-[#8B6F47] flex items-center justify-center">
+                              <Sparkles className="w-5 h-5 text-white" />
                             </div>
                           </div>
                         </div>
 
                         {/* Recent Transactions */}
-                        <div className="px-4 py-1.5 border-b border-amber-900/20">
-                          <p className="text-[10px] text-amber-100/50 font-medium uppercase tracking-wider">Recent Activity</p>
+                        <div className="px-4 py-1.5 border-b border-[#8B6F47]">
+                          <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Recent Activity</p>
                         </div>
                         <div className="max-h-48 overflow-y-auto">
                           {mockPointsTransactions.slice(0, 3).map((transaction, index) => {
@@ -775,23 +775,23 @@ export default function Navbar() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.05 }}
-                                className="flex items-center gap-3 px-4 py-2.5 hover:bg-amber-900/10 transition-colors"
+                                className="flex items-center gap-3 px-3 py-2.5 hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 transition-colors"
                               >
                                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                  isEarned ? "bg-green-500/20" : "bg-red-500/20"
+                                  isEarned ? "bg-green-600" : "bg-red-600"
                                 }`}>
-                                  <IconComponent className={`w-4 h-4 ${isEarned ? "text-green-400" : "text-red-400"}`} />
+                                  <IconComponent className={`w-4 h-4 ${isEarned ? "text-white" : "text-white"}`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-sans text-sm font-medium text-amber-50 line-clamp-1">
+                                  <p className="font-sans text-sm font-medium text-[#262626] line-clamp-1">
                                     {transaction.title}
                                   </p>
-                                  <p className="font-sans text-[10px] text-amber-100/50">
+                                  <p className="font-sans text-[10px] text-[#8B6F47]/60">
                                     {transaction.date}
                                   </p>
                                 </div>
                                 <div className={`flex items-center gap-0.5 font-semibold text-sm ${
-                                  isEarned ? "text-green-400" : "text-red-400"
+                                  isEarned ? "text-green-700" : "text-red-600"
                                 }`}>
                                   {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                                   {Math.abs(transaction.points)}
@@ -802,9 +802,9 @@ export default function Navbar() {
                         </div>
 
                         {/* Footer with View All */}
-                        <div className="px-4 py-2.5 border-t border-amber-900/20">
+                        <div className="px-4 py-2.5 border-t border-[#8B6F47] bg-[#D8CBB8]">
                           <Link href="/points" onClick={() => setShowPoints(false)}>
-                            <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-sm font-semibold transition-colors">
+                            <button className="w-full flex items-center justify-center gap-2 py-2 bg-[#8B6F47] hover:bg-[#6B5537] text-white text-sm font-semibold transition-colors">
                               <History className="w-4 h-4" />
                               View All Transactions
                             </button>

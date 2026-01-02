@@ -4,7 +4,8 @@ export type MenuCategory =
   | "pastries" 
   | "sandwiches" 
   | "beverages" 
-  | "desserts";
+  | "desserts"
+  | "Art Gallery";
 
 export interface VariationOption {
   id: string;

@@ -69,7 +69,7 @@ const TimelineItem = ({ data, index }: { data: typeof timelineData[0], index: nu
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={isInView ? { opacity: 1, scale: 1 } : {}}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className="absolute text-[10rem] font-bold text-[#8B6F47]/10 font-display select-none blur-[0.5px]"
+                    className="absolute text-[10rem] font-bold text-[#8B6F47]/20 font-display select-none"
                 >
                     {data.year.split('-')[0]}
                 </motion.span>
@@ -77,12 +77,12 @@ const TimelineItem = ({ data, index }: { data: typeof timelineData[0], index: nu
                 {/* Floating Keywords/Deco */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
-                    animate={isInView ? { opacity: 0.8, y: 8 } : {}} // y: 8 is translate-y-8
+                    animate={isInView ? { opacity: 1, y: 8 } : {}} // Increased opacity for visibility
                     transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                     className="absolute flex flex-col items-center gap-2 transform"
                 >
                     <span className="w-1 h-12 bg-gradient-to-b from-transparent via-[#8B6F47] to-transparent" />
-                    <span className="font-serif text-[#8B6F47] tracking-[0.4em] text-sm uppercase font-bold">
+                    <span className="font-serif text-[#8B6F47] tracking-[0.3em] text-xl uppercase font-bold text-center">
                         {data.context}
                     </span>
                 </motion.div>
@@ -197,7 +197,7 @@ const MobileTimelineItem = ({ data, index }: { data: typeof timelineData[0], ind
     )
 }
 
-// Professional Espresso Machine SVG Component - Large and Realistic
+// Professional Espresso Machine Image Component
 const CoffeeMachine = ({ progress }: { progress: any }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-50px" });
@@ -208,216 +208,39 @@ const CoffeeMachine = ({ progress }: { progress: any }) => {
             initial={{ opacity: 0, y: -40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 1.2, ease: "easeOut" }}
-            className="absolute left-1/2 -translate-x-1/2 -top-36 z-30 w-48 h-56 lg:w-56 lg:h-64"
+            className="absolute left-1/2 -translate-x-1/2 -top-36 z-30 w-64 h-60 lg:w-[22rem] lg:h-[22rem]"
         >
-            <svg viewBox="0 0 200 220" fill="none" className="w-full h-full drop-shadow-2xl">
-                <defs>
-                    {/* Stainless Steel Gradient */}
-                    <linearGradient id="steel-body" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#B8B8B8" />
-                        <stop offset="25%" stopColor="#E8E8E8" />
-                        <stop offset="50%" stopColor="#D0D0D0" />
-                        <stop offset="75%" stopColor="#A8A8A8" />
-                        <stop offset="100%" stopColor="#888888" />
-                    </linearGradient>
-
-                    {/* Dark Accent Gradient */}
-                    <linearGradient id="dark-accent" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#3D2B1F" />
-                        <stop offset="50%" stopColor="#2C1A10" />
-                        <stop offset="100%" stopColor="#1A0F08" />
-                    </linearGradient>
-
-                    {/* Copper/Bronze Accent */}
-                    <linearGradient id="copper-accent" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#CD7F32" />
-                        <stop offset="50%" stopColor="#B87333" />
-                        <stop offset="100%" stopColor="#8B4513" />
-                    </linearGradient>
-
-                    {/* Chrome Highlight */}
-                    <linearGradient id="chrome-highlight" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
-                        <stop offset="50%" stopColor="#E0E0E0" />
-                        <stop offset="100%" stopColor="#A0A0A0" />
-                    </linearGradient>
-
-                    {/* Coffee Color */}
-                    <linearGradient id="coffee-drip" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#4A2C17" />
-                        <stop offset="100%" stopColor="#2C1A10" />
-                    </linearGradient>
-
-                    {/* Shadows */}
-                    <filter id="machine-shadow" x="-20%" y="-10%" width="140%" height="130%">
-                        <feDropShadow dx="4" dy="8" stdDeviation="6" floodOpacity="0.4" />
-                    </filter>
-
-                    <filter id="inner-shadow">
-                        <feOffset dx="0" dy="2" />
-                        <feGaussianBlur stdDeviation="2" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                    </filter>
-                </defs>
-
-                {/* === MAIN MACHINE BODY === */}
-                <g filter="url(#machine-shadow)">
-                    {/* Base Platform */}
-                    <rect x="20" y="185" width="160" height="20" rx="3" fill="url(#dark-accent)" />
-                    <rect x="25" y="188" width="150" height="3" rx="1" fill="#4A3425" opacity="0.6" />
-
-                    {/* Main Body - Stainless Steel */}
-                    <rect x="30" y="40" width="140" height="145" rx="8" fill="url(#steel-body)" />
-
-                    {/* Body Side Panels - Dark */}
-                    <rect x="30" y="40" width="15" height="145" rx="4" fill="url(#dark-accent)" />
-                    <rect x="155" y="40" width="15" height="145" rx="4" fill="url(#dark-accent)" />
-
-                    {/* Top Section */}
-                    <rect x="25" y="30" width="150" height="18" rx="4" fill="url(#dark-accent)" />
-                    <rect x="35" y="33" width="130" height="4" rx="2" fill="url(#copper-accent)" />
-
-                    {/* Bean Hopper - Transparent Container */}
-                    <path d="M70 30 L75 5 L125 5 L130 30 Z" fill="#3D2B1F" stroke="#2C1A10" strokeWidth="2" />
-                    <path d="M75 28 L78 8 L122 8 L125 28 Z" fill="#1A0F08" opacity="0.7" />
-                    <ellipse cx="100" cy="5" rx="28" ry="5" fill="#2C1A10" stroke="#4A3425" strokeWidth="1" />
-                    {/* Coffee Beans inside hopper */}
-                    <ellipse cx="92" cy="15" rx="4" ry="6" fill="#3D2B1F" transform="rotate(-20 92 15)" />
-                    <ellipse cx="100" cy="18" rx="4" ry="6" fill="#4A3425" transform="rotate(10 100 18)" />
-                    <ellipse cx="108" cy="14" rx="4" ry="6" fill="#2C1A10" transform="rotate(25 108 14)" />
-                </g>
-
-                {/* === CONTROL PANEL === */}
-                <rect x="50" y="55" width="100" height="50" rx="4" fill="#1A0F08" stroke="#4A3425" strokeWidth="1" />
-
-                {/* Digital Display */}
-                <rect x="58" y="62" width="84" height="20" rx="2" fill="#0a1a0a" />
-                <rect x="60" y="64" width="80" height="16" rx="1" fill="#001a00" />
-                <text x="100" y="76" textAnchor="middle" fill="#00ff00" fontSize="8" fontFamily="'Courier New', monospace" fontWeight="bold">READY</text>
-
-                {/* Control Buttons */}
-                <circle cx="68" cy="94" r="6" fill="#1a1a1a" stroke="url(#copper-accent)" strokeWidth="1.5" />
-                <circle cx="68" cy="94" r="3" fill="#333" />
-
-                <circle cx="88" cy="94" r="6" fill="#1a1a1a" stroke="url(#copper-accent)" strokeWidth="1.5" />
-                <circle cx="88" cy="94" r="3" fill="#333" />
-
-                <circle cx="108" cy="94" r="6" fill="#1a1a1a" stroke="url(#copper-accent)" strokeWidth="1.5" />
-                <circle cx="108" cy="94" r="3" fill="#333" />
-
-                {/* Power Button - Glowing Red */}
-                <circle cx="132" cy="94" r="8" fill="#1a1a1a" stroke="url(#copper-accent)" strokeWidth="2" />
-                <circle cx="132" cy="94" r="5" fill="#8B0000" />
-                <motion.circle
-                    cx="132" cy="94" r="5"
-                    fill="#FF0000"
-                    initial={{ opacity: 0.3 }}
-                    animate={{ opacity: [0.3, 0.8, 0.3] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+            <div className="relative w-full h-full drop-shadow-2xl">
+                <Image
+                    src="/coffee-machine.png"
+                    alt="Professional Espresso Machine"
+                    fill
+                    className="object-contain"
+                    priority
                 />
-
-                {/* === GROUP HEAD / BREWING UNIT === */}
-                {/* Main Group Head Housing */}
-                <rect x="70" y="115" width="60" height="35" rx="4" fill="url(#chrome-highlight)" stroke="#888" strokeWidth="1" />
-
-                {/* Group Head Details */}
-                <rect x="85" y="120" width="30" height="8" rx="2" fill="url(#steel-body)" />
-                <rect x="90" y="130" width="20" height="15" rx="2" fill="url(#dark-accent)" />
-
-                {/* Portafilter */}
-                <rect x="80" y="150" width="40" height="12" rx="3" fill="url(#chrome-highlight)" stroke="#666" strokeWidth="1" />
-                <ellipse cx="100" cy="162" rx="22" ry="6" fill="url(#steel-body)" stroke="#888" strokeWidth="1" />
-
-                {/* Portafilter Handle */}
-                <rect x="50" y="153" width="30" height="6" rx="3" fill="url(#dark-accent)" />
-                <circle cx="50" cy="156" r="5" fill="url(#dark-accent)" stroke="#4A3425" strokeWidth="1" />
-
-                {/* Spouts */}
-                <rect x="88" y="162" width="6" height="15" rx="1" fill="url(#copper-accent)" />
-                <rect x="106" y="162" width="6" height="15" rx="1" fill="url(#copper-accent)" />
-
-                {/* === DRIP TRAY === */}
-                <rect x="55" y="178" width="90" height="7" rx="2" fill="url(#dark-accent)" />
-                <rect x="60" y="180" width="80" height="3" fill="#1A0F08" />
-
-                {/* Grate Pattern */}
-                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                    <rect key={i} x={65 + i * 10} y="179" width="2" height="5" rx="0.5" fill="#4A3425" />
-                ))}
-
-                {/* === STEAM WAND === */}
-                <rect x="155" y="110" width="8" height="50" rx="2" fill="url(#chrome-highlight)" />
-                <circle cx="159" cy="160" r="4" fill="url(#steel-body)" stroke="#888" strokeWidth="1" />
-                <rect x="157" y="160" width="4" height="20" rx="1" fill="url(#chrome-highlight)" />
-
-                {/* Steam Animation */}
-                <motion.path
-                    d="M159 105 Q155 90 162 75"
-                    stroke="#FFF"
-                    strokeWidth="2"
-                    strokeOpacity="0.15"
-                    fill="none"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: [0, 0.25, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, delay: 0 }}
-                />
-                <motion.path
-                    d="M159 105 Q165 88 158 70"
-                    stroke="#FFF"
-                    strokeWidth="1.5"
-                    strokeOpacity="0.1"
-                    fill="none"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: [0, 0.2, 0] }}
-                    transition={{ duration: 2.5, repeat: Infinity, delay: 1 }}
-                />
-
-                {/* === HOT WATER DISPENSER === */}
-                <rect x="37" y="120" width="8" height="40" rx="2" fill="url(#chrome-highlight)" />
-                <circle cx="41" cy="160" r="3" fill="url(#steel-body)" />
-
-                {/* === PRESSURE GAUGE === */}
-                <circle cx="42" cy="75" r="12" fill="#EEE" stroke="url(#copper-accent)" strokeWidth="2" />
-                <circle cx="42" cy="75" r="9" fill="#FFF" />
-                <motion.line
-                    x1="42" y1="75" x2="42" y2="68"
-                    stroke="#C00"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    initial={{ rotate: -45 }}
-                    animate={{ rotate: [-45, 45, -45] }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                    style={{ transformOrigin: "42px 75px" }}
-                />
-                <circle cx="42" cy="75" r="2" fill="#333" />
-
-                {/* Gauge Labels */}
-                <text x="42" y="83" textAnchor="middle" fill="#333" fontSize="4" fontWeight="bold">BAR</text>
-            </svg>
-
-            {/* Coffee Dripping Animation */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                {[0, 1].map((i) => (
-                    <motion.div
-                        key={i}
-                        className="w-2 h-4 bg-gradient-to-b from-[#4A2C17] to-[#2C1A10] rounded-full shadow-lg"
-                        initial={{ opacity: 0, y: 0 }}
-                        animate={{
-                            opacity: [0, 1, 1, 0],
-                            y: [0, 20, 40, 60],
-                            scaleY: [1, 1.3, 1, 0.8],
-                            scaleX: [1, 0.8, 1, 1.2]
-                        }}
-                        transition={{
-                            duration: 1.8,
-                            repeat: Infinity,
-                            delay: i * 0.5,
-                            ease: "easeIn"
-                        }}
-                    />
-                ))}
+                
+                {/* Coffee Dripping Animation aligned with image */}
+                <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 flex gap-3 z-10">
+                    {[0, 1].map((i) => (
+                        <motion.div
+                            key={i}
+                            className="w-2 h-4 bg-gradient-to-b from-[#4A2C17] to-[#2C1A10] rounded-full shadow-lg"
+                            initial={{ opacity: 0, y: 0 }}
+                            animate={{
+                                opacity: [0, 1, 1, 0],
+                                y: [0, 20, 40, 60],
+                                scaleY: [1, 1.3, 1, 0.8],
+                                scaleX: [1, 0.8, 1, 1.2]
+                            }}
+                            transition={{
+                                duration: 1.8,
+                                repeat: Infinity,
+                                delay: i * 0.5,
+                                ease: "easeIn"
+                            }}
+                        />
+                    ))}
+                </div>
             </div>
         </motion.div>
     );
@@ -436,60 +259,22 @@ const CoffeeCup = ({ progress }: { progress: any }) => {
             ref={ref}
             className="absolute left-1/2 -translate-x-1/2 -bottom-93 z-[60] flex flex-col items-center"
         >
-            {/* Rabuste Logo as the Cup/Destination */}
+            {/* Rabuste Logo as the Cup/Destination - Made Bigger */}
             <motion.div
-                className="relative w-28 h-28 lg:w-36 lg:h-36"
+                className="relative w-36 h-36 lg:w-48 lg:h-48"
                 style={{
                     filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.3))"
                 }}
             >
                 <Image
-                    src="/Rabuste logo.png"
-                    alt="Rabuste Coffee"
+                    src="/coffee.png"
+                    alt="Coffee Cup"
                     fill
                     className="object-contain"
                 />
             </motion.div>
 
-            {/* Realistic Steam Rising */}
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-24 h-24">
-                {[0, 1, 2].map((i) => (
-                    <motion.svg
-                        key={i}
-                        viewBox="0 0 50 100"
-                        className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-28"
-                        style={{ filter: 'blur(2px)' }}
-                    >
-                        <motion.path
-                            d="M 25 100 Q 20 85, 25 70 Q 30 55, 25 40 Q 20 25, 25 10 Q 28 0, 25 0"
-                            fill="none"
-                            stroke="url(#steamGradient)"
-                            strokeWidth="6"
-                            strokeLinecap="round"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{
-                                pathLength: [0, 1, 1],
-                                opacity: [0, 1, 0.7],
-                                x: [0, i % 2 === 0 ? 10 : -10, i % 2 === 0 ? -5 : 5],
-                            }}
-                            transition={{
-                                duration: 4,
-                                repeat: Infinity,
-                                delay: i * 0.8,
-                                ease: "easeInOut"
-                            }}
-                        />
-                        <defs>
-                            <linearGradient id="steamGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-                                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.3" />
-                                <stop offset="30%" stopColor="#F5F5F5" stopOpacity="0.85" />
-                                <stop offset="60%" stopColor="#E8E8E8" stopOpacity="0.95" />
-                                <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.2" />
-                            </linearGradient>
-                        </defs>
-                    </motion.svg>
-                ))}
-            </div>
+            {/* Steam removed as requested */}
 
 
         </motion.div>
@@ -498,6 +283,7 @@ const CoffeeCup = ({ progress }: { progress: any }) => {
 
 const ZigzagLine = ({ progress }: { progress: any }) => {
     // Path starts from center (50), smoothly curves to original zigzag, and smoothly ends at center (50)
+    // Adjusted end point to 1600 (higher up) to meet top of cup
     const pathD = `
         M 50 0
         C 50 30, 5 60, 5 100
@@ -506,7 +292,7 @@ const ZigzagLine = ({ progress }: { progress: any }) => {
         C 5 700, 95 700, 95 850
         C 95 1000, 5 1000, 5 1150
         C 5 1300, 95 1300, 95 1450
-        C 95 1550, 50 1620, 50 1650
+        C 95 1550, 50 1580, 50 1600
     `;
 
     return (
@@ -675,16 +461,18 @@ const Timeline = () => {
 
                 {/* Desktop View - Timeline with both lines originating from machine */}
                 <div className="hidden md:block relative pt-20">
-                    {/* Zigzag Animation Layer - Contains machine, zigzag curve, and cup */}
+                    {/* Zigzag Animation Layer - Connects machine nozzle to cup */}
+                    {/* Zigzag path starts at M 50 0 (nozzle/top) */}
                     <ZigzagLine progress={scaleY} />
 
-                    {/* Base Line - Starts from top (machine area), ends at cup area */}
-                    <div className="absolute left-1/2 top-0 w-[2px] bg-[#8B6F47]/10 -translate-x-1/2 rounded-full -z-10" style={{ bottom: '-17.75rem' }} />
+                    {/* Timeline Line (Static Base) - Starts at first item, ends at last item */}
+                    {/* Color changed to neutral timeline color, adjusted top/bottom to match content */}
+                    <div className="absolute left-1/2 w-[2px] bg-[#8B6F47]/20 -translate-x-1/2 rounded-full -z-10" style={{ top: '10rem', bottom: '10rem' }} />
 
-                    {/* Glowing Active Line (Liquid Style) - Animated with scroll */}
+                    {/* Timeline Line (Active Fill) - Animated with scroll */}
                     <motion.div
-                        style={{ scaleY, originY: 0, bottom: '-17.75rem' }}
-                        className="absolute left-1/2 top-0 w-[4px] bg-[#4A3425] -translate-x-1/2 shadow-[0_0_10px_rgba(74,52,37,0.4)] rounded-full -z-10"
+                        style={{ scaleY, originY: 0, top: '10rem', bottom: '10rem' }}
+                        className="absolute left-1/2 w-[2px] bg-[#8B6F47] -translate-x-1/2 rounded-full -z-10"
                     />
 
                     {/* Add extra padding at top for coffee machine */}

@@ -1,0 +1,14 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location (update after deployment)
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Disallow admin/private routes if any
+# User-agent: *
+# Disallow: /admin/
+# Disallow: /api/private/
