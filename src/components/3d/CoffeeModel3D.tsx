@@ -24,25 +24,43 @@ function CoffeeModel({ rollAnimation = false, isMobile = false }: CoffeeModelPro
   
   // Roll animation state
   const [animationProgress, setAnimationProgress] = useState(0);
+  const [isReady, setIsReady] = useState(false);
+  const animationStartTime = useRef<number | null>(null);
+  
+  // Ease out cubic function for smooth animation
+  const easeOutCubic = (t: number) => {
+    return 1 - Math.pow(1 - t, 3);
+  };
+  
+  useEffect(() => {
+    // Give the model time to fully load and render before starting animation
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 300); // Delay animation start by 300ms to ensure smooth rendering
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   useFrame((state, delta) => {
-    if (modelRef.current) {
+    if (modelRef.current && isReady) {
       if (rollAnimation && animationProgress < 1) {
-        // Increment animation progress - faster speed
-        const newProgress = Math.min(animationProgress + delta * 0.5, 1);
+        // Slower, smoother animation with easing
+        const newProgress = Math.min(animationProgress + delta * 0.35, 1);
         setAnimationProgress(newProgress);
         
-        // Animate rotation - one full rotation (360 -> 0)
-        // Desktop: (1 - newProgress) * Math.PI * 2 (Spins while moving)
-        modelRef.current.rotation.y = (1 - newProgress) * Math.PI * 2;
+        // Apply easing for smooth motion
+        const easedProgress = easeOutCubic(newProgress);
         
-        // Animate position
+        // Animate rotation - one full rotation (360 -> 0)
+        modelRef.current.rotation.y = (1 - easedProgress) * Math.PI * 2;
+        
+        // Animate position with easing
         let startX, endX;
         
         if (isMobile) {
           // Mobile Animation: From left to center (0)
-          startX = -30; // Start offset to left relative to center
-          endX = 0;     // End at center
+          startX = -30;
+          endX = 0;
         } else {
           // Desktop Animation: From far left to right side
           startX = -40;
@@ -50,11 +68,12 @@ function CoffeeModel({ rollAnimation = false, isMobile = false }: CoffeeModelPro
         }
 
         const distance = endX - startX; 
-        modelRef.current.position.x = startX + (newProgress * distance);
+        modelRef.current.position.x = startX + (easedProgress * distance);
       } else if (!rollAnimation) {
          // Reset to center if no animation
          modelRef.current.position.x = 0;
          modelRef.current.rotation.y = 0;
+         setAnimationProgress(0);
       }
     }
   });
@@ -88,6 +107,8 @@ function ErrorFallback() {
 export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: CoffeeModel3DProps = {}) {
   const [hasError, setHasError] = useState(false);
   const [key, setKey] = useState(0);
+  const [isInView, setIsInView] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isModelReady, setIsModelReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -99,6 +120,23 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
+
+    // Intersection Observer to track visibility
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsInView(entry.isIntersecting);
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the component is visible
+        rootMargin: '100px' // Start loading slightly before it enters viewport
+      }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
 
     // Handle WebGL context loss
     const handleContextLost = (event: Event) => {
@@ -120,13 +158,18 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
     if (canvas) {
       canvas.addEventListener('webglcontextlost', handleContextLost);
       canvas.addEventListener('webglcontextrestored', handleContextRestored);
+    }
 
-      return () => {
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
+      }
+      if (canvas) {
         canvas.removeEventListener('webglcontextlost', handleContextLost);
         canvas.removeEventListener('webglcontextrestored', handleContextRestored);
-        window.removeEventListener('resize', checkMobile);
-      };
-    }
+      }
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   const handleModelLoad = () => {
@@ -153,13 +196,20 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
   const activeRollAnimation = isMobile ? true : rollAnimation;
 
   return (
-    <div className={`relative w-full h-full min-h-[400px] lg:min-h-[600px]`}>
+    <div ref={containerRef} className={`relative w-full h-full min-h-[400px] lg:min-h-[600px]`}>
+      {!isInView ? (
+        // Placeholder when not in view
+        <div className="flex items-center justify-center h-full bg-transparent">
+          <div className="text-[#8B6F47]/30">Loading 3D Model...</div>
+        </div>
+      ) : (
       <Canvas
         key={key}
         ref={canvasRef}
         orthographic
-        camera={{ ...cameraSettings }}
+        camera={cameraSettings}
         dpr={[1, 1.5]}
+        frameloop="always"
         gl={{ 
           alpha: true, 
           antialias: true,
@@ -170,7 +220,7 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
         style={{ background: 'transparent' }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
-          setTimeout(handleModelLoad, 500);
+          setTimeout(handleModelLoad, 800); // Increased delay for smoother initial load
         }}
       >
         <ambientLight intensity={0.9} color="#fff5e6" />
@@ -195,6 +245,7 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
           autoRotate={false}
         />
       </Canvas>
+      )}
     </div>
   );
 }

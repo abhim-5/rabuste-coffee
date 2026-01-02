@@ -25,6 +25,7 @@ interface CartProps {
     onUpdateQuantity: (index: number, quantity: number) => void;
     onRemoveItem: (index: number) => void;
     onAddRecommendedItem: (itemId: string) => void;
+    cartType: 'menu' | 'gallery';
 }
 
 type OrderType = "dine-in" | "takeaway-now" | "takeaway-scheduled";
@@ -38,15 +39,24 @@ export function Cart({
     onUpdateQuantity,
     onRemoveItem,
     onAddRecommendedItem,
+    cartType,
 }: CartProps) {
     const [orderType, setOrderType] = React.useState<OrderType>("dine-in");
     
+    // Filter items based on cart type
+    const filteredItems = cartType === 'gallery' 
+        ? items.filter(item => item.menuItem.id.startsWith('gallery-'))
+        : items.filter(item => !item.menuItem.id.startsWith('gallery-'));
+    
+    // Calculate filtered total
+    const filteredTotal = filteredItems.reduce((sum, item) => sum + item.subtotal, 0);
+    
     // Check if cart contains any gallery items
-    const hasGalleryItems = items.some(item => item.menuItem.id.startsWith('gallery-'));
-    const hasMenuItems = items.some(item => !item.menuItem.id.startsWith('gallery-'));
+    const hasGalleryItems = cartType === 'gallery';
+    const hasMenuItems = cartType === 'menu';
     
     // Get gallery items not in cart (only if cart has gallery items)
-    const cartArtIds = items.map(item => {
+    const cartArtIds = filteredItems.map(item => {
         const match = item.menuItem.id.match(/gallery-(\d+)/);
         return match ? parseInt(match[1]) : null;
     }).filter(id => id !== null);
@@ -56,7 +66,7 @@ export function Cart({
         : [];
     
     // Get menu items not in cart (only if cart has menu items)
-    const cartMenuIds = items.map(item => item.menuItem.id).filter(id => !id.startsWith('gallery-'));
+    const cartMenuIds = filteredItems.map(item => item.menuItem.id).filter(id => !id.startsWith('gallery-'));
     const recommendedMenuItems = hasMenuItems
         ? menuItems.filter(item => !cartMenuIds.includes(item.id)).slice(0, 3)
         : [];
@@ -94,7 +104,7 @@ export function Cart({
                                         Your Cart
                                     </h2>
                                     <p className="font-sans text-sm text-[#8B6F47]">
-                                        {itemCount} {itemCount === 1 ? "item" : "items"}
+                                        {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"}
                                     </p>
                                 </div>
                             </div>
@@ -107,7 +117,7 @@ export function Cart({
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6">
-                            {items.length === 0 ? (
+                            {filteredItems.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-center">
                                     <ShoppingBag className="w-16 h-16 text-[#78716c] mb-4" />
                                     <p className="font-serif text-xl text-[#404040] mb-2">
@@ -120,7 +130,7 @@ export function Cart({
                             ) : (
                                 <>
                                     <div className="space-y-4 mb-6">
-                                        {items.map((cartItem, index) => (
+                                        {filteredItems.map((cartItem, index) => (
                                             <motion.div
                                                 key={index}
                                                 initial={{ opacity: 0, x: 20 }}
@@ -373,14 +383,14 @@ export function Cart({
                             )}
                         </div>
 
-                        {items.length > 0 && (
+                        {filteredItems.length > 0 && (
                             <div className="border-t-[0.5px] border-[#8B6F47] px-6 py-5" style={{ backgroundColor: "#D8CBB8" }}>
-                                {hasMenuItems && !hasGalleryItems && (
+                                {hasMenuItems && (
                                     <>
                                         <div className="flex items-center justify-between mb-4">
                                             <span className="font-serif text-xl text-[#404040]">Total</span>
                                             <span className="font-serif text-2xl font-bold text-green-700">
-                                                ₹{total}
+                                                ₹{filteredTotal}
                                             </span>
                                         </div>
                                         

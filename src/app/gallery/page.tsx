@@ -600,6 +600,7 @@ export default function GalleryPage() {
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeItem}
         onAddRecommendedItem={handleAddRecommendedItem}
+        cartType="gallery"
       />
       <Footer />
     </>

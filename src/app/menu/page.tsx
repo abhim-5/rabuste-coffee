@@ -123,6 +123,7 @@ export default function MenuPage() {
                 onUpdateQuantity={updateQuantity}
                 onRemoveItem={removeItem}
                 onAddRecommendedItem={handleAddRecommendedItem}
+                cartType="menu"
             />
 
             {/* Floating Cart Button */}

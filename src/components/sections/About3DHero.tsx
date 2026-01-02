@@ -33,7 +33,7 @@ const About3DHero = () => {
 
   // Calculate delays for text reveal based on model position
   const modelAnimationDuration = 4.5; // 2 seconds for model to roll in
-  const textStartDelay = modelAnimationDuration * 0.33; // Text starts revealing late (70% of model animation)
+  const textStartDelay = modelAnimationDuration * 0.26; // Text starts revealing late (70% of model animation)
 
   // Handle animation completion
   const handleAnimationComplete = () => {
