@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, Coins, X, Gift, Coffee, History, Plus, Minus, ShoppingBag, Sparkles, TrendingUp } from "lucide-react";
+import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, Coins, X, Gift, Coffee, History, Plus, Minus, ShoppingBag, Sparkles, TrendingUp, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -95,16 +95,17 @@ export default function Navbar() {
 
   // Use centralized auth state
   const { user, loading, signOut } = useAuth();
+  // Get role info
+  const { userProfile, hasStaffAccess } = useRole();
   // Debug logging
-useEffect(() => {
-  console.log('🔐 Navbar Auth State:', {
-    loading,
-    hasUser: !!user,
-    userEmail: user?.email,
-    userId: user?.id
-  });
-}, [loading, user]);
-  const { hasStaffAccess } = useRole();
+  useEffect(() => {
+    console.log('🔐 Navbar Auth State:', {
+      loading,
+      hasUser: !!user,
+      userEmail: user?.email,
+      userId: user?.id
+    });
+  }, [loading, user]);
 
   // Bell animation on mount
   useEffect(() => {
@@ -252,6 +253,28 @@ useEffect(() => {
                   </Link>
                 );
               })}
+
+              {/* Admin Panel Button - Outside loop to avoid nested links */}
+              {(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
+                <Link href="/admin">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -2 }}
+                    className="relative px-4 py-2 ml-4"
+                  >
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1a202c] text-white rounded-lg hover:bg-[#2d3748] transition-colors shadow-lg border border-[#D4AF37]/30"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span className="font-serif text-sm font-semibold">Admin Panel</span>
+                    </motion.button>
+                  </motion.div>
+                </Link>
+              )}
             </div>
 
             {/* Right Actions - Auth State Aware */}
@@ -483,25 +506,6 @@ useEffect(() => {
                         )}
                       </AnimatePresence>
                     </div>
-
-                    {/* Dashboard Button (Staff Only) */}
-                    {hasStaffAccess && (
-                      <Link href="/dashboard">
-                        <motion.button
-                          initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                          animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                          transition={{ duration: 0.6, delay: 1.05, ease: [0.22, 1, 0.36, 1] }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/60 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 transition-all duration-300"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 002-2M13 13h6m-3-3v6" />
-                          </svg>
-                          <span className="font-sans text-xs font-medium">Dashboard</span>
-                        </motion.button>
-                      </Link>
-                    )}
 
                     {/* Profile Icon */}
                     <Link href="/profile">

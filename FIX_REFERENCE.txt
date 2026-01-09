@@ -1,0 +1,8 @@
+// Quick fix script - just paste this at top of admin files
+import { createClient } from '@/lib/supabase/client';
+
+// Then replace:
+// const supabase = (await import('@/lib/supabase/client')).default;
+// 
+// With:
+// const supabase = createClient();

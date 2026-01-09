@@ -26,6 +26,11 @@ interface AuthContextType {
   signUpWithEmail: (name: string, email: string, password: string) => Promise<{ error: Error | null }>;
   resendVerificationEmail: (email: string) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
+  // Role helpers
+  isAdmin: () => boolean;
+  isSuperadmin: () => boolean;
+  isStaff: () => boolean;
+  hasRole: (roles: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,6 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       await loadProfile(user.id);
     }
+  };
+
+  // Role helper functions
+  const isAdmin = () => {
+    return profile?.role === 'admin' || profile?.role === 'superadmin';
+  };
+
+  const isSuperadmin = () => {
+    return profile?.role === 'superadmin';
+  };
+
+  const isStaff = () => {
+    return profile?.role === 'staff' || profile?.role === 'admin' || profile?.role === 'superadmin';
+  };
+
+  const hasRole = (roles: string[]) => {
+    return profile?.role ? roles.includes(profile.role) : false;
   };
 
   const signOut = async () => {
@@ -233,6 +255,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUpWithEmail,
     resendVerificationEmail,
     refreshProfile,
+    isAdmin,
+    isSuperadmin,
+    isStaff,
+    hasRole,
   };
 
   return (
