@@ -6,12 +6,12 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 
 const workshopItems = [
-    { src: "/workshops/1.jpg", title: "Pottery Workshop" },
-    { src: "/workshops/2.jpg", title: "Coffee Brewing" },
-    { src: "/workshops/3.jpg", title: "Latte Art Class" },
-    { src: "/workshops/4.jpg", title: "Pastry Baking" },
-    { src: "/workshops/5.jpg", title: "Coffee Tasting" },
-    { src: "/workshops/6.jpg", title: "Live Music" },
+    { src: "/workshops/1.jpg", title: "Coffee & Pottery" },
+    { src: "/workshops/2.jpg", title: "Lino Cut Art Workshop" },
+    { src: "/workshops/3.jpg", title: "Father's Day Coffee Art Workshop" },
+    { src: "/workshops/4.jpg", title: "Brewing Science" },
+    { src: "/workshops/5.jpg", title: "Pastry Pairing" },
+    { src: "/workshops/6.jpg", title: "Ganesha Making Workshop" },
 ];
 
 export default function FestsAndWorkshops() {
