@@ -16,7 +16,7 @@ interface AuthModalProps {
 type TabType = 'signin' | 'signup';
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resendVerificationEmail } = useAuth();
 
   const [activeTab, setActiveTab] = useState<TabType>('signin');
   const [isLoading, setIsLoading] = useState(false);
@@ -133,14 +133,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       return;
     }
 
-    // Success - user is automatically signed in
-    setSuccess('Account created successfully! Welcome to Rabuste!');
     setIsLoading(false);
 
-    // Close modal after 1 second
-    setTimeout(() => {
-      handleClose();
-    }, 1000);
+    // Show verification message
+    setSuccess(
+      `✅ Account created! Please check your email (${signUpEmail}) for a verification link. Click the link to activate your account and sign in.`
+    );
+
+    // Keep modal open so user sees the message
   };
 
   const passwordStrength = validatePassword(signUpPassword).strength;
