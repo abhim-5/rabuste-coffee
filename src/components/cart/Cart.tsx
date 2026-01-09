@@ -1,20 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { CartItem } from "@/types/menu";
-import { menuItems } from "@/data/menuData";
+import { CreateOrderRequest } from "@/types/orders";
+import { User } from "@supabase/supabase-js";
 
-const galleryItems = [
-  { id: 1, name: 'Dawn Chorus', price: 12999 },
-  { id: 2, name: 'Midnight Falls', price: 15999 },
-  { id: 3, name: 'Wetland Companions', price: 18999 },
-  { id: 4, name: 'Monsoon Transit', price: 21999 },
-  { id: 5, name: 'Summer Garden', price: 16999 },
-  { id: 6, name: 'Bamboo Sanctuary', price: 19999 },
-];
+// Removed static gallery items to enforce database source
+// const galleryItems = ...
 
 interface CartProps {
     isOpen: boolean;
@@ -26,6 +21,11 @@ interface CartProps {
     onRemoveItem: (index: number) => void;
     onAddRecommendedItem: (itemId: string) => void;
     cartType: 'menu' | 'gallery';
+    currentUser: User | null;
+    onOrderComplete: (orderNumber: string) => void;
+    onClearCart: () => void;
+    onShowAuth?: () => void;
+    onGalleryBookingComplete?: (bookingNumber: string, artPieceName: string, artist: string, price: number) => void;
 }
 
 type OrderType = "dine-in" | "takeaway-now" | "takeaway-scheduled";
@@ -40,40 +40,168 @@ export function Cart({
     onRemoveItem,
     onAddRecommendedItem,
     cartType,
+    currentUser,
+    onOrderComplete,
+    onClearCart,
+    onShowAuth,
+    onGalleryBookingComplete,
 }: CartProps) {
-    const [orderType, setOrderType] = React.useState<OrderType>("dine-in");
-    
+    const [orderType, setOrderType] = useState<OrderType>("takeaway-scheduled"); // Changed default to takeaway
+    const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+
     // Filter items based on cart type
-    const filteredItems = cartType === 'gallery' 
-        ? items.filter(item => item.menuItem.id.startsWith('gallery-'))
-        : items.filter(item => !item.menuItem.id.startsWith('gallery-'));
-    
+    const filteredItems = cartType === 'gallery'
+        ? items.filter(item => String(item.menuItem.id).startsWith('gallery-'))
+        : items.filter(item => !String(item.menuItem.id).startsWith('gallery-'));
+
     // Calculate filtered total
     const filteredTotal = filteredItems.reduce((sum, item) => sum + item.subtotal, 0);
-    
+
     // Check if cart contains any gallery items
     const hasGalleryItems = cartType === 'gallery';
     const hasMenuItems = cartType === 'menu';
-    
-    // Get gallery items not in cart (only if cart has gallery items)
-    const cartArtIds = filteredItems.map(item => {
-        const match = item.menuItem.id.match(/gallery-(\d+)/);
-        return match ? parseInt(match[1]) : null;
-    }).filter(id => id !== null);
-    
-    const recommendedArtworks = hasGalleryItems 
-        ? galleryItems.filter(art => !cartArtIds.includes(art.id))
-        : [];
-    
-    // Get menu items not in cart (only if cart has menu items)
-    const cartMenuIds = filteredItems.map(item => item.menuItem.id).filter(id => !id.startsWith('gallery-'));
-    const recommendedMenuItems = hasMenuItems
-        ? menuItems.filter(item => !cartMenuIds.includes(item.id)).slice(0, 3)
-        : [];
 
-    const handleConfirmBooking = () => {
-        const bookingNumber = Math.floor(100000 + Math.random() * 900000);
-        alert(`Booking Confirmed!\n\nYour Booking Number: ${bookingNumber}\n\nPlease visit Rabuste Coffee and show this number at the counter.\nPay in cash and collect your artwork.\n\nThank you!`);
+    // Get gallery items not in cart (only if cart has gallery items)
+    // Logic updated to support UUIDs (strings) instead of just numbers
+    const cartArtIds = filteredItems.map(item => {
+        const match = String(item.menuItem.id).match(/gallery-(.+)/);
+        return match ? match[1] : null;
+    }).filter(id => id !== null);
+
+    // Disabled static recommendations
+    const recommendedArtworks: any[] = []; // fetch from API if needed
+
+    // Get menu items not in cart
+    const cartMenuIds = filteredItems.map(item => String(item.menuItem.id)).filter(id => !id.startsWith('gallery-'));
+    const recommendedMenuItems: any[] = []; // fetch from API if needed
+
+    const handleConfirmBooking = async () => {
+        // Check if user is logged in
+        if (!currentUser) {
+            if (onShowAuth) {
+                onClose();
+                onShowAuth();
+            } else {
+                alert('Please login to book artwork');
+            }
+            return;
+        }
+
+        if (filteredItems.length === 0) {
+            alert('Your cart is empty');
+            return;
+        }
+
+        setIsProcessingOrder(true);
+
+        try {
+            // For now, assume single art piece per cart
+            const artItem = filteredItems[0];
+            const artPieceId = String(artItem.menuItem.id).replace('gallery-', '');
+
+            const response = await fetch('/api/gallery/purchase', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ artPieceId })
+            });
+
+            const data = await response.json();
+
+            if (data.success && onGalleryBookingComplete) {
+                // Clear cart
+                onClearCart();
+                // Close cart
+                onClose();
+                // Show booking confirmation
+                onGalleryBookingComplete(
+                    data.bookingNumber,
+                    data.purchase.artPieceName,
+                    data.purchase.artist,
+                    data.purchase.price
+                );
+            } else {
+                alert(data.error || 'Failed to create booking. Please try again.');
+            }
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert('Failed to create booking. Please check your connection and try again.');
+        } finally {
+            setIsProcessingOrder(false);
+        }
+    };
+
+    const handlePayNow = async () => {
+        // Check if user is logged in
+        if (!currentUser) {
+            // Show auth modal if available
+            if (onShowAuth) {
+                onClose(); // Close cart
+                onShowAuth(); // Open auth modal
+            } else {
+                alert('Please login to place an order');
+            }
+            return;
+        }
+
+        // Validate cart
+        if (filteredItems.length === 0) {
+            alert('Your cart is empty');
+            return;
+        }
+
+        setIsProcessingOrder(true);
+
+        try {
+            // Prepare order data
+            const orderData: CreateOrderRequest = {
+                orderType,
+                scheduledTime: orderType === 'takeaway-scheduled'
+                    ? document.querySelector<HTMLSelectElement>('select')?.value
+                    : undefined,
+                items: filteredItems.map(item => ({
+                    menuItemId: item.menuItem.id,
+                    menuItemName: item.menuItem.name,
+                    menuItemImage: item.menuItem.image,
+                    variationName: item.selectedVariation?.name,
+                    unitPrice: item.selectedVariation?.price || item.menuItem.price,
+                    quantity: item.quantity,
+                    subtotal: item.subtotal
+                })),
+                subtotal: filteredTotal,
+                tax: 0,
+                total: filteredTotal,
+                notes: ''
+            };
+
+            // Create order via API
+            const response = await fetch('/api/orders/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.orderNumber) {
+                // Clear cart
+                onClearCart();
+                // Close cart
+                onClose();
+                // Show confirmation
+                onOrderComplete(data.orderNumber);
+            } else {
+                alert(data.error || 'Failed to create order. Please try again.');
+            }
+        } catch (error) {
+            console.error('Order creation error:', error);
+            alert('Failed to create order. Please check your connection and try again.');
+        } finally {
+            setIsProcessingOrder(false);
+        }
     };
 
     return (
@@ -153,27 +281,11 @@ export function Cart({
                                                             {cartItem.menuItem.name}
                                                         </h3>
 
-                                                        {cartItem.selectedVariations && (
-                                                            <div className="flex flex-wrap gap-1 mb-1">
-                                                                {Object.entries(cartItem.selectedVariations).map(
-                                                                    ([varId, optId]) => {
-                                                                        const variation = cartItem.menuItem.variations?.find(
-                                                                            (v) => v.id === varId
-                                                                        );
-                                                                        const option = variation?.options.find(
-                                                                            (o) => o.id === optId
-                                                                        );
-                                                                        if (!option) return null;
-                                                                        return (
-                                                                            <span
-                                                                                key={varId}
-                                                                                className="font-sans text-xs text-[#262626] bg-[#D8CBB8]/50 px-2 py-0.5 border-[0.5px] border-[#8B6F47]"
-                                                                            >
-                                                                                {option.name}
-                                                                            </span>
-                                                                        );
-                                                                    }
-                                                                )}
+                                                        {cartItem.selectedVariation && (
+                                                            <div className="mb-1">
+                                                                <span className="font-sans text-xs text-[#8B6F47] bg-[#D8CBB8]/50 px-2 py-0.5 border-[0.5px] border-[#8B6F47]">
+                                                                    {cartItem.selectedVariation.name}
+                                                                </span>
                                                             </div>
                                                         )}
 
@@ -276,7 +388,7 @@ export function Cart({
                                                             ₹{item.price.toLocaleString('en-IN')}
                                                         </p>
                                                         <button
-                                                            onClick={() => onAddRecommendedItem(item.id)}
+                                                            onClick={() => onAddRecommendedItem(String(item.id))}
                                                             className="w-full mt-2 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-[10px] sm:text-xs px-2 py-1.5 transition-colors"
                                                         >
                                                             Add to Cart
@@ -293,11 +405,10 @@ export function Cart({
                                                 How would you like to order?
                                             </label>
                                             <div className="space-y-3">
-                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${
-                                                    orderType === "takeaway-scheduled"
-                                                        ? "border-[#8B6F47] bg-white"
-                                                        : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
-                                                }`}>
+                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${orderType === "takeaway-scheduled"
+                                                    ? "border-[#8B6F47] bg-white"
+                                                    : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
+                                                    }`}>
                                                     <input
                                                         type="radio"
                                                         name="orderType"
@@ -327,11 +438,10 @@ export function Cart({
                                                     </div>
                                                 </label>
 
-                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${
-                                                    orderType === "takeaway-now"
-                                                        ? "border-[#8B6F47] bg-white"
-                                                        : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
-                                                }`}>
+                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${orderType === "takeaway-now"
+                                                    ? "border-[#8B6F47] bg-white"
+                                                    : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
+                                                    }`}>
                                                     <input
                                                         type="radio"
                                                         name="orderType"
@@ -352,11 +462,10 @@ export function Cart({
                                                     </div>
                                                 </label>
 
-                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${
-                                                    orderType === "dine-in"
-                                                        ? "border-[#8B6F47] bg-white"
-                                                        : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
-                                                }`}>
+                                                <label className={`flex items-start gap-3 p-4 border-[0.5px] cursor-pointer transition-colors ${orderType === "dine-in"
+                                                    ? "border-[#8B6F47] bg-white"
+                                                    : "border-black bg-[#8B6F47]/5 hover:border-[#8B6F47]/50"
+                                                    }`}>
                                                     <input
                                                         type="radio"
                                                         name="orderType"
@@ -393,13 +502,22 @@ export function Cart({
                                                 ₹{filteredTotal}
                                             </span>
                                         </div>
-                                        
+
                                         <motion.button
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
-                                            className="w-full mb-3 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 transition-colors shadow-lg border-[0.5px] border-[#8B6F47]"
+                                            onClick={handlePayNow}
+                                            disabled={isProcessingOrder}
+                                            className="w-full mb-3 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 transition-colors shadow-lg border-[0.5px] border-[#8B6F47] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            Pay Now
+                                            {isProcessingOrder ? (
+                                                <>
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                'Pay Now'
+                                            )}
                                         </motion.button>
 
                                         <motion.button

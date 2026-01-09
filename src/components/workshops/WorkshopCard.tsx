@@ -8,9 +8,9 @@ import { Users, MessageSquare, X } from "lucide-react";
 interface Workshop {
     id: string;
     title: string;
-    date: string;
+    start_date: string;
     attendees: number;
-    image: string;
+    image_url: string;
     description: string;
     reviews: Array<{
         name: string;
@@ -60,7 +60,7 @@ export function WorkshopCard({
                 {/* Mobile Layout: Title First */}
                 <div className="lg:hidden px-6 pt-6 pb-2 shrink-0 text-center">
                     <div className="flex items-center justify-center gap-2 text-[#8B6F47] mb-2 text-[10px] font-bold tracking-widest uppercase font-oswald">
-                        <span>{workshop.date}</span>
+                        <span>{new Date(workshop.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                         <span className="w-1 h-1 bg-current rounded-full" />
                         <span>{workshop.attendees} Attendees</span>
                     </div>
@@ -75,7 +75,7 @@ export function WorkshopCard({
                         <div ref={imgRef} className="relative w-full h-full overflow-hidden">
                             <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
                                 <Image
-                                    src={workshop.image}
+                                    src={workshop.image_url || '/workshops/default.jpg'}
                                     alt={workshop.title}
                                     fill
                                     className="object-cover"
@@ -90,8 +90,8 @@ export function WorkshopCard({
                         {/* Date Sticker */}
                         <div className="hidden lg:block absolute -top-6 -left-6 bg-[#8B6F47] text-white p-4 shadow-xl rotate-[-8deg] z-10">
                             <p className="font-oswald text-sm tracking-widest uppercase text-center leading-none">
-                                {workshop.date.split(" ")[0]}<br />
-                                <span className="text-2xl font-bold">{workshop.date.split(" ")[1]}</span>
+                                {new Date(workshop.start_date).toLocaleDateString('en-US', { month: 'short' })}<br />
+                                <span className="text-2xl font-bold">{new Date(workshop.start_date).toLocaleDateString('en-US', { year: 'numeric' })}</span>
                             </p>
                         </div>
 
@@ -187,7 +187,7 @@ export function WorkshopCard({
                                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                         <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-xl border-8 border-white">
                                             <Image
-                                                src={workshop.image}
+                                                src={workshop.image_url || '/workshops/default.jpg'}
                                                 alt={workshop.title}
                                                 fill
                                                 className="object-cover"
@@ -198,7 +198,7 @@ export function WorkshopCard({
                                             <h3 className="font-display text-2xl text-[#2A2A2A] mb-3 uppercase tracking-wide">{workshop.title}</h3>
                                             <p className="font-serif text-base text-[#404040] leading-relaxed mb-4">{workshop.description}</p>
                                             <div className="flex items-center gap-2 text-[#8B6F47] text-xs font-bold font-oswald">
-                                                <span>{workshop.date}</span>
+                                                <span>{new Date(workshop.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                                                 <span className="w-1 h-1 bg-current rounded-full" />
                                                 <span>{workshop.attendees} Attendees</span>
                                             </div>

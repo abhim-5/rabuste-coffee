@@ -12,139 +12,156 @@ import { OrderHistory } from "@/components/profile/OrderHistory";
 import { WorkshopsSection } from "@/components/profile/WorkshopsSection";
 import { ArtCollection } from "@/components/profile/ArtCollection";
 import {
-    mockUserProfile,
-    mockOrders,
-    mockWorkshops,
-    mockArtCollection,
-} from "@/data/profileData";
-import { 
-    LogOut, Edit2, ShoppingBag, GraduationCap, Palette, Coins, 
+    LogOut, Edit2, ShoppingBag, GraduationCap, Palette, Coins,
     Settings, Bell, Heart, MapPin, Calendar, TrendingUp, Award,
     ChevronRight, User, Mail, Clock, X, Upload, Lock, Save, Camera
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useProfileStats } from "@/hooks/useProfileStats";
+import { useProfileOrders } from "@/hooks/useProfileOrders";
+import { useProfileWorkshops } from "@/hooks/useProfileWorkshops";
+import { useProfileArt } from "@/hooks/useProfileArt";
 
 export default function ProfilePage() {
     const router = useRouter();
+    const { user, signOut } = useAuth();
+    const { profile, loading: profileLoading, updateProfile } = useProfile();
+    const { stats, loading: statsLoading } = useProfileStats();
+    const { orders, loading: ordersLoading } = useProfileOrders();
+    const { workshops, loading: workshopsLoading } = useProfileWorkshops();
+    const { artPieces, loading: artLoading } = useProfileArt();
+
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState("orders");
-    const [userName, setUserName] = useState("Guest User");
-    const [userEmail, setUserEmail] = useState("");
-    const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [memberDuration, setMemberDuration] = useState("just now");
-    
+    const [rewardMessage, setRewardMessage] = useState<string | null>(null);
+
     // Edit form states
     const [editName, setEditName] = useState("");
-    const [oldPassword, setOldPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [passwordError, setPasswordError] = useState("");
+    const [editAge, setEditAge] = useState("");
+    const [editPhone, setEditPhone] = useState("");
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Initialize edit form when profile loads
     useEffect(() => {
-        const name = localStorage.getItem('rabuste_user_name') || 'Guest User';
-        const email = localStorage.getItem('rabuste_user_email') || '';
-        const image = localStorage.getItem('rabuste_user_image') || null;
-        setUserName(name);
-        setUserEmail(email);
-        setProfileImage(image);
-        setEditName(name);
-
-        // Calculate member duration
-        const memberSinceStr = localStorage.getItem('rabuste_member_since');
-        if (memberSinceStr) {
-            const memberSince = new Date(memberSinceStr);
-            const now = new Date();
-            const diffMs = now.getTime() - memberSince.getTime();
-            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const diffMonths = Math.floor(diffDays / 30);
-            const diffYears = Math.floor(diffDays / 365);
-            
-            if (diffDays < 1) setMemberDuration('today');
-            else if (diffDays < 30) setMemberDuration(`${diffDays} day${diffDays !== 1 ? 's' : ''}`);
-            else if (diffMonths < 12) setMemberDuration(`${diffMonths} month${diffMonths !== 1 ? 's' : ''}`);
-            else setMemberDuration(`${diffYears} year${diffYears !== 1 ? 's' : ''}`);
+        if (profile) {
+            setEditName(profile.full_name || "");
+            setEditAge(profile.age?.toString() || "");
+            setEditPhone(profile.phone || "");
         }
-    }, []);
+    }, [profile]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('rabuste_auth');
-        localStorage.removeItem('rabuste_user_email');
-        localStorage.removeItem('rabuste_user_password');
-        localStorage.removeItem('rabuste_user_name');
-        localStorage.removeItem('rabuste_user_image');
-        router.push('/');
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            router.push('/');
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
+        if (!file) return;
+
+        try {
+            // For now, convert to base64. In production, upload to Supabase Storage
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
                 const imageData = reader.result as string;
-                setProfileImage(imageData);
-                localStorage.setItem('rabuste_user_image', imageData);
+
+                // Update profile with new avatar
+                const result = await updateProfile({
+                    avatar_url: imageData
+                });
+
+                if (result.rewards && result.rewards.creditsEarned > 0) {
+                    setRewardMessage(result.rewards.messages.join(' '));
+                    setTimeout(() => setRewardMessage(null), 5000);
+                }
             };
             reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Failed to upload image');
         }
     };
 
-    const handleSaveProfile = () => {
-        setPasswordError("");
-        
-        // Validate password if changing
-        if (oldPassword || newPassword || confirmPassword) {
-            const savedPassword = localStorage.getItem('rabuste_user_password');
-            
-            if (oldPassword !== savedPassword) {
-                setPasswordError('Previous password is incorrect');
-                return;
+    const handleSaveProfile = async () => {
+        setIsSubmitting(true);
+        try {
+            const result = await updateProfile({
+                full_name: editName || null,
+                age: editAge ? parseInt(editAge) : null,
+                phone: editPhone || null
+            });
+
+            setSaveSuccess(true);
+
+            // Show rewards if any
+            if (result.rewards && result.rewards.creditsEarned > 0) {
+                setRewardMessage(result.rewards.messages.join(' '));
+                setTimeout(() => setRewardMessage(null), 5000);
             }
-            
-            if (newPassword.length < 8) {
-                setPasswordError('New password must be at least 8 characters');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                setPasswordError('Passwords do not match');
-                return;
-            }
-            
-            localStorage.setItem('rabuste_user_password', newPassword);
+
+            setTimeout(() => {
+                setSaveSuccess(false);
+                setIsEditing(false);
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            alert('Failed to save profile');
+        } finally {
+            setIsSubmitting(false);
         }
-        
-        // Save name
-        localStorage.setItem('rabuste_user_name', editName);
-        setUserName(editName);
-        
-        // Reset form
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setSaveSuccess(true);
-        
-        setTimeout(() => {
-            setSaveSuccess(false);
-            setIsEditing(false);
-        }, 1500);
     };
 
     const handleCancelEdit = () => {
-        setEditName(userName);
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setPasswordError("");
+        setEditName(profile?.full_name || "");
+        setEditAge(profile?.age?.toString() || "");
+        setEditPhone(profile?.phone || "");
         setIsEditing(false);
     };
 
-    // Calculate totals from actual data
-    const ordersTotal = mockOrders.reduce((sum, order) => sum + order.total, 0);
-    const workshopsTotal = mockWorkshops.length * 500;
-    const artTotal = mockArtCollection.reduce((sum, art) => sum + art.price, 0);
-    const totalSpent = ordersTotal + workshopsTotal + artTotal;
-    const totalOrders = mockOrders.length;
+    // Loading state
+    if (profileLoading || !profile) {
+        return (
+            <>
+                <Navbar />
+                <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#D8CBB8" }}>
+                    <div className="text-center">
+                        <div className="text-2xl font-display text-[#404040]">Loading your profile...</div>
+                    </div>
+                </main>
+            </>
+        );
+    }
+
+    const userName = profile.full_name || user?.email?.split('@')[0] || 'User';
+    const userEmail = profile.email || user?.email || '';
+    const profileImage = profile.avatar_url;
+
+    // Calculate member duration
+    const memberSince = profile.created_at ? new Date(profile.created_at) : new Date();
+    const diffMs = Date.now() - memberSince.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffMonths = Math.floor(diffDays / 30);
+    const memberDuration = diffDays === 0 ? "today" :
+        diffDays < 30 ? `${diffDays} day${diffDays > 1 ? 's' : ''}` :
+            `${diffMonths} month${diffMonths > 1 ? 's' : ''}`;
+
+    // Mock data for workshops and art (until we integrate those)
+    const mockWorkshops: any[] = [];
+    const mockArtCollection: any[] = [];
+
+    const totalOrders = stats?.ordersCount || 0;
+    const totalSpent = stats?.totalSpent || 0;
+    const ordersTotal = totalSpent;
+    const workshopsTotal = (workshops?.length || 0) * 500; // Average workshop price
+    const artTotal = artPieces?.reduce((sum, art) => sum + art.price, 0) || 0;
 
     const generateInitials = (name: string) => {
         if (!name || name.trim() === '') return 'GU';
@@ -153,15 +170,15 @@ export default function ProfilePage() {
     };
 
     const sidebarItems = [
-        { id: "orders", label: "My Orders", icon: ShoppingBag, count: mockOrders.length },
-        { id: "workshops", label: "Workshops", icon: GraduationCap, count: mockWorkshops.length },
-        { id: "art", label: "Art Collection", icon: Palette, count: mockArtCollection.length },
+        { id: "orders", label: "My Orders", icon: ShoppingBag, count: stats?.ordersCount || 0 },
+        { id: "workshops", label: "Workshops", icon: GraduationCap, count: stats?.workshopsCount || 0 },
+        { id: "art", label: "Art Collection", icon: Palette, count: stats?.artPurchasedCount || 0 },
         { id: "points", label: "Reward Points", icon: Coins, href: "/points" },
     ];
 
     const quickStats = [
         { label: "Total Orders", value: totalOrders, icon: ShoppingBag, color: "amber" },
-        { label: "Reward Points", value: mockUserProfile.points, icon: Coins, color: "yellow" },
+        { label: "Reward Points", value: profile.credits || 0, icon: Coins, color: "yellow" },
         { label: "Total Spent", value: `₹${totalSpent.toLocaleString()}`, icon: TrendingUp, color: "green" },
         { label: "Member Tier", value: "Gold", icon: Award, color: "amber" },
     ];
@@ -170,21 +187,39 @@ export default function ProfilePage() {
         <>
             <Navbar />
             <main className="min-h-screen" style={{ backgroundColor: "#D8CBB8" }}>
-                {/* Mobile Layout - Same as before */}
+                {/* Reward Notification Toast */}
+                <AnimatePresence>
+                    {rewardMessage && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -50 }}
+                            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg"
+                        >
+                            {rewardMessage}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Mobile Layout */}
                 <div className="lg:hidden pt-16 pb-20">
-                    <ProfileHeader 
+                    <ProfileHeader
                         user={{
-                            ...mockUserProfile,
+                            name: userName,
+                            email: userEmail,
+                            avatar: profileImage,
+                            memberSince: memberDuration,
+                            points: profile.credits || 0,
                             totalOrders: totalOrders,
                             totalSpent: totalSpent,
-                        }} 
+                        }}
                         isEditing={isEditing}
                         setIsEditing={setIsEditing}
                     />
-                    <OrderHistory orders={mockOrders} totalSpent={ordersTotal} />
-                    <WorkshopsSection workshops={mockWorkshops} totalSpent={workshopsTotal} />
-                    <ArtCollection artPieces={mockArtCollection} />
-                    
+                    <OrderHistory orders={orders || []} totalSpent={ordersTotal} />
+                    <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} />
+                    <ArtCollection artPieces={artPieces || []} />
+
                     <div className="container mx-auto px-4 py-8">
                         <div className="max-w-lg mx-auto flex flex-row items-center justify-center gap-4">
                             <button
@@ -208,11 +243,11 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Desktop Layout - New Premium Design */}
+                {/* Desktop Layout */}
                 <div className="hidden lg:block pt-28 pb-12">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="flex gap-8 items-start">
-                            {/* Left Sidebar - Fixed position with self-start */}
+                            {/* Left Sidebar */}
                             <motion.aside
                                 initial={{ opacity: 0, x: -30 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -256,7 +291,7 @@ export default function ProfilePage() {
                                             </h2>
                                             <p className="text-sm text-[#78716c] mb-3 flex items-center gap-2">
                                                 <Mail className="w-3.5 h-3.5" />
-                                                {userEmail || "user@email.com"}
+                                                {userEmail}
                                             </p>
 
                                             <div className="flex items-center gap-2 text-xs text-[#a8a29e] mb-4">
@@ -309,20 +344,18 @@ export default function ProfilePage() {
                                                     <button
                                                         key={item.id}
                                                         onClick={() => setActiveSection(item.id)}
-                                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
-                                                            isActive
-                                                                ? "bg-[#8B6F47] text-white shadow-md"
-                                                                : "text-[#78716c] hover:bg-[#F5F0EB] hover:text-[#8B6F47]"
-                                                        }`}
+                                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${isActive
+                                                            ? "bg-[#8B6F47] text-white shadow-md"
+                                                            : "text-[#78716c] hover:bg-[#F5F0EB] hover:text-[#8B6F47]"
+                                                            }`}
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <Icon className="w-5 h-5" />
                                                             <span className="font-sans font-medium text-sm">{item.label}</span>
                                                         </div>
                                                         {item.count !== undefined && (
-                                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                                                                isActive ? "bg-white/20" : "bg-[#F5F0EB]"
-                                                            }`}>
+                                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-[#F5F0EB]"
+                                                                }`}>
                                                                 {item.count}
                                                             </span>
                                                         )}
@@ -336,7 +369,7 @@ export default function ProfilePage() {
                                     <div className="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 rounded-2xl p-5 text-white relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
                                         <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-                                        
+
                                         <div className="relative z-10">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -375,11 +408,10 @@ export default function ProfilePage() {
                                                 transition={{ delay: 0.1 * index }}
                                                 className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
                                             >
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                                                    stat.color === "amber" ? "bg-amber-100 text-amber-600" :
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${stat.color === "amber" ? "bg-amber-100 text-amber-600" :
                                                     stat.color === "yellow" ? "bg-yellow-100 text-yellow-600" :
-                                                    "bg-green-100 text-green-600"
-                                                }`}>
+                                                        "bg-green-100 text-green-600"
+                                                    }`}>
                                                     <Icon className="w-5 h-5" />
                                                 </div>
                                                 <p className="text-xs text-[#78716c] font-medium mb-1">{stat.label}</p>
@@ -403,9 +435,9 @@ export default function ProfilePage() {
                                                     {activeSection === "art" && "Art Collection"}
                                                 </h2>
                                                 <p className="text-sm text-[#78716c] mt-1">
-                                                    {activeSection === "orders" && `${mockOrders.length} orders • ₹${ordersTotal.toLocaleString()} spent`}
-                                                    {activeSection === "workshops" && `${mockWorkshops.length} workshops attended`}
-                                                    {activeSection === "art" && `${mockArtCollection.length} pieces • ₹${artTotal.toLocaleString()} value`}
+                                                    {activeSection === "orders" && `${stats?.ordersCount || 0} orders • ₹${ordersTotal.toLocaleString()} spent`}
+                                                    {activeSection === "workshops" && `${workshops?.length || 0} workshops attended`}
+                                                    {activeSection === "art" && `${artPieces?.length || 0} pieces • ₹${artTotal.toLocaleString()} value`}
                                                 </p>
                                             </div>
                                         </div>
@@ -414,13 +446,13 @@ export default function ProfilePage() {
                                     {/* Section Content */}
                                     <div className="p-8">
                                         {activeSection === "orders" && (
-                                            <OrderHistory orders={mockOrders} totalSpent={ordersTotal} isDesktop />
+                                            <OrderHistory orders={orders || []} totalSpent={ordersTotal} isDesktop />
                                         )}
                                         {activeSection === "workshops" && (
-                                            <WorkshopsSection workshops={mockWorkshops} totalSpent={workshopsTotal} isDesktop />
+                                            <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} isDesktop />
                                         )}
                                         {activeSection === "art" && (
-                                            <ArtCollection artPieces={mockArtCollection} isDesktop />
+                                            <ArtCollection artPieces={artPieces || []} isDesktop />
                                         )}
                                     </div>
                                 </div>
@@ -431,7 +463,7 @@ export default function ProfilePage() {
 
                 <Footer />
 
-                {/* Edit Profile Modal - Desktop */}
+                {/* Edit Profile Modal */}
                 <AnimatePresence>
                     {isEditing && (
                         <motion.div
@@ -459,10 +491,10 @@ export default function ProfilePage() {
                                         <X className="w-5 h-5" />
                                     </button>
                                     <h2 className="font-display text-xl font-bold text-white">Edit Profile</h2>
-                                    <p className="text-amber-100/80 text-xs mt-0.5">Update your personal information</p>
+                                    <p className="text-amber-100/80 text-xs mt-0.5">Update your personal information & earn rewards</p>
                                 </div>
 
-                                {/* Modal Content - Scrollable */}
+                                {/* Modal Content */}
                                 <div className="p-6 space-y-4 overflow-y-auto flex-1">
                                     {/* Profile Picture */}
                                     <div className="flex items-center gap-4">
@@ -476,7 +508,7 @@ export default function ProfilePage() {
                                                     className="w-16 h-16 rounded-xl object-cover border-2 border-[#e7e5e4]"
                                                 />
                                             ) : (
-                                                <div className="w-16 h-16 rounded-xl border-2 border-[#e7e5e4] flex items-center justify-center bg-gradient-to-br from-[#8B6F47] to-[#6d5638] text-white text-lg font-bold">
+                                                <div className="w-16 h-16 rounded-xl border-2 border-[#e7e5e4] flex items-center justify-center bg-gradient-to-br from-[#8B6F47] to-[#6d5638]  text-white text-lg font-bold">
                                                     {generateInitials(editName)}
                                                 </div>
                                             )}
@@ -490,27 +522,14 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-xs font-medium text-[#262626] mb-1.5">Profile Photo</p>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#8B6F47] bg-[#F5F0EB] hover:bg-[#e7e0d6] rounded-lg transition-colors"
-                                                >
-                                                    <Upload className="w-3.5 h-3.5" />
-                                                    Upload
-                                                </button>
-                                                {profileImage && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setProfileImage(null);
-                                                            localStorage.removeItem('rabuste_user_image');
-                                                        }}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <X className="w-3.5 h-3.5" />
-                                                        Remove
-                                                    </button>
-                                                )}
-                                            </div>
+                                            <p className="text-[10px] text-green-600 mb-2">Upload photo = ₹50 reward!</p>
+                                            <button
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#8B6F47] bg-[#F5F0EB] hover:bg-[#e7e0d6] rounded-lg transition-colors"
+                                            >
+                                                <Upload className="w-3.5 h-3.5" />
+                                                Upload
+                                            </button>
                                         </div>
                                     </div>
 
@@ -528,6 +547,34 @@ export default function ProfilePage() {
                                         />
                                     </div>
 
+                                    {/* Age Field */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-[#262626] mb-1.5">
+                                            Age {!profile.age && <span className="text-green-600">(₹50 reward!)</span>}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={editAge}
+                                            onChange={(e) => setEditAge(e.target.value)}
+                                            className="w-full px-3 py-2.5 rounded-lg border border-[#e7e5e4] focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20 outline-none transition-all text-[#262626] text-sm"
+                                            placeholder="Enter your age"
+                                        />
+                                    </div>
+
+                                    {/* Phone Field */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-[#262626] mb-1.5">
+                                            Phone Number {!profile.phone && <span className="text-green-600">(₹25 reward!)</span>}
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={editPhone}
+                                            onChange={(e) => setEditPhone(e.target.value)}
+                                            className="w-full px-3 py-2.5 rounded-lg border border-[#e7e5e4] focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20 outline-none transition-all text-[#262626] text-sm"
+                                            placeholder="Enter your phone"
+                                        />
+                                    </div>
+
                                     {/* Email (readonly) */}
                                     <div>
                                         <label className="block text-xs font-medium text-[#262626] mb-1.5">
@@ -540,54 +587,21 @@ export default function ProfilePage() {
                                             className="w-full px-3 py-2.5 rounded-lg border border-[#e7e5e4] bg-[#f5f5f4] text-[#78716c] cursor-not-allowed text-sm"
                                         />
                                     </div>
-
-                                    {/* Password Section */}
-                                    <div className="pt-3 border-t border-[#e7e5e4]">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Lock className="w-3.5 h-3.5 text-[#8B6F47]" />
-                                            <span className="text-xs font-semibold text-[#262626]">Change Password</span>
-                                            <span className="text-[10px] text-[#a8a29e]">(optional)</span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <input
-                                                type="password"
-                                                placeholder="Current Password"
-                                                value={oldPassword}
-                                                onChange={(e) => setOldPassword(e.target.value)}
-                                                className="w-full px-3 py-2.5 rounded-lg border border-[#e7e5e4] focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20 outline-none transition-all text-[#262626] text-sm"
-                                            />
-                                            <input
-                                                type="password"
-                                                placeholder="New Password"
-                                                value={newPassword}
-                                                onChange={(e) => setNewPassword(e.target.value)}
-                                                className="w-full px-3 py-2.5 rounded-lg border border-[#e7e5e4] focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20 outline-none transition-all text-[#262626] text-sm"
-                                            />
-                                            <input
-                                                type="password"
-                                                placeholder="Confirm New Password"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                className="w-full px-3 py-2.5 rounded-lg border border-[#e7e5e4] focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20 outline-none transition-all text-[#262626] text-sm"
-                                            />
-                                            {passwordError && (
-                                                <p className="text-red-500 text-xs">{passwordError}</p>
-                                            )}
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {/* Modal Footer */}
                                 <div className="px-6 py-4 bg-[#f5f5f4] flex items-center justify-end gap-3 flex-shrink-0">
                                     <button
                                         onClick={handleCancelEdit}
-                                        className="px-5 py-2 rounded-lg text-sm font-medium text-[#78716c] hover:bg-white transition-colors"
+                                        disabled={isSubmitting}
+                                        className="px-5 py-2 rounded-lg text-sm font-medium text-[#78716c] hover:bg-white transition-colors disabled:opacity-50"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleSaveProfile}
-                                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium text-white bg-[#8B6F47] hover:bg-[#6d5638] transition-colors"
+                                        disabled={isSubmitting}
+                                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium text-white bg-[#8B6F47] hover:bg-[#6d5638] transition-colors disabled:bg-gray-400"
                                     >
                                         {saveSuccess ? (
                                             <>
@@ -605,7 +619,7 @@ export default function ProfilePage() {
                                         ) : (
                                             <>
                                                 <Save className="w-4 h-4" />
-                                                Save Changes
+                                                {isSubmitting ? 'Saving...' : 'Save Changes'}
                                             </>
                                         )}
                                     </button>

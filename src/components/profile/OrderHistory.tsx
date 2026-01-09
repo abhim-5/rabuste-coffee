@@ -49,12 +49,13 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false }: OrderHis
         }
     };
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
         return new Intl.DateTimeFormat("en-IN", {
             day: "numeric",
             month: "short",
             year: "numeric",
-        }).format(date);
+        }).format(dateObj);
     };
 
     const displayedOrders = showAll ? orders : orders.slice(0, isDesktop ? 5 : 2);

@@ -35,7 +35,6 @@ export function Hero() {
           loop
           playsInline
           preload="auto"
-          poster="/video-poster.jpg"
         />
 
         {/* Overlays */}

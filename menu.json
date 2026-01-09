@@ -1,0 +1,143 @@
+const menuCategories = [
+  {
+    id: "robusta-cold",
+    name: "Robusta Specialty Cold",
+    items: [
+      { name: "Robusta Iced Americano", price: 160, description: "Bold and refreshing robusta espresso over ice and water." },
+      { name: "Robusta Iced Espresso", price: 130, description: "A concentrated kick of chilled robusta coffee." },
+      { 
+        name: "Iced Espresso Special", 
+        price: 250, 
+        description: "Our signature espresso served with a refreshing twist.",
+        variations: [
+          { name: "Tonic", price: 250 },
+          { name: "Ginger Ale", price: 250 },
+          { name: "Orange", price: 250 },
+          { name: "Red Bull", price: 290 }
+        ]
+      },
+      { name: "Cranberry Tonic", price: 270, description: "A tart and sweet coffee mocktail with cranberry notes." },
+      { name: "Robusta Iced Latte", price: 220, description: "Smooth chilled milk meets bold robusta espresso." },
+      { name: "Robusta Affogato", price: 250, description: "Hot espresso poured over a scoop of vanilla ice cream." },
+      { name: "Robusta Classic Frappe", price: 250, description: "Creamy, blended coffee treat perfect for hot days." },
+      { name: "Robusta Hazelnut", price: 260, description: "Iced coffee infused with rich nutty hazelnut flavor." },
+      { name: "Robusta Caramel", price: 260, description: "Sweet and buttery caramel blended with cold coffee." },
+      { name: "Robusta Mocha", price: 270, description: "Decadent chocolate sauce mixed with espresso and milk." },
+      { name: "Robusta Biscoff", price: 270, description: "Indulgent coffee blended with caramelized cookie spread." },
+      { name: "Robusta Vietnamese", price: 240, description: "Traditional strong coffee with sweetened condensed milk." },
+      { name: "Robusta Café Suda", price: 250, description: "A distinct Vietnamese-style iced milk coffee." },
+      { name: "Robusta Robco", price: 290, description: "Our house special cold coffee creation." }
+    ]
+  },
+  {
+    id: "robusta-hot",
+    name: "Robusta Specialty Hot",
+    items: [
+      { name: "Robusta Hot Americano", price: 150, description: "Classic hot water and rich robusta espresso." },
+      { name: "Robusta Hot Espresso", price: 130, description: "Pure, intense shot of hot robusta coffee." },
+      { name: "Robusta Hot Latte", price: 190, description: "Steamed milk poured over bold espresso." },
+      { name: "Robusta Hot Flat White", price: 180, description: "Microfoam milk poured over espresso for a velvety texture." },
+      { name: "Robusta Hot Cappuccino", price: 180, description: "Equal parts espresso, steamed milk, and foam." },
+      { name: "Robusta Mocha", price: 230, description: "Hot espresso with rich chocolate and steamed milk." }
+    ]
+  },
+  {
+    id: "blend-cold",
+    name: "Blend Cold",
+    items: [
+      { name: "Iced Americano", price: 150, description: "Smooth blend espresso served over ice." },
+      { name: "Iced Espresso", price: 120, description: "Chilled shot of our signature house blend." },
+      { 
+        name: "Iced Espresso Special", 
+        price: 230, 
+        description: "House blend espresso with a refreshing mixer.",
+        variations: [
+          { name: "Tonic", price: 230 },
+          { name: "Ginger Ale", price: 230 },
+          { name: "Orange", price: 230 },
+          { name: "Red Bull", price: 270 }
+        ]
+      },
+      { name: "Cranberry Tonic", price: 250, description: "Refreshing coffee tonic with cranberry infusion." },
+      { name: "Iced Latte", price: 210, description: "Creamy milk and blend espresso over ice." },
+      { name: "Affogato", price: 240, description: "Dessert coffee with ice cream and espresso." },
+      { name: "Classic Frappe", price: 240, description: "Blended ice coffee drink, smooth and creamy." },
+      { name: "Hazelnut", price: 250, description: "Nutty hazelnut flavor in a cold coffee blend." },
+      { name: "Caramel", price: 250, description: "Sweet caramel syrup in a refreshing cold latte." },
+      { name: "Mocha", price: 260, description: "Chocolate and coffee blend served ice cold." },
+      { name: "Biscoff", price: 260, description: "Rich cookie butter flavor in a cold coffee." }
+    ]
+  },
+  {
+    id: "blend-hot",
+    name: "Blend Hot",
+    items: [
+      { name: "Hot Americano", price: 140, description: "A classic warming cup of black coffee." },
+      { name: "Hot Espresso", price: 120, description: "A single shot of our smooth house blend." },
+      { name: "Hot Latte", price: 180, description: "Creamy steamed milk meets smooth espresso." },
+      { name: "Hot Flat White", price: 170, description: "Silky milk integrated with espresso." },
+      { name: "Hot Cappuccino", price: 170, description: "Frothy and comforting traditional cappuccino." },
+      { name: "Mocha", price: 220, description: "The perfect mix of hot chocolate and coffee." }
+    ]
+  },
+  {
+    id: "manual-brew",
+    name: "Manual Brew (Peaberry Special)",
+    items: [
+      { 
+        name: "Classic Cold Brew", 
+        price: 220, 
+        description: "Slow-steeped coffee for a smooth, low-acid taste.",
+        variations: [
+          { name: "Regular", price: 220 },
+          { name: "Large", price: 230 },
+          { name: "Tonic", price: 270 },
+          { name: "Ginger Ale", price: 270 },
+          { name: "Orange", price: 270 },
+          { name: "Red Bull", price: 290 }
+        ]
+      },
+      { 
+        name: "V60 Pour Over", 
+        price: 220, 
+        description: "Hand-poured coffee highlighting distinct flavor notes.",
+        variations: [
+          { name: "Hot", price: 220 },
+          { name: "Cold", price: 230 },
+          { name: "Cold Special", price: 240 }
+        ]
+      },
+      { name: "Cranberry Cold Brew Tonic", price: 280, description: "Cold brew mixed with tonic and cranberry." }
+    ]
+  },
+  {
+    id: "shakes-tea",
+    name: "Shakes & Tea",
+    items: [
+      { name: "Chocolate Shake", price: 220, description: "Thick and creamy rich chocolate milkshake." },
+      { name: "Biscoff Shake", price: 250, description: "A shake made with delicious caramelized cookies." },
+      { name: "Nutella Shake", price: 260, description: "Hazelnut cocoa spread blended into a shake." },
+      { name: "Lemon Ice Tea", price: 210, description: "Zesty and refreshing chilled tea." },
+      { name: "Peach Ice Tea", price: 210, description: "Sweet and fruity peach infused iced tea." },
+      { name: "Ginger Fizz", price: 250, description: "Spicy ginger ale with a refreshing kick." },
+      { name: "Classic Orange Mint", price: 250, description: "Citrusy orange paired with cooling mint." }
+    ]
+  },
+  {
+    id: "food",
+    name: "Food",
+    items: [
+      { name: "Fries", price: 150, description: "Crispy golden potato fries." },
+      { name: "Potato Wedges", price: 170, description: "Seasoned thick-cut potato wedges." },
+      { name: "Veg Nuggets", price: 190, description: "Crispy bites of mixed vegetables." },
+      { name: "Pizza", price: 300, description: "Freshly baked pizza with delicious toppings." },
+      { name: "Bagel", price: 100, description: "Classic chewy bagel, toasted to perfection." },
+      { name: "Cream Cheese Bagel", price: 150, description: "Toasted bagel spread with smooth cream cheese." },
+      { name: "Jalapeno Cheese Bagel", price: 200, description: "Spicy jalapeno cream cheese on a bagel." },
+      { name: "Pesto Bagel", price: 230, description: "Bagel topped with aromatic basil pesto." },
+      { name: "Butter Croissant", price: 150, description: "Flaky and buttery French pastry." },
+      { name: "Nutella Croissant", price: 200, description: "Croissant filled with rich Nutella." },
+      { name: "Cream Cheese Croissant", price: 240, description: "Croissant served with cream cheese." }
+    ]
+  }
+];

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Playfair_Display, Cormorant_Garamond, Inter, Oswald } from "next/font/google";
 import "./globals.css";
 import PasswordProtection from "@/components/auth/PasswordProtection";
+import AuthChecker from "@/components/auth/AuthChecker";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -81,10 +83,14 @@ export default function RootLayout({
       </head>
       <body
         className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${oswald.variable} antialiased`}
+        suppressHydrationWarning={true}
       >
-        <PasswordProtection>
-          {children}
-        </PasswordProtection>
+        <AuthProvider>
+          <AuthChecker />
+          <PasswordProtection>
+            {children}
+          </PasswordProtection>
+        </AuthProvider>
       </body>
     </html>
   );

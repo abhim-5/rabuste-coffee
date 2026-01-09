@@ -23,121 +23,28 @@ import {
 import Navbar from "@/components/navbar/Navbar";
 import { WorkshopCard } from "@/components/workshops/WorkshopCard";
 import Footer from "@/components/ui/Footer";
-
-
-// Data
-const upcomingWorkshops = [
-  {
-    id: 1,
-    title: "Latte Art Mastery",
-    description: "Transform your coffee into canvas. Learn professional barista techniques from award-winning instructors.",
-    fullDescription: "Master the art of creating stunning latte art patterns including hearts, rosettas, and tulips. Our expert baristas will guide you through milk texturing, pouring techniques, and advanced pattern creation.",
-    date: "December 28, 2025",
-    time: "2:00 PM - 5:00 PM",
-    duration: "3 hours",
-    price: "₹2,499",
-    spots: "8 spots left",
-    image: "/workshops/1.jpg",
-    instructor: "Priya Malhotra",
-    level: "Beginner to Intermediate",
-    includes: ["All materials & coffee beans", "Certificate of completion", "Recipe booklet", "Complimentary refreshments"],
-  },
-  {
-    id: 2,
-    title: "Coffee Tasting Journey",
-    description: "Explore the world of specialty coffee. Discover flavor profiles from different regions and roasting styles.",
-    fullDescription: "An immersive sensory experience where you'll taste and compare single-origin coffees from around the world. Learn professional cupping techniques and develop your palate.",
-    date: "January 5, 2026",
-    time: "3:00 PM - 6:00 PM",
-    duration: "3 hours",
-    price: "₹1,999",
-    spots: "12 spots left",
-    image: "/workshops/2.jpg",
-    instructor: "Rahul Verma",
-    level: "All levels welcome",
-    includes: ["10+ coffee tastings", "Tasting journal", "Certificate", "Coffee bean samples to take home"],
-  },
-];
-
-const previousWorkshops = [
-  {
-    id: "1",
-    title: "Coffee & Pottery",
-    image: "/workshops/1.jpg",
-    date: "Dec 2025",
-    attendees: 28,
-    description: "Create your own ceramic coffee mug while learning about coffee origins. A hands-on workshop combining artisan crafts with coffee culture.",
-    reviews: [
-      { name: "Meera Kapoor", rating: 5, date: "Dec 28, 2025 • 2:15 PM", comment: "The perfect blend of creativity and coffee! Made my own mug and learned so much about coffee origins. The instructors were patient and knowledgeable. Highly recommend!", avatar: "M" },
-      { name: "Raj Patel", rating: 5, date: "Dec 29, 2025 • 10:45 AM", comment: "Loved every minute! The pottery instructor was amazing and the coffee knowledge I gained was invaluable.", avatar: "R" },
-    ],
-  },
-  {
-    id: "2",
-    title: "Espresso Fundamentals",
-    image: "/workshops/2.jpg",
-    date: "Nov 2025",
-    attendees: 24,
-    description: "Deep dive into the science of espresso extraction. Learn about grind size, tamping pressure, and timing to create the perfect shot.",
-    reviews: [
-      { name: "Arjun Reddy", rating: 5, date: "Nov 15, 2025 • 9:30 AM", comment: "As a home barista, this workshop elevated my game completely. Understanding extraction, grind size, and timing changed everything. Now my espresso rivals the cafe!", avatar: "A" },
-      { name: "Priya Singh", rating: 5, date: "Nov 16, 2025 • 5:20 PM", comment: "Professional instruction and hands-on practice. Best investment for any coffee lover!", avatar: "P" },
-    ],
-  },
-  {
-    id: "3",
-    title: "Coffee & Canvas",
-    image: "/workshops/3.jpg",
-    date: "Oct 2025",
-    attendees: 30,
-    description: "Paint your masterpiece while sipping on premium coffee. Art meets caffeine in this unique creative workshop.",
-    reviews: [
-      { name: "Sudhir Gupta", rating: 5, date: "Oct 20, 2025 • 11:00 AM", comment: "Such a unique concept! Painting while sipping premium coffee in that gorgeous cafe. The art instructor and baristas work together seamlessly. Left with a masterpiece and caffeine buzz!", avatar: "S" },
-      { name: "Karan Mehta", rating: 5, date: "Oct 21, 2025 • 3:45 PM", comment: "Never thought I could paint! The relaxed atmosphere and great coffee made it so enjoyable.", avatar: "K" },
-    ],
-  },
-  {
-    id: "4",
-    title: "Brewing Science",
-    image: "/workshops/4.jpg",
-    date: "Sep 2025",
-    attendees: 22,
-    description: "Explore the chemistry behind perfect coffee. Learn about water temperature, extraction ratios, and brewing methods.",
-    reviews: [
-      { name: "Rahul Menon", rating: 5, date: "Sep 10, 2025 • 1:30 PM", comment: "Finally understand why my home brew never tasted right. The chemistry behind extraction, water temperature, ratios - it's all science! Rabuste explains it beautifully.", avatar: "R" },
-      { name: "Divya Sharma", rating: 5, date: "Sep 12, 2025 • 6:15 PM", comment: "Mind-blowing! I learned so much about the science behind every cup of coffee.", avatar: "D" },
-    ],
-  },
-  {
-    id: "5",
-    title: "Pastry Pairing",
-    image: "/workshops/5.jpg",
-    date: "Aug 2025",
-    attendees: 26,
-    description: "Discover the art of pairing coffee with pastries. Learn which flavors complement each other for the ultimate experience.",
-    reviews: [
-      { name: "Aisha Khan", rating: 5, date: "Aug 05, 2025 • 4:00 PM", comment: "A delicious journey through flavors! Understanding how different pastries pair with coffee types was eye-opening.", avatar: "A" },
-      { name: "Vikram Joshi", rating: 5, date: "Aug 06, 2025 • 10:30 AM", comment: "The tastings were incredible. Now I can impress my guests with perfect pairings!", avatar: "V" },
-    ],
-  },
-  {
-    id: "6",
-    title: "Live Acoustic Night",
-    image: "/workshops/6.jpg",
-    date: "Jul 2025",
-    attendees: 35,
-    description: "An evening of live music, great coffee, and wonderful company. Experience the cafe's cultural side.",
-    reviews: [
-      { name: "Nisha Reddy", rating: 5, date: "Jul 22, 2025 • 8:00 PM", comment: "The atmosphere was magical! Live music + amazing coffee = perfect evening. Can't wait for the next one!", avatar: "N" },
-      { name: "Amit Desai", rating: 5, date: "Jul 23, 2025 • 7:30 PM", comment: "Fantastic acoustic performances and the best coffee in town. Rabuste really knows how to create an experience.", avatar: "A" },
-    ],
-  },
-];
+import { useWorkshops } from "@/hooks/useWorkshops";
+import { WorkshopConfirmation } from "@/components/workshops/WorkshopConfirmation";
+import AuthModal from "@/components/auth/AuthModal";
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 export default function WorkshopsPage() {
+  const { upcomingWorkshops, previousWorkshops, loading, error } = useWorkshops();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [confirmationData, setConfirmationData] = useState<{
+    isOpen: boolean;
+    bookingNumber: string;
+    workshopTitle: string;
+    date: string;
+    time: string;
+    price: number;
+  }>({ isOpen: false, bookingNumber: '', workshopTitle: '', date: '', time: '', price: 0 });
+
   const heroRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedWorkshop, setSelectedWorkshop] = useState<(typeof previousWorkshops)[0] | null>(null);
+  const [selectedWorkshop, setSelectedWorkshop] = useState<any | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -158,7 +65,16 @@ export default function WorkshopsPage() {
 
   const heroScale = useTransform(smoothScrollProgress, [0, 1], [1, 1.1]);
 
-  // Smooth background color transition based on page scroll
+  // Get current user
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <>
       <Navbar />
@@ -168,11 +84,22 @@ export default function WorkshopsPage() {
         <HeroSection heroRef={heroRef} heroScale={heroScale} />
 
         {/* Upcoming Workshops */}
-        <UpcomingWorkshops pageScrollProgress={pageScrollProgress} />
+        <UpcomingWorkshops
+          pageScrollProgress={pageScrollProgress}
+          workshops={upcomingWorkshops}
+          loading={loading}
+          error={error}
+          currentUser={currentUser}
+          onShowAuth={() => setShowAuthModal(true)}
+          onRegistrationComplete={(bookingNumber: string, title: string, date: string, time: string, price: number) => {
+            setConfirmationData({ isOpen: true, bookingNumber, workshopTitle: title, date, time, price });
+          }}
+        />
 
         {/* Previous Workshops Gallery */}
         <PreviousWorkshops
           pageScrollProgress={pageScrollProgress}
+          workshops={previousWorkshops}
           selectedWorkshop={selectedWorkshop}
           setSelectedWorkshop={setSelectedWorkshop}
         />
@@ -185,6 +112,22 @@ export default function WorkshopsPage() {
 
         {/* Request Workshop Form */}
         <RequestWorkshopSection pageScrollProgress={pageScrollProgress} />
+
+        {/* Confirmation Modals */}
+        <WorkshopConfirmation
+          isOpen={confirmationData.isOpen}
+          onClose={() => setConfirmationData({ ...confirmationData, isOpen: false })}
+          bookingNumber={confirmationData.bookingNumber}
+          workshopTitle={confirmationData.workshopTitle}
+          date={confirmationData.date}
+          time={confirmationData.time}
+          price={confirmationData.price}
+        />
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          buttonRect={undefined}
+        />
 
         {/* Footer */}
         <Footer />
@@ -248,10 +191,30 @@ function HeroSection({ heroRef, heroScale }: any) {
   );
 }
 
-// Upcoming Workshops - Creative Magazine-Style Layout
-function UpcomingWorkshops({ pageScrollProgress }: any) {
+//Upcoming Workshops - Creative Magazine-Style Layout
+function UpcomingWorkshops({ pageScrollProgress, workshops, loading, error, currentUser, onShowAuth, onRegistrationComplete }: any) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+
+  if (loading) {
+    return (
+      <section className="relative py-24">
+        <div className="container mx-auto px-4 text-center text-[#404040]">
+          <div className="text-xl">Loading workshops...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="relative py-24">
+        <div className="container mx-auto px-4 text-center text-red-600">
+          <div className="text-xl">Failed to load workshops. Please try again later.</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="upcoming" ref={sectionRef} className="relative py-24 overflow-hidden">
@@ -265,7 +228,7 @@ function UpcomingWorkshops({ pageScrollProgress }: any) {
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center mb-12 lg:mb-16 px-4"
         >
@@ -276,7 +239,7 @@ function UpcomingWorkshops({ pageScrollProgress }: any) {
           {/* Title Separator */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-32 h-8 lg:w-40 lg:h-10 mb-6"
           >
@@ -295,8 +258,16 @@ function UpcomingWorkshops({ pageScrollProgress }: any) {
 
         {/* Workshops Grid - Alternating Diagonal Layout */}
         <div className="space-y-32">
-          {upcomingWorkshops.map((workshop, index) => (
-            <UpcomingWorkshopCard key={workshop.id} workshop={workshop} index={index} isInView={isInView} />
+          {workshops.map((workshop: any, index: number) => (
+            <UpcomingWorkshopCard
+              key={workshop.id}
+              workshop={workshop}
+              index={index}
+              isInView={isInView}
+              currentUser={currentUser}
+              onShowAuth={onShowAuth}
+              onRegistrationComplete={onRegistrationComplete}
+            />
           ))}
         </div>
       </div>
@@ -304,10 +275,11 @@ function UpcomingWorkshops({ pageScrollProgress }: any) {
   );
 }
 
-function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
+function UpcomingWorkshopCard({ workshop, index, isInView, currentUser, onShowAuth, onRegistrationComplete }: any) {
   const isEven = index % 2 === 0;
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [focusedField, setFocusedField] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cardRef = useRef(null);
 
   /* Parallax Logic */
@@ -323,17 +295,54 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
 
   const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Registration submitted for ${workshop.title}!`);
-    setFormData({ name: "", email: "", phone: "", message: "" });
+
+    if (!currentUser) {
+      if (onShowAuth) onShowAuth();
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/workshops/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workshopId: workshop.id,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && onRegistrationComplete) {
+        onRegistrationComplete(
+          data.bookingNumber,
+          data.registration.workshopTitle,
+          data.registration.date,
+          data.registration.time,
+          data.registration.price
+        );
+        setFormData({ name: "", email: "", phone: "" });
+      } else {
+        alert(data.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Failed to register. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, x: isEven ? -100 : 100, rotate: isEven ? -2 : 2 }}
-      animate={isInView ? { opacity: 1, x: 0, rotate: 0 } : {}}
+      animate={{ opacity: 1, x: 0, rotate: 0 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center ${isEven ? "" : "lg:grid-flow-dense"}`}
     >
@@ -354,7 +363,7 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
         <div className="relative aspect-[4/5] overflow-hidden rounded-sm shadow-2xl w-full max-w-[90%] mx-auto">
           <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
             <Image
-              src={workshop.image}
+              src={workshop.image_url || '/workshops/default.jpg'}
               alt={workshop.title}
               fill
               className="object-cover"
@@ -370,7 +379,7 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
 
         {/* Handwritten note effect */}
         <div className="absolute -top-4 -left-4 bg-amber-100 p-4 shadow-lg rotate-[-5deg] border border-amber-200">
-          <p className="font-cormorant italic text-[#404040] text-sm">&quot;{workshop.spots}&quot;</p>
+          <p className="font-cormorant italic text-[#404040] text-sm">&quot;{workshop.available_spots} spots left&quot;</p>
         </div>
       </motion.div>
 
@@ -415,6 +424,7 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
         </div>
 
         {/* Workshop Details with Scroll Animation */}
+        {/* Workshop Details with Scroll Animations */}
         <motion.div
           initial={{ opacity: 0, filter: "blur(8px)" }}
           whileInView={{ opacity: 1, filter: "blur(0px)" }}
@@ -426,14 +436,20 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
             <Calendar className="w-5 h-5 text-[#8B6F47]" />
             <div>
               <p className="text-xs text-[#404040]/60 font-inter">Date</p>
-              <p className="text-sm font-semibold text-[#404040] font-inter">{workshop.date}</p>
+              <p className="text-sm font-semibold text-[#404040] font-inter">
+                {new Date(workshop.start_date).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-white/50 p-3 rounded-sm">
             <Clock className="w-5 h-5 text-[#8B6F47]" />
             <div>
               <p className="text-xs text-[#404040]/60 font-inter">Time</p>
-              <p className="text-sm font-semibold text-[#404040] font-inter">{workshop.time}</p>
+              <p className="text-sm font-semibold text-[#404040] font-inter">{workshop.start_time}</p>
             </div>
           </div>
         </motion.div>
@@ -441,7 +457,7 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
         {/* Registration Form - Elegant Style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
           className="bg-white/70 backdrop-blur-sm p-8 lg:px-12 rounded-sm shadow-xl border border-[#8B6F47]/10"
         >
@@ -511,20 +527,21 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full py-5 bg-[#404040] text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8 flex items-center justify-center gap-2 group"
+              disabled={isSubmitting}
+              className="w-full py-5 bg-[#404040] disabled:bg-gray-400 text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8 flex items-center justify-center gap-2 group"
             >
-              REGISTER NOW
+              {isSubmitting ? 'REGISTERING...' : 'REGISTER NOW'}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </motion.button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-[#8B6F47]/20 flex items-center justify-between">
             <div>
-              <p className="text-3xl font-display font-bold text-[#8B6F47]">{workshop.price}</p>
+              <p className="text-3xl font-display font-bold text-[#8B6F47]">₹{workshop.price.toLocaleString('en-IN')}</p>
               <p className="text-xs text-[#404040]/60 font-serif mt-1">Includes all materials & refreshments</p>
             </div>
             <div className="text-right">
-              <p className="text-sm font-serif text-[#404040] font-semibold">{workshop.spots}</p>
+              <p className="text-sm font-serif text-[#404040] font-semibold">{workshop.available_spots} spots left</p>
               <p className="text-xs text-[#404040]/60 font-serif">Available</p>
             </div>
           </div>
@@ -535,7 +552,7 @@ function UpcomingWorkshopCard({ workshop, index, isInView }: any) {
 }
 
 // Previous Workshops - Stacking Cards Effect
-function PreviousWorkshops({ pageScrollProgress, selectedWorkshop, setSelectedWorkshop }: any) {
+function PreviousWorkshops({ pageScrollProgress, workshops, selectedWorkshop, setSelectedWorkshop }: any) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeReviewWorkshopId, setActiveReviewWorkshopId] = useState<string | null>(null);
 
@@ -572,7 +589,7 @@ function PreviousWorkshops({ pageScrollProgress, selectedWorkshop, setSelectedWo
       </div>
 
       <div className="flex flex-col items-center">
-        {previousWorkshops.map((workshop, index) => (
+        {workshops.map((workshop: any, index: number) => (
           <WorkshopCard
             key={workshop.id}
             workshop={workshop}
@@ -775,7 +792,7 @@ function ImpactSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-lg lg:text-xl font-serif text-[#404040]/80 text-center max-w-3xl leading-relaxed italic"
           >
-            "Every workshop is a journey. Every participant, a story. Together, we've created a community 
+            "Every workshop is a journey. Every participant, a story. Together, we've created a community
             where coffee isn't just a drink—it's a canvas for creativity, connection, and craft."
           </motion.p>
         </motion.div>
@@ -841,13 +858,13 @@ function ImpactSection() {
           <div className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-sm rounded-3xl p-8 lg:p-12 shadow-2xl border-2 border-[#8B6F47]/20">
             {/* Quote Icon */}
             <Quote className="absolute top-6 left-6 w-12 h-12 text-[#8B6F47]/20" />
-            
+
             <div className="relative z-10">
               <p className="text-2xl lg:text-3xl font-serif text-[#2A2A2A] italic leading-relaxed text-center mb-6">
-                "These workshops aren't just about coffee—they're about discovering your passion, 
+                "These workshops aren't just about coffee—they're about discovering your passion,
                 connecting with like-minded souls, and creating memories that last a lifetime."
               </p>
-              
+
               <div className="flex items-center justify-center gap-4">
                 <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-[#8B6F47]/20">
                   <Image
@@ -880,20 +897,57 @@ function ImpactSection() {
 function RequestWorkshopSection({ pageScrollProgress }: any) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", workshop: "", message: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    workshop: "",
+    instagram: "",
+    message: ""
+  });
   const [focusedField, setFocusedField] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Workshop request submitted successfully!");
-    setFormData({ name: "", email: "", phone: "", workshop: "", message: "" });
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/workshops/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          workshopTheme: formData.workshop,
+          additionalDetails: formData.message,
+          instagramHandle: formData.instagram
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('✅ Workshop request submitted successfully! We\'ll contact you soon.');
+        setFormData({ name: "", email: "", phone: "", workshop: "", instagram: "", message: "" });
+      } else {
+        alert('❌ ' + (data.error || 'Failed to submit request'));
+      }
+    } catch (error) {
+      console.error('Request error:', error);
+      alert('❌ Failed to submit request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputs = [
-    { name: 'name', label: 'Full Name', type: 'text' },
-    { name: 'email', label: 'Email Address', type: 'email' },
-    { name: 'phone', label: 'Phone Number', type: 'tel' },
-    { name: 'workshop', label: 'Workshop Theme/Idea', type: 'text' },
+    { name: 'name', label: 'Full Name', type: 'text', required: true },
+    { name: 'email', label: 'Email Address', type: 'email', required: true },
+    { name: 'phone', label: 'Phone Number', type: 'tel', required: true },
+    { name: 'workshop', label: 'Workshop Theme/Idea', type: 'text', required: true },
+    { name: 'instagram', label: 'Instagram Handle (Optional)', type: 'text', required: false },
   ];
 
   return (
@@ -958,6 +1012,7 @@ function RequestWorkshopSection({ pageScrollProgress }: any) {
                     type={input.type}
                     id={input.name}
                     name={input.name}
+                    required={input.required}
                     value={formData[input.name as keyof typeof formData] || ''}
                     onChange={(e) => setFormData({ ...formData, [input.name]: e.target.value })}
                     className="w-full bg-transparent border-b border-[#8B6F47]/30 py-4 text-[#404040] text-lg focus:outline-none focus:border-[#8B6F47] transition-colors duration-300 peer placeholder-transparent"
@@ -1006,9 +1061,10 @@ function RequestWorkshopSection({ pageScrollProgress }: any) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-5 bg-[#404040] text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8"
+                disabled={isSubmitting}
+                className="w-full py-5 bg-[#404040] disabled:bg-gray-400 disabled:cursor-not-allowed text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8"
               >
-                Submit Request
+                {isSubmitting ? 'SUBMITTING...' : 'Submit Request'}
               </motion.button>
             </form>
           </motion.div>

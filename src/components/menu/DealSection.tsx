@@ -111,7 +111,7 @@ export function DealSection({
                                 onCardClick={onItemClick}
                                 onAddToCart={onAddToCart}
                                 onUpdateQuantity={onUpdateQuantity}
-                                cartQuantity={getCartQuantity(item.id)}
+                                cartQuantity={getCartQuantity(String(item.id))}
                             />
                         </motion.div>
                     ))}

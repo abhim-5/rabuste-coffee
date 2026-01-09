@@ -1,0 +1,133 @@
+// Prisma Schema for Rabuste Coffee
+// This schema will be automatically generated from your Supabase database
+// using: npm run prisma:pull
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// After running `prisma db pull`, this file will contain all your database tables
+// For now, we define the basic structure manually
+
+model profiles {
+  id          String   @id @db.Uuid
+  email       String?
+  full_name   String?
+  age         Int?
+  avatar_url  String?
+  role        String   @default("customer")
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model products {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String   @default("")
+  price       Decimal  @default(0) @db.Decimal(10, 2)
+  category    String   @default("coffee")
+  image_url   String?
+  available   Boolean  @default(true)
+  created_by  String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model orders {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  status     String   @default("pending")
+  total      Decimal  @default(0) @db.Decimal(10, 2)
+  notes      String   @default("")
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model order_items {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id     String   @db.Uuid
+  product_id   String?  @db.Uuid
+  product_name String
+  quantity     Int      @default(1)
+  price        Decimal  @default(0) @db.Decimal(10, 2)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model workshops {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  description      String   @default("")
+  start_date       DateTime @db.Timestamptz(6)
+  end_date         DateTime? @db.Timestamptz(6)
+  price            Decimal  @default(0) @db.Decimal(10, 2)
+  max_participants Int?
+  enrolled_count   Int      @default(0)
+  image_url        String?
+  instructor       String   @default("")
+  location         String   @default("")
+  available        Boolean  @default(true)
+  created_by       String?  @db.Uuid
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model workshop_enrollments {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workshop_id String?  @db.Uuid
+  user_id     String?  @db.Uuid
+  enrolled_at DateTime @default(now()) @db.Timestamptz(6)
+  status      String   @default("enrolled")
+
+  @@unique([workshop_id, user_id])
+}
+
+model art_pieces {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  artist_name  String
+  description  String   @default("")
+  price        Decimal  @default(0) @db.Decimal(10, 2)
+  image_url    String?
+  dimensions   String   @default("")
+  medium       String   @default("")
+  year_created Int?
+  available    Boolean  @default(true)
+  created_by   String?  @db.Uuid
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model art_purchases {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  art_piece_id   String?  @db.Uuid
+  user_id        String?  @db.Uuid
+  purchased_at   DateTime @default(now()) @db.Timestamptz(6)
+  purchase_price Decimal  @db.Decimal(10, 2)
+
+  @@unique([art_piece_id, user_id])
+}
+
+model points_transactions {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  points      Int
+  type        String
+  source      String
+  description String   @default("")
+  order_id    String?  @db.Uuid
+  workshop_id String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model user_points {
+  user_id         String   @id @db.Uuid
+  total_points    Int      @default(0)
+  total_earned    Int      @default(0)
+  total_redeemed  Int      @default(0)
+  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+}

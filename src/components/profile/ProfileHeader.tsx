@@ -5,6 +5,7 @@ import { Camera, Edit2, Award, ShoppingBag, Coins, Save, X, Upload, Lock } from 
 import Image from "next/image";
 import { UserProfile } from "@/types/menu";
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProfileHeaderProps {
     user: UserProfile;
@@ -13,10 +14,12 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderProps) {
+    const { user: authUser } = useAuth();
     const [editedUser, setEditedUser] = useState(user);
     const [userEmail, setUserEmail] = useState('');
     const [userName, setUserName] = useState('');
     const [profileImage, setProfileImage] = useState<string>('');
+    const [memberDuration, setMemberDuration] = useState('just now');
     const [passwordData, setPasswordData] = useState({
         oldPassword: '',
         newPassword: '',
@@ -25,26 +28,45 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
     const [passwordError, setPasswordError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Load user data from localStorage
+    // Load user data from mock auth
     useEffect(() => {
-        const email = localStorage.getItem('rabuste_user_email') || '';
-        const name = localStorage.getItem('rabuste_user_name') || 'Guest User';
-        const savedImage = localStorage.getItem('rabuste_user_image') || '';
-        
-        setUserEmail(email);
-        setUserName(name);
-        setProfileImage(savedImage);
-        
-        setEditedUser({
-            ...user,
-            name: name,
-            email: email,
-        });
-    }, []);
+        if (authUser) {
+            const email = authUser?.email || '';
+            const name = authUser?.user_metadata?.full_name || authUser?.user_metadata?.name || 'User';
+            const image = authUser?.user_metadata?.picture || authUser?.user_metadata?.avatar_url || '';
+
+            setUserEmail(email);
+            setUserName(name);
+            setProfileImage(image);
+
+            // Calculate member duration from auth user creation
+            if (authUser.created_at) {
+                const memberSince = new Date(authUser.created_at);
+                const now = new Date();
+                const diffMs = now.getTime() - memberSince.getTime();
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const diffMonths = Math.floor(diffDays / 30);
+
+                if (diffDays === 0) {
+                    setMemberDuration("today");
+                } else if (diffDays < 30) {
+                    setMemberDuration(`${diffDays} day${diffDays > 1 ? 's' : ''}`);
+                } else {
+                    setMemberDuration(`${diffMonths} month${diffMonths > 1 ? 's' : ''}`);
+                }
+            }
+
+            setEditedUser({
+                ...user,
+                name: name,
+                email: email,
+            });
+        }
+    }, [authUser]);
 
     // Generate initials from first name
     const generateInitials = (name: string) => {
-        if (!name || name.trim() === '') return 'GU'; // Guest User
+        if (!name || name.trim() === '') return 'U'; // User
         const firstName = name.trim().split(' ')[0];
         return firstName.slice(0, 2).toUpperCase();
     };
@@ -56,65 +78,41 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
             reader.onloadend = () => {
                 const imageData = reader.result as string;
                 setProfileImage(imageData);
-                localStorage.setItem('rabuste_user_image', imageData);
+                // TODO: Upload to Supabase storage in future update
             };
             reader.readAsDataURL(file);
         }
     };
-    
-    // Calculate real member duration from localStorage
+
+    // Calculate real member duration from state
     const getMemberDuration = (): string => {
-        const memberSinceStr = localStorage.getItem('rabuste_member_since');
-        if (!memberSinceStr) return 'just now';
-        
-        const memberSince = new Date(memberSinceStr);
-        const now = new Date();
-        const diffMs = now.getTime() - memberSince.getTime();
-        
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30));
-        const diffYears = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365));
-        
-        if (diffMinutes < 1) return 'just now';
-        if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-        if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-        if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-        if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
-        return `${diffYears} year${diffYears !== 1 ? 's' : ''}`;
+        return memberDuration;
     };
-    
-    const [memberDuration, setMemberDuration] = useState('');
-    
-    useEffect(() => {
-        setMemberDuration(getMemberDuration());
-    }, []);
 
     const handleSave = () => {
         // Validate password if changing
         if (passwordData.oldPassword || passwordData.newPassword || passwordData.confirmPassword) {
             const savedPassword = localStorage.getItem('rabuste_user_password');
-            
+
             if (passwordData.oldPassword !== savedPassword) {
                 setPasswordError('Previous password is incorrect');
                 return;
             }
-            
+
             if (passwordData.newPassword.length < 8) {
                 setPasswordError('New password must be at least 8 characters');
                 return;
             }
-            
+
             if (passwordData.newPassword !== passwordData.confirmPassword) {
                 setPasswordError('Passwords do not match');
                 return;
             }
-            
+
             // Save new password
             localStorage.setItem('rabuste_user_password', passwordData.newPassword);
         }
-        
+
         // Save to localStorage
         localStorage.setItem('rabuste_user_name', editedUser.name);
         setUserName(editedUser.name);
@@ -175,7 +173,7 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
                                         {generateInitials(userName)}
                                     </div>
                                 )}
-                                
+
                                 {/* Hidden file input */}
                                 <input
                                     ref={fileInputRef}
@@ -184,7 +182,7 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
                                     onChange={handleImageUpload}
                                     className="hidden"
                                 />
-                                
+
                                 {/* Upload/Remove buttons - Only show in edit mode */}
                                 {isEditing && (
                                     <>
@@ -201,7 +199,7 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
                                         >
                                             <Upload className="w-5 h-5" />
                                         </motion.button>
-                                        
+
                                         {/* Remove Image Button - Only show if user has uploaded an image */}
                                         {profileImage && (
                                             <motion.button
@@ -247,7 +245,7 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
                                 <p className="font-sans text-base lg:text-lg text-amber-100 mb-1">
                                     {userEmail}
                                 </p>
-                                
+
                                 {/* Password Change Fields */}
                                 {isEditing && (
                                     <div className="mt-4 space-y-3 w-full max-w-md">
@@ -281,7 +279,7 @@ export function ProfileHeader({ user, isEditing, setIsEditing }: ProfileHeaderPr
                                         )}
                                     </div>
                                 )}
-                                
+
                                 <div className="flex items-center justify-center lg:justify-start gap-2 text-amber-100 mt-3">
                                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                                     <span className="font-sans text-sm">

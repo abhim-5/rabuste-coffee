@@ -1,29 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { MenuItem, CartItem, CartState } from "@/types/menu";
+import { MenuItem, CartItem, CartState, Variation } from "@/types/menu";
 
 const CART_STORAGE_KEY = "rabuste-cart";
 
 const calculateSubtotal = (
     menuItem: MenuItem,
     quantity: number,
-    selectedVariations?: Record<string, string>
+    selectedVariation?: Variation
 ): number => {
-    let price = menuItem.price;
-
-    if (selectedVariations && menuItem.variations) {
-        menuItem.variations.forEach((variation) => {
-            const selectedOptionId = selectedVariations[variation.id];
-            if (selectedOptionId) {
-                const option = variation.options.find((opt) => opt.id === selectedOptionId);
-                if (option?.priceModifier) {
-                    price += option.priceModifier;
-                }
-            }
-        });
-    }
-
+    // If variation is selected, use variation price, otherwise use menu item price
+    const price = selectedVariation ? selectedVariation.price : menuItem.price;
     return price * quantity;
 };
 
@@ -54,31 +42,35 @@ export function useCart() {
         (
             menuItem: MenuItem,
             quantity: number = 1,
-            selectedVariations?: Record<string, string>
+            selectedVariation?: Variation
         ) => {
             setCart((prevCart) => {
+                // Each variation is a separate cart item
+                // Match by both item ID AND variation name
                 const existingItemIndex = prevCart.items.findIndex(
                     (item) =>
                         item.menuItem.id === menuItem.id &&
-                        JSON.stringify(item.selectedVariations) === JSON.stringify(selectedVariations)
+                        item.selectedVariation?.name === selectedVariation?.name
                 );
 
                 let newItems: CartItem[];
 
                 if (existingItemIndex > -1) {
+                    // Update existing cart item quantity
                     newItems = [...prevCart.items];
                     const newQuantity = newItems[existingItemIndex].quantity + quantity;
                     newItems[existingItemIndex] = {
                         ...newItems[existingItemIndex],
                         quantity: newQuantity,
-                        subtotal: calculateSubtotal(menuItem, newQuantity, selectedVariations),
+                        subtotal: calculateSubtotal(menuItem, newQuantity, selectedVariation),
                     };
                 } else {
+                    // Add new cart item (new variation = new item)
                     const newItem: CartItem = {
                         menuItem,
                         quantity,
-                        selectedVariations,
-                        subtotal: calculateSubtotal(menuItem, quantity, selectedVariations),
+                        selectedVariation,
+                        subtotal: calculateSubtotal(menuItem, quantity, selectedVariation),
                     };
                     newItems = [...prevCart.items, newItem];
                 }
@@ -113,7 +105,7 @@ export function useCart() {
             newItems[index] = {
                 ...item,
                 quantity,
-                subtotal: calculateSubtotal(item.menuItem, quantity, item.selectedVariations),
+                subtotal: calculateSubtotal(item.menuItem, quantity, item.selectedVariation),
             };
 
             const total = newItems.reduce((sum, item) => sum + item.subtotal, 0);

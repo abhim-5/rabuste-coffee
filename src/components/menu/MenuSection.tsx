@@ -19,12 +19,13 @@ interface MenuSectionProps {
 
 const categoryFilters: { id: MenuCategory | "all"; label: string }[] = [
     { id: "all", label: "All" },
-    { id: "coffee", label: "Coffee" },
-    { id: "pizza", label: "Pizza" },
-    { id: "pastries", label: "Pastries" },
-    { id: "sandwiches", label: "Sandwiches" },
-    { id: "beverages", label: "Beverages" },
-    { id: "desserts", label: "Desserts" },
+    { id: "robusta-cold", label: "Robusta Cold" },
+    { id: "robusta-hot", label: "Robusta Hot" },
+    { id: "blend-cold", label: "Blend Cold" },
+    { id: "blend-hot", label: "Blend Hot" },
+    { id: "manual-brew", label: "Manual Brew" },
+    { id: "shakes-tea", label: "Shakes & Tea" },
+    { id: "food", label: "Food" },
 ];
 
 export function MenuSection({
@@ -102,8 +103,8 @@ export function MenuSection({
                     }
                 });
             },
-            { 
-                threshold: [0, 0.1], 
+            {
+                threshold: [0, 0.1],
                 rootMargin: "-120px 0px -75% 0px"
             }
         );
@@ -132,21 +133,21 @@ export function MenuSection({
     }, []);
 
     let filteredItems = selectedCategory === "all"
-        ? items.filter(item => 
+        ? items.filter(item =>
             item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.description.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        : items.filter(item => 
+        : items.filter(item =>
             item.category === selectedCategory &&
             (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.description.toLowerCase().includes(searchQuery.toLowerCase()))
+                item.description.toLowerCase().includes(searchQuery.toLowerCase()))
         );
 
     // Apply advanced filters
     if (advancedFilters.dealsOnly) {
         filteredItems = filteredItems.filter(item => item.isDealOfTheDay || item.originalPrice);
     }
-    
+
     if (advancedFilters.priceRange !== "all") {
         if (advancedFilters.priceRange === "under100") {
             filteredItems = filteredItems.filter(item => item.price < 100);
@@ -244,11 +245,11 @@ export function MenuSection({
                                     }}
                                     className="flex items-center gap-2 px-4 py-3 border-[0.5px] border-[#8B6F47] bg-[#D8CBB8] text-[#262626] font-sans text-sm transition-all cursor-pointer whitespace-nowrap hover:bg-[#c9baa7]"
                                 >
-                                    {sortBy === "none" ? "Sort By" : 
-                                     sortBy === "price-low" ? "Price: Low to High" :
-                                     sortBy === "price-high" ? "Price: High to Low" : "Highest Rated"}
+                                    {sortBy === "none" ? "Sort By" :
+                                        sortBy === "price-low" ? "Price: Low to High" :
+                                            sortBy === "price-high" ? "Price: High to Low" : "Highest Rated"}
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" className={`transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}>
-                                        <path fill="#8B6F47" d="M6 9L1 4h10z"/>
+                                        <path fill="#8B6F47" d="M6 9L1 4h10z" />
                                     </svg>
                                 </button>
                                 {showSortDropdown && (
@@ -265,11 +266,10 @@ export function MenuSection({
                                                     setSortBy(option.value as any);
                                                     setShowSortDropdown(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-3 font-sans text-sm transition-all ${
-                                                    sortBy === option.value
-                                                        ? "bg-[#8B6F47] text-white"
-                                                        : "bg-white text-[#262626] hover:bg-[#f5f5f0]"
-                                                }`}
+                                                className={`w-full text-left px-4 py-3 font-sans text-sm transition-all ${sortBy === option.value
+                                                    ? "bg-[#8B6F47] text-white"
+                                                    : "bg-white text-[#262626] hover:bg-[#f5f5f0]"
+                                                    }`}
                                             >
                                                 {option.label}
                                             </button>
@@ -279,11 +279,10 @@ export function MenuSection({
                             </div>
                             <button
                                 onClick={() => setAdvancedFilters(prev => ({ ...prev, dealsOnly: !prev.dealsOnly }))}
-                                className={`px-4 py-3 border-[0.5px] font-sans text-sm font-semibold transition-all whitespace-nowrap ${
-                                    advancedFilters.dealsOnly
-                                        ? "bg-[#8B6F47] text-white border-[#8B6F47]"
-                                        : "bg-[#D8CBB8] text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
-                                }`}
+                                className={`px-4 py-3 border-[0.5px] font-sans text-sm font-semibold transition-all whitespace-nowrap ${advancedFilters.dealsOnly
+                                    ? "bg-[#8B6F47] text-white border-[#8B6F47]"
+                                    : "bg-[#D8CBB8] text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
+                                    }`}
                             >
                                 Deals Only
                             </button>
@@ -296,10 +295,10 @@ export function MenuSection({
                                     className="flex items-center gap-2 px-4 py-3 border-[0.5px] border-[#8B6F47] bg-[#D8CBB8] text-[#262626] font-sans text-sm font-semibold transition-all cursor-pointer whitespace-nowrap hover:bg-[#c9baa7]"
                                 >
                                     {advancedFilters.priceRange === "all" ? "All Prices" :
-                                     advancedFilters.priceRange === "under100" ? "Under ₹100" :
-                                     advancedFilters.priceRange === "100-200" ? "₹100 - ₹200" : "Above ₹200"}
+                                        advancedFilters.priceRange === "under100" ? "Under ₹100" :
+                                            advancedFilters.priceRange === "100-200" ? "₹100 - ₹200" : "Above ₹200"}
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" className={`transition-transform ${showPriceDropdown ? 'rotate-180' : ''}`}>
-                                        <path fill="#8B6F47" d="M5 8L0 3h10z"/>
+                                        <path fill="#8B6F47" d="M5 8L0 3h10z" />
                                     </svg>
                                 </button>
                                 {showPriceDropdown && (
@@ -316,11 +315,10 @@ export function MenuSection({
                                                     setAdvancedFilters(prev => ({ ...prev, priceRange: option.value as any }));
                                                     setShowPriceDropdown(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-3 font-sans text-sm font-semibold transition-all ${
-                                                    advancedFilters.priceRange === option.value
-                                                        ? "bg-[#8B6F47] text-white"
-                                                        : "bg-white text-[#262626] hover:bg-[#f5f5f0]"
-                                                }`}
+                                                className={`w-full text-left px-4 py-3 font-sans text-sm font-semibold transition-all ${advancedFilters.priceRange === option.value
+                                                    ? "bg-[#8B6F47] text-white"
+                                                    : "bg-white text-[#262626] hover:bg-[#f5f5f0]"
+                                                    }`}
                                             >
                                                 {option.label}
                                             </button>
@@ -347,9 +345,8 @@ export function MenuSection({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className={`sticky z-30 py-4 mb-8 lg:mb-10 shadow-md transition-all duration-300 ${
-                            scrollDirection === "down" ? "top-0" : "top-[64px] lg:top-[80px]"
-                        }`}
+                        className={`sticky z-30 py-4 mb-8 lg:mb-10 shadow-md transition-all duration-300 ${scrollDirection === "down" ? "top-0" : "top-[64px] lg:top-[80px]"
+                            }`}
                         style={{ backgroundColor: "#D8CBB8" }}
                     >
                         <div className="flex flex-wrap justify-center gap-2 lg:gap-3">
@@ -357,20 +354,18 @@ export function MenuSection({
                                 const isLongWord = filter.label.length > 8;
                                 const isSelected = selectedCategory === filter.id;
                                 const isHighlighted = selectedCategory === "all" && activeCategory === filter.id;
-                                
+
                                 return (
                                     <button
                                         key={filter.id}
                                         onClick={() => setSelectedCategory(filter.id)}
-                                        className={`px-3 lg:w-32 py-2 lg:py-2.5 font-sans font-semibold transition-all border-[0.5px] ${
-                                            isLongWord ? "text-xs lg:text-sm" : "text-sm lg:text-base"
-                                        } ${
-                                            isSelected
+                                        className={`px-3 lg:w-32 py-2 lg:py-2.5 font-sans font-semibold transition-all border-[0.5px] ${isLongWord ? "text-xs lg:text-sm" : "text-sm lg:text-base"
+                                            } ${isSelected
                                                 ? "bg-[#8B6F47] text-white border-[#8B6F47] shadow-md"
                                                 : isHighlighted
-                                                ? "bg-[#daa520] text-white border-[#daa520] shadow-sm"
-                                                : "bg-[#D8CBB8] text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
-                                        }`}
+                                                    ? "bg-[#daa520] text-white border-[#daa520] shadow-sm"
+                                                    : "bg-[#D8CBB8] text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
+                                            }`}
                                     >
                                         {filter.label}
                                     </button>
@@ -427,7 +422,7 @@ export function MenuSection({
                                                         onCardClick={onItemClick}
                                                         onAddToCart={onAddToCart}
                                                         onUpdateQuantity={onUpdateQuantity}
-                                                        cartQuantity={getCartQuantity(item.id)}
+                                                        cartQuantity={getCartQuantity(String(item.id))}
                                                     />
                                                 </motion.div>
                                             ))}
@@ -452,7 +447,7 @@ export function MenuSection({
                                     onCardClick={onItemClick}
                                     onAddToCart={onAddToCart}
                                     onUpdateQuantity={onUpdateQuantity}
-                                    cartQuantity={getCartQuantity(item.id)}
+                                    cartQuantity={getCartQuantity(String(item.id))}
                                 />
                             </motion.div>
                         ))}

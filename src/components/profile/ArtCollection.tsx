@@ -14,11 +14,12 @@ interface ArtCollectionProps {
 export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionProps) {
     const [showAll, setShowAll] = useState(false);
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
         return new Intl.DateTimeFormat("en-IN", {
             month: "short",
             year: "numeric",
-        }).format(date);
+        }).format(dateObj);
     };
 
     const totalValue = artPieces.reduce((sum, piece) => sum + piece.price, 0);

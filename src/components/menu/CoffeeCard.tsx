@@ -80,7 +80,7 @@ export function CoffeeCard({
                     alt={item.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+                    />
             </div>
 
             {/* Content Section - Reduced padding for less height */}
