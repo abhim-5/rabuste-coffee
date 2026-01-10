@@ -119,11 +119,12 @@ export async function POST(request: Request) {
 
     // Create purchase record
     const { data: purchase, error: purchaseError } = await supabase
-      .from(' art_purchases')
+      .from('art_purchases')
       .insert({
         art_piece_id: artPieceId,
         user_id: user.id,
-        purchase_price: artPiece.price
+        purchase_price: artPiece.price,
+        status: 'pending'
       })
       .select()
       .single()

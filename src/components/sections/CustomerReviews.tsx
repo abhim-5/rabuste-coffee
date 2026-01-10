@@ -244,7 +244,7 @@ export function CustomerReviews() {
                                                 initial={{ filter: "blur(4px)" }}
                                                 animate={{ filter: "blur(0px)" }}
                                                 transition={{ duration: 0.6, delay: 0.1 }}
-                                                className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-[#404040] italic"
+                                                className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-black italic"
                                             >
                                                 <motion.span
                                                     initial={{ opacity: 0 }}

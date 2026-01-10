@@ -54,9 +54,31 @@ export function useWorkshops() {
       const data = await response.json();
       
       if (data.workshops) {
-        // Split into upcoming and previous
-        const upcoming = data.workshops.filter((w: Workshop) => w.is_upcoming);
-        const previous = data.workshops.filter((w: Workshop) => !w.is_upcoming);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Start of today
+
+        // Separate upcoming and past workshops based on current date
+        const upcoming: Workshop[] = [];
+        const previous: Workshop[] = [];
+
+        data.workshops.forEach((workshop: Workshop) => {
+          const workshopDate = new Date(workshop.start_date);
+          workshopDate.setHours(0, 0, 0, 0);
+
+          if (workshopDate >= now) {
+            // Future or today = upcoming
+            upcoming.push(workshop);
+          } else {
+            // Past date = previous
+            previous.push(workshop);
+          }
+        });
+
+        // Sort upcoming: soonest date first (chronological)
+        upcoming.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+
+        // Sort previous: most recent past workshop first (reverse chronological)
+        previous.sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
 
         setUpcomingWorkshops(upcoming);
         setPreviousWorkshops(previous);

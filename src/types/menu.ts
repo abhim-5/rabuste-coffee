@@ -27,6 +27,7 @@ export interface MenuItem {
   rating: number;
   reviewCount: number;
   isDealOfTheDay?: boolean;
+  dealExpiry?: string;
   variations?: Variation[];  // Updated to use new structure
   available?: boolean;
   frequentlyBoughtWith?: string[];
@@ -69,6 +70,8 @@ export interface Workshop {
   host: string;
   date: Date;
   attended: boolean;
+  status?: string; // pending, confirmed, cancelled, attended
+  price?: number; // Workshop price
 }
 
 export interface OrderItem {

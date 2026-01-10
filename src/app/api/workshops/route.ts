@@ -26,13 +26,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Use local images from /public/workshops/ folder
-    const workshops = data.map(workshop => ({
-      ...workshop,
-      image_url: workshop.image_url 
-        ? `/workshops/${workshop.image_url}`
-        : '/workshops/1.jpg'
-    }));
+    // Construct full Supabase URL for images that are filenames only
+    const workshops = data.map(workshop => {
+      let imageUrl = '/workshops/1.jpg'; // Default fallback
+      
+      if (workshop.image_url) {
+        // If it's already a full URL (starts with http), use it
+        if (workshop.image_url.startsWith('http')) {
+          imageUrl = workshop.image_url;
+        } else {
+          // It's just a filename, construct full Supabase URL
+          imageUrl = `https://cxwudthziqkqazzpatlp.supabase.co/storage/v1/object/public/workshops/${workshop.image_url}`;
+        }
+      }
+      
+      console.log('Workshop:', workshop.title, 'Image URL:', imageUrl);
+      
+      return {
+        ...workshop,
+        image_url: imageUrl
+      };
+    });
 
     return NextResponse.json({
       success: true,

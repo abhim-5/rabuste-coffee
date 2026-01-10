@@ -54,11 +54,14 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      )
+    if (!profile) {
+      console.error('Profile not found for user:', user.id)
+      return NextResponse.json({ error: 'Profile not found. Please contact support.' }, { status: 403 })
+    }
+
+    if (profile.role !== 'admin' && profile.role !== 'staff') {
+      console.error('Insufficient role:', profile.role)
+      return NextResponse.json({ error: `Insufficient permissions. Role is: ${profile.role}` }, { status: 403 })
     }
 
     const productData = await request.json()
@@ -104,5 +107,52 @@ export async function POST(request: Request) {
       { error: 'Internal server error' },
       { status: 500 }
     )
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+        return NextResponse.json({ error: 'Product ID is required' }, { status: 400 })
+    }
+
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check permissions
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
+    // Delete the product
+    const { error: deleteError } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+
+    if (deleteError) {
+        console.error('Error deleting product:', deleteError)
+        return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+
+  } catch (error) {
+    console.error('API route error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

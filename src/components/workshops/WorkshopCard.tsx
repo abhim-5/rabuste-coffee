@@ -74,13 +74,11 @@ export function WorkshopCard({
                     <div className="relative w-full h-full lg:aspect-[4/5] shadow-2xl rotate-1 group max-w-md lg:h-auto">
                         <div ref={imgRef} className="relative w-full h-full overflow-hidden">
                             <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
-                                <Image
+                                <img
                                     src={workshop.image_url || '/workshops/default.jpg'}
                                     alt={workshop.title}
-                                    fill
-                                    className="object-cover"
-                                    priority={index === 0}
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 33vw"
+                                    className="w-full h-full object-cover absolute inset-0"
+                                    loading={index === 0 ? "eager" : "lazy"}
                                 />
                             </motion.div>
                         </div>
@@ -186,11 +184,10 @@ export function WorkshopCard({
 
                                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                         <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-xl border-8 border-white">
-                                            <Image
+                                            <img
                                                 src={workshop.image_url || '/workshops/default.jpg'}
                                                 alt={workshop.title}
-                                                fill
-                                                className="object-cover"
+                                                className="w-full h-full object-cover absolute inset-0"
                                             />
                                         </div>
 

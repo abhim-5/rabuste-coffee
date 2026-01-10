@@ -449,7 +449,14 @@ export default function GalleryPage() {
               const getImageSrc = () => {
                 if (!item.image_url) return '/gallery/default.jpg';
                 if (item.image_url.startsWith('http')) return item.image_url;
-                return item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`;
+                
+                // If it already has gallery/ prefix, respect it
+                if (item.image_url.includes('gallery/')) {
+                    return item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`;
+                }
+                
+                // Otherwise assume it's in the gallery folder
+                return `/gallery/${item.image_url.startsWith('/') ? item.image_url.substring(1) : item.image_url}`;
               };
 
               return (

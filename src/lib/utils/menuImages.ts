@@ -25,30 +25,16 @@ export function itemNameToSlug(name: string): string {
  * @returns Full URL to image or fallback
  */
 export function getMenuItemImageUrl(categoryId: string, itemName: string): string {
-  if (!SUPABASE_URL) {
-    console.warn('SUPABASE_URL not set, using placeholder');
-    return getPlaceholderImage(categoryId);
-  }
-
-  const slug = itemNameToSlug(itemName);
-  return `${SUPABASE_URL}/storage/v1/object/public/products/${categoryId}/${slug}.png`;
+  // Always return placeholder for items without uploaded images
+  return getPlaceholderImage(categoryId);
 }
 
 /**
  * Gets placeholder image based on category
  */
 export function getPlaceholderImage(categoryId: string): string {
-  const placeholders: Record<string, string> = {
-    'robusta-cold': '/menu/coffee-cold.png',
-    'robusta-hot': '/menu/coffee-hot.png',
-    'blend-cold': '/menu/coffee-cold.png',
-    'blend-hot': '/menu/coffee-hot.png',
-    'manual-brew': '/menu/coffee-manual.png',
-    'shakes-tea': '/menu/beverage.png',
-    'food': '/menu/food.png'
-  };
-  
-  return placeholders[categoryId] || '/menu/default.png';
+  // Use existing coffee.png for all categories
+  return '/coffee.png';
 }
 
 /**

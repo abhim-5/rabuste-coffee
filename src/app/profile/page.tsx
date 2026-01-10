@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -11,10 +11,13 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { OrderHistory } from "@/components/profile/OrderHistory";
 import { WorkshopsSection } from "@/components/profile/WorkshopsSection";
 import { ArtCollection } from "@/components/profile/ArtCollection";
+import { CafeReviewsSection } from "@/components/profile/CafeReviewsSection";
+import { FranchiseRequestsSection } from "@/components/profile/FranchiseRequestsSection";
+import { WorkshopRequestsSection } from "@/components/profile/WorkshopRequestsSection";
 import {
     LogOut, Edit2, ShoppingBag, GraduationCap, Palette, Coins,
     Settings, Bell, Heart, MapPin, Calendar, TrendingUp, Award,
-    ChevronRight, User, Mail, Clock, X, Upload, Lock, Save, Camera
+    ChevronRight, User, Mail, Clock, X, Upload, Lock, Save, Camera, Star, Building2
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -25,6 +28,7 @@ import { useProfileArt } from "@/hooks/useProfileArt";
 
 export default function ProfilePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, signOut } = useAuth();
     const { profile, loading: profileLoading, updateProfile } = useProfile();
     const { stats, loading: statsLoading } = useProfileStats();
@@ -35,6 +39,14 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState("orders");
     const [rewardMessage, setRewardMessage] = useState<string | null>(null);
+
+    // Handle deep linking to tabs
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['orders', 'workshops', 'art', 'points', 'reviews', 'franchise-requests', 'workshop-requests'].includes(tab)) {
+            setActiveSection(tab);
+        }
+    }, [searchParams]);
 
     // Edit form states
     const [editName, setEditName] = useState("");
@@ -172,7 +184,10 @@ export default function ProfilePage() {
     const sidebarItems = [
         { id: "orders", label: "My Orders", icon: ShoppingBag, count: stats?.ordersCount || 0 },
         { id: "workshops", label: "Workshops", icon: GraduationCap, count: stats?.workshopsCount || 0 },
+        { id: "workshop-requests", label: "Workshop Requests", icon: GraduationCap },
         { id: "art", label: "Art Collection", icon: Palette, count: stats?.artPurchasedCount || 0 },
+        { id: "franchise-requests", label: "Franchise Requests", icon: Building2 },
+        { id: "reviews", label: "Cafe Reviews", icon: Star },
         { id: "points", label: "Reward Points", icon: Coins, href: "/points" },
     ];
 
@@ -219,6 +234,10 @@ export default function ProfilePage() {
                     <OrderHistory orders={orders || []} totalSpent={ordersTotal} />
                     <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} />
                     <ArtCollection artPieces={artPieces || []} />
+                    <div className="container mx-auto px-4 pb-8">
+                        <h2 className="text-2xl font-bold text-[#292524] mb-6">Cafe Reviews</h2>
+                        <CafeReviewsSection />
+                    </div>
 
                     <div className="container mx-auto px-4 py-8">
                         <div className="max-w-lg mx-auto flex flex-row items-center justify-center gap-4">
@@ -453,6 +472,15 @@ export default function ProfilePage() {
                                         )}
                                         {activeSection === "art" && (
                                             <ArtCollection artPieces={artPieces || []} isDesktop />
+                                        )}
+                                        {activeSection === "reviews" && (
+                                            <CafeReviewsSection />
+                                        )}
+                                        {activeSection === "franchise-requests" && (
+                                            <FranchiseRequestsSection />
+                                        )}
+                                        {activeSection === "workshop-requests" && (
+                                            <WorkshopRequestsSection />
                                         )}
                                     </div>
                                 </div>

@@ -18,12 +18,27 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false }: OrderHis
 
     const getStatusConfig = (status: Order["status"]) => {
         switch (status) {
+            case "completed":
             case "delivered":
                 return {
                     icon: CheckCircle,
                     color: "text-green-600",
                     bg: "bg-green-100",
-                    label: "Delivered",
+                    label: "Completed",
+                };
+            case "ready":
+                return {
+                    icon: Package,
+                    color: "text-purple-600",
+                    bg: "bg-purple-100",
+                    label: "Ready",
+                };
+            case "confirmed":
+                return {
+                    icon: CheckCircle,
+                    color: "text-blue-600",
+                    bg: "bg-blue-100",
+                    label: "Confirmed",
                 };
             case "preparing":
                 return {
@@ -46,6 +61,14 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false }: OrderHis
                     bg: "bg-red-100",
                     label: "Cancelled",
                 };
+            default:
+                // Fallback for unknown statuses
+                return {
+                    icon: Package,
+                    color: "text-gray-600",
+                    bg: "bg-gray-100",
+                    label: status || "Unknown",
+                };
         }
     };
 
@@ -60,8 +83,30 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false }: OrderHis
 
     const displayedOrders = showAll ? orders : orders.slice(0, isDesktop ? 5 : 2);
 
-    const handleDownloadBill = (orderId: string) => {
-        alert(`Downloading bill for order ${orderId}`);
+    const handleDownloadBill = async (orderId: string) => {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        try {
+            const { generateBillPDF } = await import('@/utils/billGenerator');
+            generateBillPDF({
+                orderId: order.id,
+                date: new Date(order.date).toLocaleDateString(),
+                customerName: "Valued Customer", // You can pass user name via props if needed
+                items: order.items.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    subtotal: item.price * item.quantity
+                })),
+                subtotal: order.total, // Assuming total includes tax for now or tax is 0
+                total: order.total,
+                paymentMethod: 'Online / Paid'
+            });
+        } catch (error) {
+            console.error('Error generating bill:', error);
+            alert('Failed to generate bill');
+        }
     };
 
     const handleReorder = (orderId: string) => {
@@ -142,11 +187,10 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false }: OrderHis
                                                         {order.items.map((item, idx) => (
                                                             <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-xl">
                                                                 <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
-                                                                    <Image
+                                                                    <img
                                                                         src={item.image}
                                                                         alt={item.name}
-                                                                        fill
-                                                                        className="object-cover"
+                                                                        className="w-full h-full object-cover"
                                                                     />
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
@@ -324,11 +368,10 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false }: OrderHis
                                                         {order.items.map((item, idx) => (
                                                             <div key={idx} className="flex items-center gap-4">
                                                                 <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                                                                    <Image
+                                                                    <img
                                                                         src={item.image}
                                                                         alt={item.name}
-                                                                        fill
-                                                                        className="object-cover"
+                                                                        className="w-full h-full object-cover"
                                                                     />
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">

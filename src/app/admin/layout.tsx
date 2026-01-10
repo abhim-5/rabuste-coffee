@@ -14,11 +14,19 @@ export default function AdminLayout({
 }) {
     const { user, profile, loading, isAdmin } = useAuth();
     const router = useRouter();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
-        // Client-side check as backup
-        if (!loading && (!user || !isAdmin())) {
+        // Don't redirect until we have both user AND profile data
+        if (!loading && user && profile) {
+            // Profile loaded - check if admin
+            if (!isAdmin()) {
+                console.warn('Non-admin trying to access admin panel, redirecting');
+                router.push('/');
+            }
+        } else if (!loading && !user) {
+            // Not logged in at all
+            console.warn('Unauthenticated user trying to access admin panel, redirecting');
             router.push('/');
         }
     }, [user, profile, loading, isAdmin, router]);
@@ -26,10 +34,10 @@ export default function AdminLayout({
     // Show loading state
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#D8CBB8] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600 font-medium">Loading Admin Dashboard...</p>
+                    <div className="w-16 h-16 border-4 border-[#8B6F47] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-[#4A3B28] font-serif tracking-widest text-sm font-semibold">LOADING DASHBOARD...</p>
                 </div>
             </div>
         );
@@ -41,17 +49,17 @@ export default function AdminLayout({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#D8CBB8] text-[#4A3B28] font-sans">
             {/* Sidebar */}
             <AdminSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
             {/* Main Content */}
-            <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+            <div className={`transition-all duration-500 ease-in-out ml-0 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
                 {/* Topbar */}
-                <AdminTopbar />
+                <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
 
                 {/* Page Content */}
-                <main className="p-6">
+                <main className="p-4 lg:p-6 overflow-x-hidden">
                     {children}
                 </main>
             </div>

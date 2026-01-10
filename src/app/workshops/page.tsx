@@ -363,11 +363,12 @@ function UpcomingWorkshopCard({ workshop, index, isInView, currentUser, onShowAu
         <div className="relative aspect-[4/5] overflow-hidden rounded-sm shadow-2xl w-full max-w-[90%] mx-auto">
           <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
             <Image
-              src={workshop.image_url || '/workshops/default.jpg'}
+              src={workshop.image_url && workshop.image_url.startsWith('http') ? workshop.image_url : '/workshops/1.jpg'}
               alt={workshop.title}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
+              unoptimized
             />
           </motion.div>
           {/* Polaroid effect */}

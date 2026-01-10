@@ -2,11 +2,15 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { LogOut, ExternalLink, User } from 'lucide-react';
+import { LogOut, ExternalLink, User, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function AdminTopbar() {
+interface AdminTopbarProps {
+    onMenuClick?: () => void;
+}
+
+export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
     const { user, profile, signOut } = useAuth();
     const router = useRouter();
 
@@ -16,52 +20,64 @@ export default function AdminTopbar() {
     };
 
     return (
-        <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-            {/* Left Side - Page Title (can be dynamic later) */}
-            <div>
-                <h2 className="text-xl font-bold text-gray-800">Admin Dashboard</h2>
-                <p className="text-sm text-gray-500">Manage your coffee empire</p>
+        <div className="h-16 lg:h-20 bg-[#F9F5F1]/80 backdrop-blur-md border-b border-[#4A3B28]/10 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-20">
+            {/* Left Side - Page Title & Mobile Menu */}
+            <div className="flex items-center gap-4">
+                {/* Mobile Menu Button */}
+                <button 
+                    onClick={onMenuClick}
+                    className="p-2 -ml-2 text-[#4A3B28] hover:bg-[#4A3B28]/5 rounded-lg lg:hidden"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+
+                <div>
+                    <h2 className="text-xl lg:text-2xl font-display font-bold text-[#4A3B28]">
+                        Admin <span className="hidden sm:inline">Dashboard</span>
+                    </h2>
+                    <p className="text-[10px] lg:text-xs text-[#4A3B28]/70 font-sans tracking-wide font-medium">Manage your coffee empire</p>
+                </div>
             </div>
 
             {/* Right Side - Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 lg:gap-6">
                 {/* View as Customer */}
                 <Link
                     href="/"
                     target="_blank"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                    className="flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 bg-white/50 hover:bg-white border border-[#4A3B28]/20 text-[#4A3B28] rounded-full transition-all text-[10px] lg:text-xs font-bold tracking-wider uppercase group shadow-sm"
                 >
-                    <ExternalLink className="w-4 h-4" />
-                    View as Customer
+                    <ExternalLink className="w-3 h-3 group-hover:scale-110 transition-transform text-[#4A3B28]" />
+                    <span className="hidden sm:inline">View Site</span>
                 </Link>
 
                 {/* User Info */}
-                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 lg:gap-4 pl-3 lg:pl-6 border-l border-[#4A3B28]/10">
+                    <Link href="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div className="text-right hidden sm:block">
+                            <p className="font-serif font-bold text-[#4A3B28] text-sm leading-tight">{profile?.full_name || user?.email}</p>
+                            <p className="text-[10px] text-[#4A3B28]/70 uppercase tracking-widest font-semibold">{profile?.role || 'Admin'}</p>
+                        </div>
                         {profile?.avatar_url ? (
                             <img
                                 src={profile.avatar_url}
                                 alt={profile.full_name || 'Admin'}
-                                className="w-9 h-9 rounded-full object-cover"
+                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border-2 border-[#4A3B28]/20"
                             />
                         ) : (
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#8B6F47] flex items-center justify-center">
-                                <User className="w-5 h-5 text-white" />
+                            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#4A3B28] flex items-center justify-center border-2 border-white shadow-md">
+                                <User className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
                             </div>
                         )}
-                        <div className="text-sm">
-                            <p className="font-medium text-gray-800">{profile?.full_name || user?.email}</p>
-                            <p className="text-xs text-gray-500 capitalize">{profile?.role || 'Admin'}</p>
-                        </div>
-                    </div>
+                    </Link>
 
                     {/* Sign Out */}
                     <button
                         onClick={handleSignOut}
-                        className="p-2 hover:bg-red-50 text-gray-600 hover:text-red-600 rounded-lg transition-colors"
+                        className="p-2 lg:p-2.5 hover:bg-red-50 text-[#4A3B28]/60 hover:text-red-600 rounded-full transition-colors border border-transparent hover:border-red-200"
                         title="Sign Out"
                     >
-                        <LogOut className="w-5 h-5" />
+                        <LogOut className="w-4 h-4 lg:w-5 lg:h-5" />
                     </button>
                 </div>
             </div>

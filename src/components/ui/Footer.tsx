@@ -2,9 +2,61 @@
 
 import Link from "next/link";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
+    const [email, setEmail] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState('');
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const supabase = createClient();
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setCurrentUser(session?.user ?? null);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const handleNewsletterSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!currentUser) {
+            setMessage('⚠️ Please log in to subscribe');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
+
+        setIsSubmitting(true);
+        setMessage('');
+
+        try {
+            const response = await fetch('/api/newsletter', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage('✅ ' + data.message);
+                setEmail('');
+            } else {
+                setMessage('⚠️ ' + data.error);
+            }
+        } catch (error) {
+            console.error('Newsletter error:', error);
+            setMessage('❌ Failed to subscribe');
+        } finally {
+            setIsSubmitting(false);
+            setTimeout(() => setMessage(''), 5000);
+        }
+    };
 
     return (
         <footer className="w-full bg-black text-white pt-12 pb-0 lg:py-12 border-t border-neutral-900">
@@ -32,15 +84,29 @@ export default function Footer() {
                         {/* Newsletter */}
                         <div className="pt-4">
                             <h4 className="font-bold text-sm mb-3 text-[#dcbba0] uppercase tracking-wider">Stay Updated</h4>
-                            <form className="flex flex-col gap-2">
+                            {message && (
+                                <div className="mb-2 text-xs p-2 rounded bg-neutral-900">
+                                    {message}
+                                </div>
+                            )}
+                            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2">
                                 <input
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Your email address"
-                                    className="bg-neutral-900 border border-neutral-800 text-white px-4 py-2 rounded text-sm focus:outline-none focus:border-[#dcbba0] transition-colors"
+                                    required
+                                    disabled={isSubmitting}
+                                    className="bg-neutral-900 border border-neutral-800 text-white px-4 py-2 rounded text-sm focus:outline-none focus:border-[#dcbba0] transition-colors disabled:opacity-50"
                                     suppressHydrationWarning
                                 />
-                                <button className="bg-[#dcbba0] text-black font-semibold px-4 py-2 rounded text-sm hover:bg-[#c5a289] transition-colors" suppressHydrationWarning>
-                                    Subscribe
+                                <button 
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="bg-[#dcbba0] text-black font-semibold px-4 py-2 rounded text-sm hover:bg-[#c5a289] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors" 
+                                    suppressHydrationWarning
+                                >
+                                    {isSubmitting ? 'Subscribing...' : 'Subscribe'}
                                 </button>
                             </form>
                         </div>

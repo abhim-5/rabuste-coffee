@@ -114,12 +114,11 @@ export function CoffeeDetail({
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                                     {/* Dynamic Image - changes with variation */}
                                     <div className="relative w-full aspect-square lg:aspect-[4/5] rounded-2xl overflow-hidden">
-                                        <Image
+                                        <img
                                             key={displayImage} // Force re-render when image changes
                                             src={displayImage}
                                             alt={item.name}
-                                            fill
-                                            className="object-cover"
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
 

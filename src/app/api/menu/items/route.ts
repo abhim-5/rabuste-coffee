@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
       .from('products')
       .select('*')
       .eq('available', true)
-      .order('sort_order', { ascending: true });
+      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: false });
 
     // Apply filters
     if (category) {
@@ -46,22 +47,39 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Transform to MenuItem format
-    const menuItems = data.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: parseFloat(item.price),
-      originalPrice: item.original_price ? parseFloat(item.original_price) : undefined,
-      image: item.image_url 
-        ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${item.image_url}`
-        : getMenuItemImageUrl(item.category, item.name),
-      category: item.category,
-      available: item.available,
-      rating: parseFloat(item.rating || '4.5'),
-      reviewCount: item.review_count || 0,
-      variations: item.variations || [],
-    }));
+    // Transform to MenuItem format with new pricing fields
+    const menuItems = data.map(item => {
+      let imageUrl;
+      
+      // Check if image_url is a Supabase Storage path (starts with product-images/)
+      if (item.image_url?.startsWith('product-images/')) {
+        // Generate Supabase Storage public URL
+        imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${item.image_url}`;
+      } else if (item.image_url) {
+        // Legacy local path
+        imageUrl = `/menu-images/${item.image_url}`;
+      } else {
+        // Fallback to default image
+        imageUrl = getMenuItemImageUrl(item.category, item.name);
+      }
+
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: parseFloat(item.discount_price || item.price), // Use discount if available
+        originalPrice: item.crossed_price ? parseFloat(item.crossed_price) : (item.discount_price ? parseFloat(item.price) : undefined),
+        image: imageUrl,
+        category: item.category,
+        available: item.available,
+        rating: parseFloat(item.rating || '4.5'),
+        reviewCount: item.review_count || 0,
+        variations: item.variations || [],
+        isDealOfTheDay: item.is_deal_of_day || false,
+        dealExpiry: item.deal_expiry,
+        is_featured: item.is_featured || false,
+      };
+    });
 
     return NextResponse.json({
       success: true,

@@ -22,73 +22,95 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { artPieceId } = body;
+    let { artPieceIds, artPieceId } = body;
 
-    if (!artPieceId) {
+    // Normalize to array
+    if (artPieceId && !artPieceIds) {
+        artPieceIds = [artPieceId];
+    }
+
+    if (!artPieceIds || !Array.isArray(artPieceIds) || artPieceIds.length === 0) {
       return NextResponse.json(
-        { error: 'Art piece ID is required' },
+        { error: 'Art piece IDs are required' },
         { status: 400 }
       );
     }
 
-    // Get art piece details
-    const { data: artPiece, error: fetchError } = await supabase
+    // Get art pieces details and verify availability
+    const { data: artPieces, error: fetchError } = await supabase
       .from('art_pieces')
       .select('*')
-      .eq('id', artPieceId)
-      .eq('available', true)
-      .single();
+      .in('id', artPieceIds)
+      .eq('available', true);
 
-    if (fetchError || !artPiece) {
+    if (fetchError || !artPieces) {
       return NextResponse.json(
-        { error: 'Art piece not found or not available' },
-        { status: 404 }
-      );
-    }
-
-    // Generate booking number (6 digits)
-    const bookingNumber = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Create purchase record
-    const { data: purchase, error: purchaseError } = await supabase
-      .from('art_purchases')
-      .insert({
-        art_piece_id: artPieceId,
-        user_id: user.id,
-        purchase_price: artPiece.price,
-        status: 'pending'
-      })
-      .select()
-      .single();
-
-    if (purchaseError) {
-      console.error('Purchase creation error:', purchaseError);
-      return NextResponse.json(
-        { error: 'Failed to create purchase' },
+        { error: 'Failed to fetch art pieces' },
         { status: 500 }
       );
     }
 
-    // Mark art piece as unavailable
+    // Check if all requested pieces are available
+    if (artPieces.length !== artPieceIds.length) {
+        return NextResponse.json(
+            { error: 'One or more art pieces are no longer available' },
+            { status: 409 } // Conflict
+        );
+    }
+
+    // Generate booking number (6 digits) - shared for the batch if we wanted, 
+    // but the DB schema likely processes them individually? 
+    // The previous code generated one booking number. User didn't specify batching logic 
+    // but "confirmation of only 1" implies they want to see all purchased.
+    // Let's create individual purchase records.
+    
+    const purchaseRecords = artPieces.map(piece => ({
+        art_piece_id: piece.id,
+        user_id: user.id,
+        purchase_price: piece.price,
+        status: 'pending'
+    }));
+
+    const { data: purchases, error: purchaseError } = await supabase
+      .from('art_purchases')
+      .insert(purchaseRecords)
+      .select();
+
+    if (purchaseError) {
+      console.error('Purchase creation error:', purchaseError);
+      return NextResponse.json(
+        { error: 'Failed to create purchase records' },
+        { status: 500 }
+      );
+    }
+
+    // Mark art pieces as unavailable
     const { error: updateError } = await supabase
       .from('art_pieces')
       .update({ available: false })
-      .eq('id', artPieceId);
+      .in('id', artPieceIds);
 
     if (updateError) {
       console.error('Error marking art as unavailable:', updateError);
-      // Note: Purchase is already created, so we don't rollback
     }
+
+    // Construct response
+    // If multiple, maybe return the first one's booking info or a summary?
+    // The frontend mostly cares about success and maybe details to show.
+    // We'll return the list.
+    
+    const bookingNumber = Math.floor(100000 + Math.random() * 900000).toString(); // Visual booking ref
 
     return NextResponse.json({
       success: true,
-      bookingNumber,
-      purchase: {
-        id: purchase.id,
-        artPieceName: artPiece.name,
-        price: artPiece.price,
-        artist: artPiece.artist
-      }
+      bookingNumber, // One "Booking Ref" for the session
+      purchases: purchases.map((p, idx) => ({
+          id: p.id,
+          artPieceName: artPieces[idx].name,
+          price: artPieces[idx].price,
+          artist: artPieces[idx].artist
+      })),
+      count: purchases.length
     });
 
   } catch (error) {

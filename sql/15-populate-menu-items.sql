@@ -1,3 +1,4 @@
+--this was previous menu item insertion query, and the latest is changed, see the 33,34,35 for the updated insertion
 -- Populate Menu Items from realMenuData.ts
 -- Run this AFTER running 14-enhance-products-schema.sql
 -- This inserts all 59 menu items into the products table

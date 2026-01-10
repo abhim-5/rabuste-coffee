@@ -9,6 +9,8 @@ import Image from "next/image";
 import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
@@ -56,27 +58,7 @@ const mockPointsTransactions = [
 
 const totalPoints = 250;
 
-// Mock notifications data
-const mockNotifications = [
-  {
-    id: 1,
-    type: "welcome",
-    title: "Welcome to Rabuste! ☕",
-    message: "We're thrilled to have you here. Explore our artisanal coffee and exclusive workshops.",
-    time: "Just now",
-    unread: true,
-    icon: Coffee,
-  },
-  {
-    id: 2,
-    type: "offer",
-    title: "Special Offer! 🎉",
-    message: "Get 20% off on your first order. Use code: WELCOME20",
-    time: "2 hours ago",
-    unread: true,
-    icon: Gift,
-  },
-];
+
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -85,18 +67,57 @@ export default function Navbar() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | undefined>();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<any[]>([]); // Use DB data
   const [bellAnimating, setBellAnimating] = useState(false);
   const [showPoints, setShowPoints] = useState(false);
   const loginButtonRef = useRef<HTMLButtonElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const pointsRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
 
   // Use centralized auth state
   const { user, loading, signOut } = useAuth();
   // Get role info
   const { userProfile, hasStaffAccess } = useRole();
+
+  // Fetch Notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (data) setNotifications(data);
+    };
+
+    fetchNotifications();
+
+    // Realtime Subscription
+    const channel = supabase
+      .channel('navbar_notifications')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications', 
+        filter: `user_id=eq.${user.id}` 
+      }, (payload) => {
+        setNotifications(prev => [payload.new, ...prev]);
+        setBellAnimating(true);
+        setTimeout(() => setBellAnimating(false), 1000);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   // Debug logging
   useEffect(() => {
     console.log('🔐 Navbar Auth State:', {
@@ -130,14 +151,66 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+  const markAsRead = async (id: string, link?: string) => {
+    // Optimistic update
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    
+    // DB Update
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+
+    if (link) {
+      setShowNotifications(false);
+      router.push(link);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  const deleteNotification = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    await supabase.from('notifications').delete().eq('id', id);
+  };
+
+  const markAllAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    if (user) {
+      await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Determine if navbar should have background
+      setScrolled(currentScrollY > 20);
+
+      // Determine if navbar should hide (scrolling down) or show (scrolling up)
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down
+        setHidden(true);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setHidden(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
+  const formatTime = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return date.toLocaleDateString();
   };
 
   useEffect(() => {
@@ -254,24 +327,36 @@ export default function Navbar() {
                 );
               })}
 
-              {/* Admin Panel Button - Outside loop to avoid nested links */}
+              {/* Admin Panel Button */}
               {(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
                 <Link href="/admin">
                   <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{ duration: 0.8, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
                     whileHover={{ y: -2 }}
-                    className="relative px-4 py-2 ml-4"
+                    className="relative px-7 py-2 cursor-pointer group"
                   >
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#1a202c] text-white rounded-lg hover:bg-[#2d3748] transition-colors shadow-lg border border-[#D4AF37]/30"
+                    <span
+                      className={`font-serif text-lg font-semibold tracking-wide transition-colors duration-300 ${
+                        pathname.startsWith('/admin')
+                          ? "text-amber-400"
+                          : "text-amber-50 group-hover:text-amber-300"
+                      }`}
                     >
-                      <LayoutDashboard className="w-4 h-4" />
-                      <span className="font-serif text-sm font-semibold">Admin Panel</span>
-                    </motion.button>
+                      Admin Panel
+                    </span>
+                    {pathname.startsWith('/admin') && (
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 origin-left"
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      />
+                    )}
+                    {!pathname.startsWith('/admin') && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                    )}
                   </motion.div>
                 </Link>
               )}
@@ -292,7 +377,8 @@ export default function Navbar() {
               ) : user ? (
                 // Authenticated user - show notifications, points, dashboard, profile
                 <>
-                  {/* Notification Button */}
+                  {/* Notification Button - Hidden for Admins */}
+                  {!(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
                   <div className="relative" ref={notificationRef}>
                     <motion.button
                       initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
@@ -352,36 +438,48 @@ export default function Navbar() {
                           <div className="max-h-80 overflow-y-auto">
                             {notifications.length > 0 ? (
                               notifications.map((notification, index) => {
-                                const IconComponent = notification.icon;
+                                let IconComponent = Bell;
+                                if (notification.type === 'order') IconComponent = ShoppingBag;
+                                if (notification.type === 'art_purchase') IconComponent = Palette;
+                                if (notification.type === 'workshop_request') IconComponent = Wrench;
+                                if (notification.type === 'system') IconComponent = Info;
+
+                                const bgClass = notification.type === 'order' ? 'bg-blue-600' :
+                                                notification.type === 'art_purchase' ? 'bg-purple-600' :
+                                                notification.type === 'workshop_request' ? 'bg-amber-600' :
+                                                'bg-[#8B6F47]';
+
                                 return (
                                   <motion.div
                                     key={notification.id}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.1 }}
-                                    onClick={() => markAsRead(notification.id)}
-                                    className={`flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-[#8B6F47]/10 ${notification.unread ? "bg-white" : ""
+                                    onClick={() => markAsRead(notification.id, notification.link)}
+                                    className={`relative group flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-[#8B6F47]/10 ${!notification.is_read ? "bg-white" : ""
                                       }`}
                                   >
-                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${notification.type === "welcome" ? "bg-[#8B6F47]" : "bg-green-600"
-                                      }`}>
-                                      <IconComponent className={`w-5 h-5 ${notification.type === "welcome" ? "text-white" : "text-white"
-                                        }`} />
+                                    <button
+                                      onClick={(e) => deleteNotification(notification.id, e)}
+                                      className="lg:opacity-0 lg:group-hover:opacity-100 absolute top-2 right-2 p-1 text-[#8B6F47]/40 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200 z-10"
+                                      title="Delete notification"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${bgClass}`}>
+                                      <IconComponent className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-start justify-between gap-2">
                                         <p className="font-sans text-sm font-semibold text-[#262626] line-clamp-1">
                                           {notification.title}
                                         </p>
-                                        {notification.unread && (
-                                          <span className="w-2 h-2 bg-[#8B6F47] rounded-full flex-shrink-0 mt-1.5" />
-                                        )}
                                       </div>
                                       <p className="font-sans text-xs text-[#262626]/70 line-clamp-2 mt-0.5">
                                         {notification.message}
                                       </p>
                                       <p className="font-sans text-[10px] text-[#8B6F47]/60 mt-1">
-                                        {notification.time}
+                                        {formatTime(notification.created_at)}
                                       </p>
                                     </div>
                                   </motion.div>
@@ -408,10 +506,12 @@ export default function Navbar() {
                       )}
                     </AnimatePresence>
                   </div>
+                  )}
 
                   {/* Reward Points & Profile Section */}
                   <div className="flex items-center gap-4">
-                    {/* Reward Points */}
+                    {/* Reward Points - Hidden for Admins */}
+                    {!(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
                     <div className="relative" ref={pointsRef}>
                       <motion.button
                         initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
@@ -506,6 +606,7 @@ export default function Navbar() {
                         )}
                       </AnimatePresence>
                     </div>
+                    )}
 
                     {/* Profile Icon */}
                     <Link href="/profile">
@@ -602,7 +703,8 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            {/* Notification */}
+            {/* Notification - Hidden for Admins */}
+            {user && !(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
             <div className="relative" ref={notificationRef}>
               <motion.button
                 initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
@@ -654,36 +756,49 @@ export default function Navbar() {
                     <div className="max-h-64 overflow-y-auto">
                       {notifications.length > 0 ? (
                         notifications.map((notification, index) => {
-                          const IconComponent = notification.icon;
+                          let IconComponent = Bell;
+                          if (notification.type === 'order') IconComponent = ShoppingBag;
+                          if (notification.type === 'art_purchase') IconComponent = Palette;
+                          if (notification.type === 'workshop_request') IconComponent = Wrench;
+                          if (notification.type === 'system') IconComponent = Info;
+
+                          const bgClass = notification.type === 'order' ? 'bg-blue-600' :
+                                          notification.type === 'art_purchase' ? 'bg-purple-600' :
+                                          notification.type === 'workshop_request' ? 'bg-amber-600' :
+                                          'bg-[#8B6F47]';
+
                           return (
                             <motion.div
                               key={notification.id}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.1 }}
-                              onClick={() => markAsRead(notification.id)}
-                              className={`flex gap-2 px-2.5 py-2 cursor-pointer transition-colors hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 ${notification.unread ? "bg-white" : ""
+                              onClick={() => markAsRead(notification.id, notification.link)}
+                              className={`relative group flex gap-2 px-2.5 py-2 cursor-pointer transition-colors hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 ${!notification.is_read ? "bg-white" : ""
                                 }`}
                             >
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${notification.type === "welcome" ? "bg-[#8B6F47]" : "bg-green-600"
-                                }`}>
-                                <IconComponent className={`w-3.5 h-3.5 ${notification.type === "welcome" ? "text-white" : "text-white"
-                                  }`} />
+                              <button
+                                onClick={(e) => deleteNotification(notification.id, e)}
+                                className="absolute top-1 right-1 p-1.5 text-[#8B6F47]/40 hover:text-red-500 active:text-red-600 rounded-full transition-colors z-10"
+                                title="Delete notification"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${bgClass}`}>
+                                <IconComponent className="w-3.5 h-3.5 text-white" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-1">
                                   <p className="font-sans text-sm font-semibold text-[#262626] line-clamp-1 break-words">
                                     {notification.title}
                                   </p>
-                                  {notification.unread && (
-                                    <span className="w-2 h-2 bg-[#8B6F47] rounded-full flex-shrink-0 mt-1.5" />
-                                  )}
+
                                 </div>
                                 <p className="font-sans text-xs text-[#262626]/70 line-clamp-2 mt-0.5 break-words">
                                   {notification.message}
                                 </p>
                                 <p className="font-sans text-[10px] text-[#8B6F47]/60 mt-0.5">
-                                  {notification.time}
+                                  {formatTime(notification.created_at)}
                                 </p>
                               </div>
                             </motion.div>
@@ -710,104 +825,121 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
             </div>
+            )}
 
             {/* Auth Section */}
             {!loading && user ? (
               <div className="flex items-center gap-3">
-                {/* Reward Points */}
-                <div className="relative" ref={pointsRef}>
-                  <motion.button
-                    initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-                    animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setShowPoints(!showPoints)}
-                    className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
-                  >
-                    <Coins className="w-5 h-5 text-amber-400" />
-                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                      {totalPoints}
-                    </span>
-                  </motion.button>
+                {/* Admin Button OR Reward Points */}
+                {(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') ? (
+                  // Admin Mobile Button
+                  <Link href="/admin">
+                    <motion.button
+                      initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                      animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                      transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      whileTap={{ scale: 0.9 }}
+                      className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
+                    >
+                      <LayoutDashboard className="w-5 h-5 text-amber-50" />
+                    </motion.button>
+                  </Link>
+                ) : (
+                  // Reward Points (Customers only)
+                  <div className="relative" ref={pointsRef}>
+                    <motion.button
+                      initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
+                      animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                      transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setShowPoints(!showPoints)}
+                      className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
+                    >
+                      <Coins className="w-5 h-5 text-amber-400" />
+                      <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        {totalPoints}
+                      </span>
+                    </motion.button>
 
-                  {/* Mobile Points Dropdown */}
-                  <AnimatePresence>
-                    {showPoints && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 top-12 w-[90vw] max-w-[280px] bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
-                      >
-                        {/* Header with Total Points */}
-                        <div className="px-4 py-3 border-b border-[#8B6F47] bg-white">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Your Balance</p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <Coins className="w-5 h-5 text-[#8B6F47]" />
-                                <span className="font-display text-2xl font-bold text-[#8B6F47]">{totalPoints}</span>
-                                <span className="text-[#262626]/70 text-xs">points</span>
+                    {/* Mobile Points Dropdown */}
+                    <AnimatePresence>
+                      {showPoints && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="absolute right-0 top-12 w-[90vw] max-w-[280px] bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
+                        >
+                          {/* Header with Total Points */}
+                          <div className="px-4 py-3 border-b border-[#8B6F47] bg-white">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Your Balance</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <Coins className="w-5 h-5 text-[#8B6F47]" />
+                                  <span className="font-display text-2xl font-bold text-[#8B6F47]">{totalPoints}</span>
+                                  <span className="text-[#262626]/70 text-xs">points</span>
+                                </div>
+                              </div>
+                              <div className="w-10 h-10 rounded-full bg-[#8B6F47] flex items-center justify-center">
+                                <Sparkles className="w-5 h-5 text-white" />
                               </div>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-[#8B6F47] flex items-center justify-center">
-                              <Sparkles className="w-5 h-5 text-white" />
-                            </div>
                           </div>
-                        </div>
 
-                        {/* Recent Transactions */}
-                        <div className="px-4 py-1.5 border-b border-[#8B6F47]">
-                          <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Recent Activity</p>
-                        </div>
-                        <div className="max-h-48 overflow-y-auto">
-                          {mockPointsTransactions.slice(0, 3).map((transaction, index) => {
-                            const IconComponent = transaction.icon;
-                            const isEarned = transaction.type === "earned";
-                            return (
-                              <motion.div
-                                key={transaction.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="flex items-center gap-3 px-3 py-2.5 hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 transition-colors"
-                              >
-                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEarned ? "bg-green-600" : "bg-red-600"
-                                  }`}>
-                                  <IconComponent className={`w-4 h-4 ${isEarned ? "text-white" : "text-white"}`} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-sans text-sm font-medium text-[#262626] line-clamp-1">
-                                    {transaction.title}
-                                  </p>
-                                  <p className="font-sans text-[10px] text-[#8B6F47]/60">
-                                    {transaction.date}
-                                  </p>
-                                </div>
-                                <div className={`flex items-center gap-0.5 font-semibold text-sm ${isEarned ? "text-green-700" : "text-red-600"
-                                  }`}>
-                                  {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                                  {Math.abs(transaction.points)}
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
+                          {/* Recent Transactions */}
+                          <div className="px-4 py-1.5 border-b border-[#8B6F47]">
+                            <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Recent Activity</p>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {mockPointsTransactions.slice(0, 3).map((transaction, index) => {
+                              const IconComponent = transaction.icon;
+                              const isEarned = transaction.type === "earned";
+                              return (
+                                <motion.div
+                                  key={transaction.id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: index * 0.05 }}
+                                  className="flex items-center gap-3 px-3 py-2.5 hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 transition-colors"
+                                >
+                                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEarned ? "bg-green-600" : "bg-red-600"
+                                    }`}>
+                                    <IconComponent className={`w-4 h-4 ${isEarned ? "text-white" : "text-white"}`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-sans text-sm font-medium text-[#262626] line-clamp-1">
+                                      {transaction.title}
+                                    </p>
+                                    <p className="font-sans text-[10px] text-[#8B6F47]/60">
+                                      {transaction.date}
+                                    </p>
+                                  </div>
+                                  <div className={`flex items-center gap-0.5 font-semibold text-sm ${isEarned ? "text-green-700" : "text-red-600"
+                                    }`}>
+                                    {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                                    {Math.abs(transaction.points)}
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
 
-                        {/* Footer with View All */}
-                        <div className="px-4 py-2.5 border-t border-[#8B6F47] bg-[#D8CBB8]">
-                          <Link href="/points" onClick={() => setShowPoints(false)}>
-                            <button className="w-full flex items-center justify-center gap-2 py-2 bg-[#8B6F47] hover:bg-[#6B5537] text-white text-sm font-semibold transition-colors">
-                              <History className="w-4 h-4" />
-                              View All Transactions
-                            </button>
-                          </Link>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                          {/* Footer with View All */}
+                          <div className="px-4 py-2.5 border-t border-[#8B6F47] bg-[#D8CBB8]">
+                            <Link href="/points" onClick={() => setShowPoints(false)}>
+                              <button className="w-full flex items-center justify-center gap-2 py-2 bg-[#8B6F47] hover:bg-[#6B5537] text-white text-sm font-semibold transition-colors">
+                                <History className="w-4 h-4" />
+                                View All Transactions
+                              </button>
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
 
                 {/* Profile Icon */}
                 <Link href="/profile">

@@ -1,14 +1,76 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
+import AuthModal from '@/components/auth/AuthModal';
 
 const FranchiseInquiry = () => {
     const [focusedField, setFocusedField] = useState<string | null>(null);
     const [formValues, setFormValues] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const supabase = createClient();
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setCurrentUser(session?.user ?? null);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormValues({ ...formValues, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Check authentication
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitStatus('idle');
+
+        try {
+            const response = await fetch('/api/franchise', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formValues.name,
+                    email: formValues.email,
+                    phone: formValues.phone,
+                    location: formValues.location,
+                    message: formValues.message || ''
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setSubmitStatus('success');
+                setFormValues({});
+                setTimeout(() => setSubmitStatus('idle'), 5000);
+            } else {
+                setSubmitStatus('error');
+                const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to submit inquiry');
+                alert('❌ ' + errorMsg);
+                console.error('Franchise submission error:', data);
+            }
+        } catch (error) {
+            console.error('Franchise inquiry error:', error);
+            setSubmitStatus('error');
+            alert('❌ Failed to submit. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const inputs = [
@@ -49,8 +111,7 @@ const FranchiseInquiry = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4, duration: 0.6 }}
-                                className="pl-6 border-l-2 border-[#8B6F47]"
-                            >
+                                className="pl-6 border-l-2 border-[#8B6F47]">
                                 <h3 className="font-display text-2xl font-bold text-[#404040] mb-2">Why Partner?</h3>
                                 <ul className="space-y-2">
                                     <li>✦ Proven High-Yield Model</li>
@@ -72,7 +133,14 @@ const FranchiseInquiry = () => {
                         <h3 className="font-display text-3xl font-bold text-[#404040] mb-8">
                             Unit Franchise Inquiry
                         </h3>
-                        <form className="space-y-8">
+
+                        {submitStatus === 'success' && (
+                            <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg text-green-800">
+                                ✅ Thank you! We'll contact you soon.
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-8">
                             {inputs.map((input) => (
                                 <div key={input.name} className="relative group">
                                     <input
@@ -130,9 +198,11 @@ const FranchiseInquiry = () => {
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="w-full py-5 bg-[#404040] text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8"
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full py-5 bg-[#404040] disabled:bg-gray-400 disabled:cursor-not-allowed text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8"
                             >
-                                Submit Inquiry
+                                {isSubmitting ? 'SUBMITTING...' : 'Submit Inquiry'}
                             </motion.button>
                         </form>
                     </motion.div>
@@ -169,6 +239,13 @@ const FranchiseInquiry = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Auth Modal */}
+            <AuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                buttonRect={undefined}
+            />
         </section>
     );
 };

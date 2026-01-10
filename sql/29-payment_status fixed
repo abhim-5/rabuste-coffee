@@ -1,0 +1,77 @@
+-- ============================================
+-- COMPLETE DATABASE SETUP FOR RABUSTE COFFEE
+-- Run this SQL in Supabase SQL Editor
+-- ============================================
+-- 1. ENSURE PAYMENT_STATUS COLUMN EXISTS
+-- ============================================
+DO $$ 
+BEGIN
+    -- Add payment_status if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='orders' AND column_name='payment_status') THEN
+        ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'pending';
+    END IF;
+END $$;
+-- 2. SET DATABASE TIMEZONE TO IST (INDIA STANDARD TIME)
+-- ============================================
+ALTER DATABASE postgres SET timezone TO 'Asia/Kolkata';
+-- For current session
+SET timezone = 'Asia/Kolkata';
+-- 3. CREATE FUNCTION TO HANDLE IST TIMESTAMPS
+-- ============================================
+CREATE OR REPLACE FUNCTION set_ist_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.created_at = NOW() AT TIME ZONE 'Asia/Kolkata';
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+-- 4. ADD TRIGGER FOR AUTOMATIC IST TIMESTAMPS (IF NOT EXISTS)
+-- ============================================
+DROP TRIGGER IF EXISTS set_orders_ist_timestamp ON orders;
+CREATE TRIGGER set_orders_ist_timestamp
+    BEFORE INSERT ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION set_ist_timestamp();
+-- 5. UPDATE EXISTING RECORDS TO ENSURE CORRECT DEFAULTS
+-- ============================================
+-- Set any NULL payment_status to 'pending'
+UPDATE orders 
+SET payment_status = 'pending' 
+WHERE payment_status IS NULL;
+-- 6. CREATE INDEX FOR FASTER CHRONOLOGICAL QUERIES
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_orders_created_at_desc 
+ON orders (created_at DESC);
+-- 7. VERIFICATION QUERIES
+-- ============================================
+-- Check if payment_status column exists and has proper values
+SELECT 
+    column_name, 
+    data_type, 
+    column_default,
+    is_nullable
+FROM information_schema.columns 
+WHERE table_name = 'orders' 
+  AND column_name = 'payment_status';
+-- View recent orders with IST time formatting
+SELECT 
+    id,
+    order_number,
+    status,
+    payment_status,
+    total,
+    created_at AT TIME ZONE 'Asia/Kolkata' as created_at_ist,
+    TO_CHAR(created_at AT TIME ZONE 'Asia/Kolkata', 'DD-Mon-YYYY HH24:MI:SS') as formatted_time
+FROM orders 
+ORDER BY created_at DESC 
+LIMIT 10;
+-- Check current timezone setting
+SHOW timezone;
+-- ============================================
+-- NOTES FOR DEVELOPER:
+-- ============================================
+-- 1. Payment status values should be: 'pending', 'paid', 'failed'
+-- 2. All times are stored in UTC but displayed in IST
+-- 3. Orders are sorted chronologically (newest first) using created_at DESC
+-- 4. The trigger automatically sets IST timestamps on new orders

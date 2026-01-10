@@ -55,14 +55,18 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                    workshop.attended 
+                                                    workshop.status === 'confirmed' 
                                                     ? "bg-green-100 text-green-700" 
-                                                    : "bg-amber-100 text-amber-700"
+                                                    : workshop.status === 'pending'
+                                                    ? "bg-amber-100 text-amber-700"
+                                                    : "bg-gray-100 text-gray-700"
                                                 }`}>
-                                                    {workshop.attended ? "Completed" : "Upcoming"}
+                                                    {workshop.status === 'confirmed' ? "Confirmed" : 
+                                                     workshop.status === 'pending' ? "Pending" : 
+                                                     workshop.status || 'Pending'}
                                                 </span>
                                                 <span className="font-display text-lg font-bold text-[#8B6F47]">
-                                                    ₹500
+                                                    ₹{workshop.price || 500}
                                                 </span>
                                             </div>
                                         </div>
@@ -167,11 +171,15 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                                             </p>
                                             <div className="flex items-center gap-2">
                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                                    workshop.attended 
+                                                    workshop.status === 'confirmed' 
                                                     ? "bg-green-100 text-green-700" 
-                                                    : "bg-amber-100 text-amber-700"
+                                                    : workshop.status === 'pending'
+                                                    ? "bg-amber-100 text-amber-700"
+                                                    : "bg-gray-100 text-gray-700"
                                                 }`}>
-                                                    {workshop.attended ? "Completed" : "Upcoming"}
+                                                    {workshop.status === 'confirmed' ? "Confirmed" : 
+                                                     workshop.status === 'pending' ? "Pending" : 
+                                                     workshop.status || 'Pending'}
                                                 </span>
                                                 <span className="text-xs text-[#a8a29e]">•</span>
                                                 <span className="font-sans text-xs text-[#78716c]">
@@ -185,7 +193,7 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
 
                                         <div className="flex-shrink-0 text-right">
                                             <span className="font-sans text-sm font-bold text-[#8B6F47]">
-                                                ₹500
+                                                ₹{workshop.price || 500}
                                             </span>
                                         </div>
                                     </div>
