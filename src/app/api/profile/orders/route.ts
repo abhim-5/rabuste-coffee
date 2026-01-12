@@ -39,9 +39,11 @@ export async function GET(request: NextRequest) {
 
     // Transform orders to match frontend Order type
     const transformedOrders = (orders || []).map(order => ({
-      id: order.order_number || order.id,
+      id: order.order_number || order.id, // Display ID
+      uuid: order.id, // UUID for ratings lookup
       date: order.created_at, // Keep as ISO string
       status: order.status,
+      payment_status: order.payment_status || 'paid', // Add payment status
       total: order.total,
       pointsEarned: Math.floor(order.total), // 1 point per rupee
       items: (order.order_items || []).map((item: any) => ({

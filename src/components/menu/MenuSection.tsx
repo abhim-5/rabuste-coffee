@@ -364,13 +364,13 @@ export function MenuSection({
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="mb-6 relative z-50"
+                    className="mb-6 relative z-40"
                 >
                     <div className="max-w-7xl mx-auto">
                         <div className="flex gap-2 flex-wrap items-center">
 
             {/* Smart Search Bar */}
-            <div className="flex-1 relative group z-10">
+            <div className="flex-1 relative group z-40">
               <div
                 className={`flex items-center bg-[#D8CBB8] border-[0.5px] transition-all duration-300 ease-out
                   ${
@@ -447,7 +447,7 @@ export function MenuSection({
 
               {/* Suggestions Dropdown (Autocomplete) */}
               {showSuggestions && suggestions.length > 0 && searchQuery && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-[60]">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-40">
                   {suggestions.map((suggestion, index) => (
                     <button
                       key={index}
@@ -469,7 +469,7 @@ export function MenuSection({
 
               {/* History Dropdown (Recent Searches) */}
               {showHistory && !searchQuery && searchHistory.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-[60]">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-40">
                   <div className="px-4 py-2 bg-[#8B6F47]/5 text-[10px] font-bold text-[#8B6F47] uppercase tracking-wider flex justify-between items-center">
                     <span>Recent Searches</span>
                     <button 
@@ -546,7 +546,7 @@ export function MenuSection({
                                     </svg>
                                 </button>
                                 {showSortDropdown && (
-                                    <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-50 w-[180px]">
+                                    <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20 w-[180px]">
                                         {[
                                             { value: "default", label: "Default" },
                                             { value: "price-low", label: "Price: Low-High" },
@@ -590,7 +590,7 @@ export function MenuSection({
                                     </svg>
                                 </button>
                                 {showFilterDropdown && (
-                                    <div className="absolute top-full left-0 lg:right-0 lg:left-auto mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-50 w-[180px] lg:w-auto max-h-[400px] overflow-y-auto lg:overflow-visible">
+                                    <div className="absolute top-full right-0 left-auto mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20 w-[240px] lg:w-auto max-h-[400px] overflow-y-auto lg:overflow-visible">
                                         {/* Desktop: Horizontal Layout - BIGGER */}
                                         <div className="hidden lg:flex lg:flex-row lg:divide-x lg:divide-[#8B6F47]/10">
                                             {/* Temperature */}

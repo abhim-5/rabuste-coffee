@@ -1,7 +1,7 @@
 // Admin Data Table Component
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronUp, ChevronDown, Search } from 'lucide-react';
 
 interface Column<T> {
@@ -18,6 +18,8 @@ interface DataTableProps<T> {
     searchable?: boolean;
     searchPlaceholder?: string;
     onRowClick?: (row: T) => void;
+    renderExpandedRow?: (row: T) => React.ReactNode;
+    expandedRowId?: string | null;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -27,6 +29,8 @@ export default function DataTable<T extends Record<string, any>>({
     searchable = false,
     searchPlaceholder = 'Search...',
     onRowClick,
+    renderExpandedRow,
+    expandedRowId,
 }: DataTableProps<T>) {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -135,25 +139,38 @@ export default function DataTable<T extends Record<string, any>>({
                                 </td>
                             </tr>
                         ) : (
-                            sortedData.map((row, rowIndex) => (
-                                <tr
-                                    key={rowIndex}
-                                    className={`hover:bg-gray-50 transition-colors ${onRowClick ? 'cursor-pointer' : ''
-                                        }`}
-                                    onClick={() => onRowClick?.(row)}
-                                >
-                                    {columns.map((column) => (
-                                        <td
-                                            key={String(column.key)}
-                                            className="px-6 py-4 text-sm text-gray-900"
+                            sortedData.map((row, rowIndex) => {
+                                const rowId = row.id || String(rowIndex);
+                                const isExpanded = expandedRowId === rowId;
+                                
+                                return (
+                                    <React.Fragment key={rowIndex}>
+                                        <tr
+                                            className={`hover:bg-gray-50 transition-colors ${onRowClick ? 'cursor-pointer' : ''
+                                                }`}
+                                            onClick={() => onRowClick?.(row)}
                                         >
-                                            {column.render
-                                                ? column.render(row)
-                                                : String(row[column.key] ?? '-')}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
+                                            {columns.map((column) => (
+                                                <td
+                                                    key={String(column.key)}
+                                                    className="px-6 py-4 text-sm text-gray-900"
+                                                >
+                                                    {column.render
+                                                        ? column.render(row)
+                                                        : String(row[column.key] ?? '-')}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        {isExpanded && renderExpandedRow && (
+                                            <tr key={`${rowIndex}-expanded`}>
+                                                <td colSpan={columns.length} className="p-0">
+                                                    {renderExpandedRow(row)}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

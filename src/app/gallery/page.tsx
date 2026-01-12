@@ -516,19 +516,27 @@ export default function GalleryPage() {
               </div>
 
               <div className="article__purchase">
-                <p className="article__price">₹{item.price.toLocaleString('en-IN')}</p>
-                <button
-                  className={`article__add-to-cart ${isInCart(`gallery-${item.id}`) ? 'remove-from-cart' : ''}`}
-                  onClick={() => {
-                    if (isInCart(`gallery-${item.id}`)) {
-                      handleRemoveFromCart(`gallery-${item.id}`);
-                    } else {
-                      handleAddToCart(item);
-                    }
-                  }}
-                >
-                  {isInCart(`gallery-${item.id}`) ? 'Remove from Cart' : 'Add to Cart'}
-                </button>
+                {!item.available ? (
+                    <div className="w-full text-center py-3 bg-gray-100 rounded">
+                        <span className="text-red-600 font-bold uppercase tracking-wider">Out of Stock</span>
+                    </div>
+                ) : (
+                    <>
+                        <p className="article__price">₹{item.price.toLocaleString('en-IN')}</p>
+                        <button
+                          className={`article__add-to-cart ${isInCart(`gallery-${item.id}`) ? 'remove-from-cart' : ''}`}
+                          onClick={() => {
+                            if (isInCart(`gallery-${item.id}`)) {
+                              handleRemoveFromCart(`gallery-${item.id}`);
+                            } else {
+                              handleAddToCart(item);
+                            }
+                          }}
+                        >
+                          {isInCart(`gallery-${item.id}`) ? 'Remove from Cart' : 'Add to Cart'}
+                        </button>
+                    </>
+                )}
               </div>
 
               <div className="article__artist">

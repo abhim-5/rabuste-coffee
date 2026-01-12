@@ -1,133 +1,442 @@
 // Prisma Schema for Rabuste Coffee
-// This schema will be automatically generated from your Supabase database
-// using: npm run prisma:pull
+// Auto-sync with Supabase Database
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// After running `prisma db pull`, this file will contain all your database tables
-// For now, we define the basic structure manually
+// ============================================
+// PROFILES & AUTHENTICATION
+// ============================================
 
 model profiles {
-  id          String   @id @db.Uuid
-  email       String?
-  full_name   String?
-  age         Int?
-  avatar_url  String?
-  role        String   @default("customer")
-  created_at  DateTime @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+  id            String    @id @db.Uuid
+  email         String?
+  full_name     String?
+  age           Int?
+  avatar_url    String?
+  phone         String?   @db.VarChar
+  role          String    @default("customer")
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @default(now()) @db.Timestamptz(6)
+  credits       Decimal   @default(0) @db.Decimal
+  is_banned     Boolean   @default(false)
+  banned_reason String?
+
+  @@map("profiles")
 }
+
+// ============================================
+// PRODUCTS & MENU
+// ============================================
 
 model products {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  description String   @default("")
-  price       Decimal  @default(0) @db.Decimal(10, 2)
-  category    String   @default("coffee")
-  image_url   String?
-  available   Boolean  @default(true)
-  created_by  String?  @db.Uuid
-  created_at  DateTime @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime @default(now()) @db.Timestamptz(6)
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  description     String    @default("")
+  price           Decimal   @default(0) @db.Decimal
+  category        String    @default("coffee")
+  image_url       String?
+  available       Boolean   @default(true)
+  created_by      String?   @db.Uuid
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
+  variations      Json      @default("[]") @db.JsonB
+  rating          Decimal   @default(4.5) @db.Decimal
+  review_count    Int       @default(0)
+  original_price  Decimal?  @db.Decimal
+  is_featured     Boolean   @default(false)
+  sort_order      Int       @default(0)
+  discount_price  Decimal?  @db.Decimal
+  crossed_price   Decimal?  @db.Decimal
+  is_deal_of_day  Boolean   @default(false)
+  deal_expiry     DateTime? @db.Timestamptz(6)
+  display_order   Int       @default(0)
+
+  @@map("products")
 }
 
+model categories {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String    @unique
+  description String?
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("categories")
+}
+
+model menu_items {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  price      Decimal   @db.Decimal
+  category   String
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("menu_items")
+}
+
+// ============================================
+// ORDERS
+// ============================================
+
 model orders {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id    String   @db.Uuid
-  status     String   @default("pending")
-  total      Decimal  @default(0) @db.Decimal(10, 2)
-  notes      String   @default("")
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String       @db.Uuid
+  order_number    String       @unique @db.VarChar
+  order_type      String       @db.VarChar
+  scheduled_time  String?      @db.VarChar
+  subtotal        Decimal      @db.Decimal
+  tax             Decimal      @default(0) @db.Decimal
+  total           Decimal      @db.Decimal
+  status          String       @default("pending") @db.VarChar
+  payment_status  String       @default("pending") @db.VarChar
+  customer_name   String?      @db.VarChar
+  customer_email  String?      @db.VarChar
+  notes           String?
+  created_at      DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime     @default(now()) @db.Timestamptz(6)
+  points_applied  Int          @default(0)
+  points_discount Decimal      @default(0.00) @db.Decimal
+  original_total  Decimal?     @db.Decimal
+
+  order_items     order_items[]
+  product_ratings product_ratings[]
+
+  @@map("orders")
 }
 
 model order_items {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  order_id     String   @db.Uuid
-  product_id   String?  @db.Uuid
-  product_name String
-  quantity     Int      @default(1)
-  price        Decimal  @default(0) @db.Decimal(10, 2)
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id        String    @db.Uuid
+  menu_item_id    String    @db.VarChar
+  menu_item_name  String    @db.VarChar
+  menu_item_image String?
+  variation_name  String?   @db.VarChar
+  unit_price      Decimal   @db.Decimal
+  quantity        Int
+  subtotal        Decimal   @db.Decimal
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+
+  order           orders    @relation(fields: [order_id], references: [id])
+
+  @@map("order_items")
 }
 
+// ============================================
+// RATINGS
+// ============================================
+
+model product_ratings {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String    @db.Uuid
+  order_id       String    @db.Uuid
+  order_item_id  String
+  menu_item_id   String
+  menu_item_name String
+  rating         Int
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  order          orders    @relation(fields: [order_id], references: [id])
+
+  @@map("product_ratings")
+}
+
+// ============================================
+// WORKSHOPS
+// ============================================
+
 model workshops {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title            String
-  description      String   @default("")
-  start_date       DateTime @db.Timestamptz(6)
-  end_date         DateTime? @db.Timestamptz(6)
-  price            Decimal  @default(0) @db.Decimal(10, 2)
-  max_participants Int?
-  enrolled_count   Int      @default(0)
+  description      String
+  full_description String?
+  start_date       DateTime                 @db.Date
+  start_time       String
+  duration         String?
+  price            Decimal                  @db.Decimal
+  max_spots        Int                      @default(20)
+  available_spots  Int                      @default(20)
   image_url        String?
-  instructor       String   @default("")
-  location         String   @default("")
-  available        Boolean  @default(true)
-  created_by       String?  @db.Uuid
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime @default(now()) @db.Timestamptz(6)
+  instructor       String?
+  level            String?
+  includes         Json                     @default("[]") @db.JsonB
+  available        Boolean                  @default(true)
+  is_upcoming      Boolean                  @default(true)
+  reviews          Json                     @default("[]") @db.JsonB
+  attendees        Int                      @default(0)
+  created_at       DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime                 @default(now()) @db.Timestamptz(6)
+
+  enrollments      workshop_enrollments[]
+  registrations    workshop_registrations[]
+
+  @@map("workshops")
 }
 
 model workshop_enrollments {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workshop_id String?  @db.Uuid
-  user_id     String?  @db.Uuid
-  enrolled_at DateTime @default(now()) @db.Timestamptz(6)
-  status      String   @default("enrolled")
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workshop_id String?   @db.Uuid
+  user_id     String?   @db.Uuid
+  enrolled_at DateTime  @default(now()) @db.Timestamptz(6)
+  status      String    @default("enrolled")
 
-  @@unique([workshop_id, user_id])
+  workshop    workshops? @relation(fields: [workshop_id], references: [id])
+
+  @@map("workshop_enrollments")
+}
+
+model workshop_registrations {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workshop_id    String    @db.Uuid
+  user_id        String    @db.Uuid
+  booking_number String    @unique
+  name           String
+  email          String
+  phone          String
+  status         String    @default("pending")
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  workshop       workshops @relation(fields: [workshop_id], references: [id])
+
+  @@map("workshop_registrations")
+}
+
+model workshop_requests {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String?   @db.Uuid
+  name                String
+  email               String
+  phone               String
+  workshop_theme      String
+  additional_details  String?
+  instagram_handle    String?
+  status              String    @default("pending")
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("workshop_requests")
+}
+
+// ============================================
+// ART GALLERY
+// ============================================
+
+model artists {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String       @unique
+  description String?
+  created_at  DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime     @default(now()) @db.Timestamptz(6)
+
+  art_pieces  art_pieces[]
+
+  @@map("artists")
 }
 
 model art_pieces {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title        String
-  artist_name  String
-  description  String   @default("")
-  price        Decimal  @default(0) @db.Decimal(10, 2)
-  image_url    String?
-  dimensions   String   @default("")
-  medium       String   @default("")
-  year_created Int?
-  available    Boolean  @default(true)
-  created_by   String?  @db.Uuid
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
-  updated_at   DateTime @default(now()) @db.Timestamptz(6)
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String
+  price       Decimal   @db.Decimal
+  artist      String
+  artist_pov  String?
+  image_url   String
+  available   Boolean   @default(true)
+  is_featured Boolean   @default(false)
+  sort_order  Int       @default(0)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  artist_id   String?   @db.Uuid
+
+  artist_rel  artists?         @relation(fields: [artist_id], references: [id])
+  purchases   art_purchases[]
+
+  @@map("art_pieces")
 }
 
 model art_purchases {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  art_piece_id   String?  @db.Uuid
-  user_id        String?  @db.Uuid
-  purchased_at   DateTime @default(now()) @db.Timestamptz(6)
-  purchase_price Decimal  @db.Decimal(10, 2)
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  art_piece_id   String     @db.Uuid
+  user_id        String     @db.Uuid
+  purchase_price Decimal    @db.Decimal
+  purchase_date  DateTime   @default(now()) @db.Timestamptz(6)
+  status         String     @default("pending")
+  created_at     DateTime   @default(now()) @db.Timestamptz(6)
 
-  @@unique([art_piece_id, user_id])
+  art_piece      art_pieces @relation(fields: [art_piece_id], references: [id])
+
+  @@map("art_purchases")
+}
+
+// ============================================
+// POINTS SYSTEM
+// ============================================
+
+model user_points {
+  user_id        String    @id @db.Uuid
+  total_points   Int       @default(0)
+  total_earned   Int       @default(0)
+  total_redeemed Int       @default(0)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("user_points")
 }
 
 model points_transactions {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id     String   @db.Uuid
-  points      Int
-  type        String
-  source      String
-  description String   @default("")
-  order_id    String?  @db.Uuid
-  workshop_id String?  @db.Uuid
-  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                 String    @db.Uuid
+  points                  Int
+  transaction_type        String
+  source                  String
+  description             String    @default("")
+  order_id                String?   @db.Uuid
+  workshop_id             String?   @db.Uuid
+  created_at              DateTime  @default(now()) @db.Timestamptz(6)
+  status                  String    @default("confirmed")
+  locked                  Boolean   @default(false)
+  admin_id                String?   @db.Uuid
+  reversal_reason         String?
+  reversed_transaction_id String?   @db.Uuid
+  metadata                Json      @default("{}") @db.JsonB
+
+  @@map("points_transactions")
 }
 
-model user_points {
-  user_id         String   @id @db.Uuid
-  total_points    Int      @default(0)
-  total_earned    Int      @default(0)
-  total_redeemed  Int      @default(0)
-  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+model points_config {
+  id                             Int       @id @default(1)
+  system_enabled                 Boolean   @default(true)
+  earning_enabled                Boolean   @default(true)
+  redemption_enabled             Boolean   @default(true)
+  points_to_rupee_ratio          Int       @default(10)
+  max_discount_percent           Int       @default(50)
+  min_payable_amount             Decimal   @default(10.00) @db.Decimal
+  order_confirmation_delay_minutes Int     @default(15)
+  max_points_per_order           Int       @default(1000)
+  daily_earning_limit            Int       @default(500)
+  updated_by                     String?   @db.Uuid
+  updated_at                     DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("points_config")
+}
+
+model points_earning_rules {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rule_name      String
+  item_type      String
+  item_id        String?   @db.Uuid
+  points_awarded Int
+  earn_per_rupee Boolean   @default(false)
+  enabled        Boolean   @default(true)
+  valid_from     DateTime  @default(now()) @db.Timestamptz(6)
+  valid_until    DateTime? @db.Timestamptz(6)
+  created_by     String?   @db.Uuid
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("points_earning_rules")
+}
+
+model points_redemption_rules {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rule_name            String
+  item_type            String
+  item_id              String?   @db.Uuid
+  redemption_allowed   Boolean   @default(false)
+  max_discount_amount  Decimal?  @db.Decimal
+  max_discount_percent Int?
+  enabled              Boolean   @default(true)
+  created_by           String?   @db.Uuid
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("points_redemption_rules")
+}
+
+model points_admin_actions {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminid       String    @db.Uuid
+  action_type     String
+  target_user_id  String?   @db.Uuid
+  details         Json      @default("{}") @db.JsonB
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("points_admin_actions")
+}
+
+// ============================================
+// NOTIFICATIONS & REVIEWS
+// ============================================
+
+model notifications {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  type       String
+  title      String
+  message    String
+  link       String?
+  is_read    Boolean   @default(false)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("notifications")
+}
+
+model cafe_reviews {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String    @db.Uuid
+  rating         Int
+  review_text    String?
+  status         String    @default("pending")
+  admin_response String?
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("cafe_reviews")
+}
+
+model newsletter_subscriptions {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String    @unique
+  subscribed_at   DateTime  @default(now()) @db.Timestamptz(6)
+  status          String    @default("active")
+  unsubscribed_at DateTime? @db.Timestamptz(6)
+
+  @@map("newsletter_subscriptions")
+}
+
+model franchise_inquiries {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  email       String
+  phone       String
+  location    String
+  message     String?
+  status      String    @default("pending")
+  admin_notes String?
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("franchise_inquiries")
+}
+
+model admin_activity_log {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  admin_id      String    @db.Uuid
+  action        String    @db.VarChar
+  resource_type String    @db.VarChar
+  resource_id   String?   @db.VarChar
+  details       Json?     @db.JsonB
+  ip_address    String?   @db.Inet
+  user_agent    String?
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("admin_activity_log")
 }

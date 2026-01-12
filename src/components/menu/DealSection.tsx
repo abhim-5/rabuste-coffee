@@ -135,7 +135,10 @@ export function DealSection({
                             >
                                 {/* Countdown Overlay - Positioned appropriately for the card */}
                                 {item.dealExpiry && (
-                                    <div className="absolute top-3 right-3 z-20">
+                                    <div 
+                                        className="absolute z-20"
+                                        style={{ top: '8px', right: '8px', left: 'auto' }}
+                                    >
                                         <ProductCountdown 
                                             expiryDate={item.dealExpiry} 
                                             onExpire={() => handleExpire(item.id)} 

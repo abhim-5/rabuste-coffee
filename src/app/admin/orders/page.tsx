@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import DataTable from '@/components/admin/DataTable';
 import StatCard from '@/components/admin/StatCard';
-import { ShoppingBag, Clock, CheckCircle, XCircle, Package, CreditCard } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, XCircle, Package, CreditCard, Star } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface OrderItem {
@@ -33,6 +33,7 @@ interface Order {
     scheduled_time: string | null;
     created_at: string;
     items: OrderItem[];
+    ratings?: Record<string, { rating: number }>; // Item ID -> rating
 }
 
 export default function OrdersPage() {
@@ -119,17 +120,46 @@ export default function OrdersPage() {
                 order_type: order.order_type || 'dine-in',
                 scheduled_time: order.scheduled_time,
                 created_at: order.created_at,
-                items: order.order_items || []
+                items: order.order_items || [],
+                ratings: {} // Will be populated if order is completed
             })) || [];
+
+            // Fetch ratings for completed orders
+            const completedOrderIds = formattedOrders
+                .filter((o: Order) => o.status === 'completed')
+                .map((o: Order) => o.id);
+
+            if (completedOrderIds.length > 0) {
+                const { data: ratingsData } = await supabase
+                    .from('product_ratings')
+                    .select('order_id, menu_item_name, rating')
+                    .in('order_id', completedOrderIds);
+
+                if (ratingsData) {
+                    // Map ratings to orders by menu_item_name since IDs are synthetic
+                    formattedOrders.forEach((order: Order) => {
+                        if (order.status === 'completed') {
+                            order.ratings = {};
+                            order.items.forEach((item: OrderItem) => {
+                                const rating = ratingsData.find(
+                                    r => r.order_id === order.id && r.menu_item_name === item.menu_item_name
+                                );
+                                if (rating && order.ratings) {
+                                    order.ratings[item.id] = { rating: rating.rating };
+                                }
+                            });
+                        }
+                    });
+                }
+            }
 
             setOrders(formattedOrders);
 
-            // Calculate comprehensive stats
+            // Calculate comprehensive stats (Simplified to 4 statuses)
             const pending = formattedOrders.filter((o: Order) => o.status === 'pending').length;
-            const preparing = formattedOrders.filter((o: Order) => o.status === 'preparing').length;
+            const confirmed = formattedOrders.filter((o: Order) => o.status === 'confirmed').length;
             const ready = formattedOrders.filter((o: Order) => o.status === 'ready').length;
             const completed = formattedOrders.filter((o: Order) => o.status === 'completed').length;
-            const cancelled = formattedOrders.filter((o: Order) => o.status === 'cancelled').length;
             
             const paidOrders = formattedOrders.filter((o: Order) => o.payment_status === 'paid');
             const totalRevenue = paidOrders.reduce((sum: number, o: Order) => sum + Number(o.total), 0);
@@ -139,10 +169,9 @@ export default function OrdersPage() {
             setStats({
                 total: formattedOrders.length,
                 pending,
-                preparing,
+                confirmed,
                 ready,
                 completed,
-                cancelled,
                 revenue: totalRevenue,
                 paidOrders: paidOrders.length,
                 pendingPayment
@@ -196,10 +225,8 @@ export default function OrdersPage() {
         const colors: Record<string, string> = {
             pending: 'bg-yellow-100 text-yellow-800',
             confirmed: 'bg-blue-100 text-blue-800',
-            preparing: 'bg-blue-100 text-blue-800',
             ready: 'bg-purple-100 text-purple-800',
-            completed: 'bg-green-100 text-green-800',
-            cancelled: 'bg-red-100 text-red-800'
+            completed: 'bg-green-100 text-green-800'
         };
 
         return (
@@ -302,18 +329,14 @@ export default function OrdersPage() {
                     className={`px-2 py-1 rounded-full text-xs font-semibold border-none cursor-pointer 
                         ${row.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
                         ${row.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : ''}
-                        ${row.status === 'preparing' ? 'bg-blue-100 text-blue-800' : ''}
                         ${row.status === 'ready' ? 'bg-purple-100 text-purple-800' : ''}
                         ${row.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                        ${row.status === 'cancelled' ? 'bg-red-100 text-red-800' : ''}
                     `}
                 >
                     <option value="pending">PENDING</option>
                     <option value="confirmed">CONFIRMED</option>
-                    <option value="preparing">PREPARING</option>
                     <option value="ready">READY</option>
                     <option value="completed">COMPLETED</option>
-                    <option value="cancelled">CANCELLED</option>
                 </select>
             )
         },
@@ -347,6 +370,24 @@ export default function OrdersPage() {
                                 {item.variation_name && (
                                     <p className="text-xs text-gray-500">Variation: {item.variation_name}</p>
                                 )}
+                                {/* Show rating if available */}
+                                {order.status === 'completed' && order.ratings?.[item.id] && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                className={`w-3 h-3 ${
+                                                    i < order.ratings![item.id].rating
+                                                        ? 'fill-yellow-400 text-yellow-400'
+                                                        : 'text-gray-300'
+                                                }`}
+                                            />
+                                        ))}
+                                        <span className="text-xs text-gray-600 ml-1">
+                                            ({order.ratings[item.id].rating}/5)
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                             <div className="text-right">
                                 <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
@@ -361,7 +402,7 @@ export default function OrdersPage() {
                 <div className="mt-4 pt-3 border-t border-gray-300 text-right">
                     <p className="text-sm text-gray-600">Subtotal: ₹{order.subtotal.toLocaleString()}</p>
                     {order.tax > 0 && <p className="text-sm text-gray-600">Tax: ₹{order.tax.toFixed(2)}</p>}
-                    <p className="text-lg font-bold text-gray-900 mt-1">Total: ₹{order.total.toLocaleString()}</p>
+
                 </div>
             </div>
         );
@@ -393,10 +434,10 @@ export default function OrdersPage() {
                             loading={loading}
                         />
                         <StatCard
-                            title="Pending Orders"
-                            value={stats.pending + stats.preparing}
+                            title="Active Orders"
+                            value={stats.pending + stats.confirmed}
                             icon={Clock}
-                            subtitle={`${stats.preparing} preparing`}
+                            subtitle={`${stats.confirmed} confirmed`}
                             loading={loading}
                         />
                         <StatCard
@@ -407,15 +448,15 @@ export default function OrdersPage() {
                         />
                     </div>
 
-                    {/* Secondary Stats */}
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {/* Secondary Stats - Simplified to 4 statuses */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
                             <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
                             <p className="text-xs text-gray-600">Pending</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
-                            <p className="text-2xl font-bold text-blue-600">{stats.preparing}</p>
-                            <p className="text-xs text-gray-600">Preparing</p>
+                            <p className="text-2xl font-bold text-blue-600">{stats.confirmed}</p>
+                            <p className="text-xs text-gray-600">Confirmed</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
                             <p className="text-2xl font-bold text-purple-600">{stats.ready}</p>
@@ -424,10 +465,6 @@ export default function OrdersPage() {
                         <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
                             <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
                             <p className="text-xs text-gray-600">Completed</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
-                            <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
-                            <p className="text-xs text-gray-600">Cancelled</p>
                         </div>
                     </div>
                 </>
@@ -439,6 +476,10 @@ export default function OrdersPage() {
                 loading={loading}
                 searchable
                 searchPlaceholder="Search by order number, customer name, or email..."
+                onRowClick={(order) => {
+                    setExpandedRow(expandedRow === order.id ? null : order.id);
+                }}
+                expandedRowId={expandedRow}
                 renderExpandedRow={renderExpandedRow}
             />
         </div>

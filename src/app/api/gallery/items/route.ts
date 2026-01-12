@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    // Public view only shows available items
-    if (!adminMode) {
-        query = query.eq('available', true);
-    }
+    // Public view shows all items (available and unavailable)
+    // if (!adminMode) {
+    //     query = query.eq('available', true);
+    // }
 
     if (featured) {
       query = query.eq('is_featured', true);

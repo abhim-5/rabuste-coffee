@@ -84,7 +84,7 @@ export function CoffeeDetail({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]"
                 />
             )}
             {isOpen && (
@@ -94,9 +94,9 @@ export function CoffeeDetail({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: "100%" }}
                     transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                    className="fixed inset-x-0 bottom-0 lg:inset-0 lg:flex lg:items-center lg:justify-center z-50 pointer-events-none"
+                    className="fixed inset-x-0 bottom-0 lg:inset-0 lg:flex lg:items-center lg:justify-center z-[110] pointer-events-none"
                 >
-                    <div className="rounded-2xl max-h-[90vh] lg:max-h-[85vh] w-full lg:max-w-4xl overflow-hidden shadow-2xl pointer-events-auto border-[0.5px] border-[#8B6F47]" style={{ backgroundColor: "#D8CBB8" }}>
+                    <div className="rounded-t-2xl rounded-b-none lg:rounded-2xl max-h-[90vh] lg:max-h-[85vh] w-full lg:w-auto lg:max-w-4xl overflow-hidden shadow-2xl pointer-events-auto border-[0.5px] border-[#8B6F47] max-w-full" style={{ backgroundColor: "#D8CBB8" }}>
                         <div className="sticky top-0 z-10 px-4 lg:px-6 py-4 border-b-[0.5px] border-[#8B6F47] flex items-center justify-between" style={{ backgroundColor: "#D8CBB8" }}>
                             <h2 className="font-serif text-xl lg:text-2xl font-bold text-[#262626]">
                                 Product Details
@@ -128,23 +128,31 @@ export function CoffeeDetail({
                                         </h3>
 
                                         <div className="flex items-center gap-2 mb-4">
-                                            <div className="flex items-center gap-1">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star
-                                                        key={i}
-                                                        className={`w-4 h-4 ${i < Math.floor(item.rating)
-                                                            ? "fill-amber-500 text-amber-500"
-                                                            : "text-gray-300"
-                                                            }`}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <span className="font-sans text-sm text-[#404040] font-semibold">
-                                                {item.rating}
-                                            </span>
-                                            <span className="font-sans text-sm text-[#78716c]">
-                                                ({item.reviewCount} reviews)
-                                            </span>
+                                            {item.reviewCount > 0 ? (
+                                                <>
+                                                    <div className="flex items-center gap-1">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                className={`w-4 h-4 ${i < Math.round(item.rating)
+                                                                    ? "fill-amber-500 text-amber-500"
+                                                                    : "text-gray-300"
+                                                                    }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <span className="font-sans text-sm text-[#404040] font-semibold">
+                                                        {item.rating.toFixed(1)}
+                                                    </span>
+                                                    <span className="font-sans text-sm text-[#78716c]">
+                                                        ({item.reviewCount} reviews)
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded border border-amber-200">
+                                                    New Product
+                                                </span>
+                                            )}
                                         </div>
 
                                         {/* Dynamic Price - updates with variation */}
@@ -201,55 +209,63 @@ export function CoffeeDetail({
                                         )}
 
                                         <div className="mt-auto">
-                                            {/* Always show Add to Cart when switching variations, or show quantity if already in cart */}
-                                            {currentSelectionQuantity === 0 ? (
-                                                <motion.button
-                                                    key={`add-${selectedVariation?.name || 'base'}`}
-                                                    initial={{ opacity: 0.8 }}
-                                                    animate={{ opacity: 1 }}
-                                                    whileHover={{ scale: 1.02 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                    onClick={handleAddToCart}
-                                                    className="w-full bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 rounded-full transition-colors shadow-lg flex items-center justify-center gap-2"
-                                                >
-                                                    <ShoppingCart className="w-5 h-5" />
-                                                    Add to Cart
-                                                </motion.button>
+                                            {!item.available ? (
+                                                <div className="w-full bg-gray-100 font-sans font-bold text-red-600 px-6 py-4 rounded-full text-center uppercase tracking-wider">
+                                                    Out of Stock
+                                                </div>
                                             ) : (
                                                 <>
-                                                    <label className="font-sans text-sm font-semibold text-[#404040] mb-2 block">
-                                                        Quantity
-                                                    </label>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex items-center gap-3 bg-[#D8CBB8]/30 rounded-full px-4 py-3">
-                                                            <button
-                                                                onClick={handleDecrement}
-                                                                className="w-8 h-8 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
-                                                            >
-                                                                <Minus className="w-4 h-4 text-[#404040]" />
-                                                            </button>
-                                                            <span className="font-sans text-xl font-semibold text-[#404040] min-w-[32px] text-center">
-                                                                {currentSelectionQuantity}
-                                                            </span>
-                                                            <button
-                                                                onClick={handleIncrement}
-                                                                className="w-8 h-8 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
-                                                            >
-                                                                <Plus className="w-4 h-4 text-[#404040]" />
-                                                            </button>
-                                                        </div>
-
+                                                    {/* Always show Add to Cart when switching variations, or show quantity if already in cart */}
+                                                    {currentSelectionQuantity === 0 ? (
                                                         <motion.button
-                                                            initial={{ opacity: 0, scale: 0.9 }}
-                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            key={`add-${selectedVariation?.name || 'base'}`}
+                                                            initial={{ opacity: 0.8 }}
+                                                            animate={{ opacity: 1 }}
                                                             whileHover={{ scale: 1.02 }}
                                                             whileTap={{ scale: 0.98 }}
-                                                            onClick={handleViewCart}
-                                                            className="flex-1 bg-[#D8CBB8] hover:bg-[#c9bca9] text-[#404040] font-sans font-semibold px-6 py-3 rounded-full transition-colors shadow-md border-[0.5px] border-[#8B6F47]"
+                                                            onClick={handleAddToCart}
+                                                            className="w-full bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold px-6 py-4 rounded-full transition-colors shadow-lg flex items-center justify-center gap-2"
                                                         >
-                                                            View Cart
+                                                            <ShoppingCart className="w-5 h-5" />
+                                                            Add to Cart
                                                         </motion.button>
-                                                    </div>
+                                                    ) : (
+                                                        <>
+                                                            <label className="font-sans text-sm font-semibold text-[#404040] mb-2 block">
+                                                                Quantity
+                                                            </label>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex items-center gap-3 bg-[#D8CBB8]/30 rounded-full px-4 py-3">
+                                                                    <button
+                                                                        onClick={handleDecrement}
+                                                                        className="w-8 h-8 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
+                                                                    >
+                                                                        <Minus className="w-4 h-4 text-[#404040]" />
+                                                                    </button>
+                                                                    <span className="font-sans text-xl font-semibold text-[#404040] min-w-[32px] text-center">
+                                                                        {currentSelectionQuantity}
+                                                                    </span>
+                                                                    <button
+                                                                        onClick={handleIncrement}
+                                                                        className="w-8 h-8 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 flex items-center justify-center transition-colors"
+                                                                    >
+                                                                        <Plus className="w-4 h-4 text-[#404040]" />
+                                                                    </button>
+                                                                </div>
+
+                                                                <motion.button
+                                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    whileHover={{ scale: 1.02 }}
+                                                                    whileTap={{ scale: 0.98 }}
+                                                                    onClick={handleViewCart}
+                                                                    className="flex-1 bg-[#D8CBB8] hover:bg-[#c9bca9] text-[#404040] font-sans font-semibold px-6 py-3 rounded-full transition-colors shadow-md border-[0.5px] border-[#8B6F47]"
+                                                                >
+                                                                    View Cart
+                                                                </motion.button>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </>
                                             )}
                                         </div>

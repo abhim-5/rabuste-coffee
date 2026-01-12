@@ -10,7 +10,12 @@ This document outlines the architecture, algorithms, and features of the Rabuste
 
 The search engine uses a multi-layered approach to understand user intent. It doesn't just look for text matches; it analyzes **spelling**, **sound**, and **context**.
 
+
+
 ### 1. Fuzzy Matching (Levenshtein Distance)
+
+
+
 
 -   **What it does:** Calculates the number of single-character edits (insertions, deletions, or substitutions) required to change the user's input into a known menu item.
 -   **Use Case:** Handles fat-finger typos.
@@ -19,7 +24,11 @@ The search engine uses a multi-layered approach to understand user intent. It do
     -   Short words (≤4 chars): Strict matching (Max distance 1).
     -   Long words (>4 chars): Looser matching (Max distance 2).
 
+
+
 ### 2. Phonetic Analysis (Sound Matching)
+
+
 
 -   **What it does:** Converts words into a "phonetic code" representing their pronunciation. We use a custom, simplified Metaphone-like algorithm optimized for food/coffee terms.
 -   **Use Case:** Handles "sounds-like" errors where users don't know the spelling.

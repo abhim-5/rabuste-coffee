@@ -110,13 +110,22 @@ export default function MenuManagementPage() {
         try {
             const supabase = createClient();
             const { data, error } = await supabase
-                .from('products')
+                .from('products_with_ratings_view')
                 .select('*')
                 .order('display_order', { ascending: true })
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setProducts(data || []);
+
+            // Map view fields to MenuItem interface
+            const mappedProducts = (data || []).map((item: any) => ({
+                ...item,
+                rating: item.weighted_rating || 0,
+                reviewCount: item.real_vote_count || 0,
+                // Ensure other fields map correctly if needed, broadly spreading item works if names match
+            }));
+
+            setProducts(mappedProducts);
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {

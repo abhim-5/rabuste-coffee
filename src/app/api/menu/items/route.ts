@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = supabase
-      .from('products')
+      .from('products_with_ratings_view')
       .select('*')
-      .eq('available', true)
+      // .eq('available', true) - Removed to show Out of Stock items
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
 
@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
         image: imageUrl,
         category: item.category,
         available: item.available,
-        rating: parseFloat(item.rating || '4.5'),
-        reviewCount: item.review_count || 0,
+        rating: parseFloat(item.weighted_rating || '0'), 
+        reviewCount: item.real_vote_count || 0,
         variations: item.variations || [],
         isDealOfTheDay: item.is_deal_of_day || false,
         dealExpiry: item.deal_expiry,

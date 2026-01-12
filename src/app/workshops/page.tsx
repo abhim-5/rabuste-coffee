@@ -305,11 +305,29 @@ function UpcomingWorkshopCard({ workshop, index, isInView, currentUser, onShowAu
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/workshops/register', {
+      // Load Razorpay SDK
+      const loadRazorpay = () => {
+        return new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      const isLoaded = await loadRazorpay();
+      if (!isLoaded) {
+        alert('Razorpay SDK failed to load');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Create registration + Razorpay order
+      const response = await fetch(`/api/workshops/${workshop.id}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          workshopId: workshop.id,
           name: formData.name,
           email: formData.email,
           phone: formData.phone
@@ -318,22 +336,77 @@ function UpcomingWorkshopCard({ workshop, index, isInView, currentUser, onShowAu
 
       const data = await response.json();
 
-      if (data.success && onRegistrationComplete) {
-        onRegistrationComplete(
-          data.bookingNumber,
-          data.registration.workshopTitle,
-          data.registration.date,
-          data.registration.time,
-          data.registration.price
-        );
-        setFormData({ name: "", email: "", phone: "" });
-      } else {
-        alert(data.error || 'Registration failed');
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
       }
+
+      // Open Razorpay payment modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Rabuste Coffee Workshops",
+        description: `Workshop: ${workshop.title}`,
+        order_id: data.razorpayOrderId,
+        handler: async function (razorpayResponse: any) {
+          try {
+            // Verify payment
+            const verifyRes = await fetch('/api/workshops/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: razorpayResponse.razorpay_order_id,
+                razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                razorpay_signature: razorpayResponse.razorpay_signature,
+                registration_id: data.registrationId
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.success) {
+              // Show success confirmation
+              if (onRegistrationComplete) {
+                onRegistrationComplete(
+                  data.bookingNumber,
+                  workshop.title,
+                  new Date(workshop.start_date).toLocaleDateString(),
+                  workshop.start_time,
+                  workshop.price
+                );
+              }
+              setFormData({ name: "", email: "", phone: "" });
+            } else {
+              alert('Payment verification failed');
+            }
+          } catch (err) {
+            console.error('Payment verification error:', err);
+            alert('Payment processed but verification failed. Please contact support.');
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone
+        },
+        theme: {
+          color: "#8B6F47"
+        },
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+          }
+        }
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
+
     } catch (error) {
       console.error('Registration error:', error);
-      alert('Failed to register. Please try again.');
-    } finally {
+      alert((error as any).message || 'Failed to register. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -677,9 +750,7 @@ function WorkshopDetailModal({ workshop, onClose }: any) {
                             <div className="flex items-start sm:items-center justify-between mb-2 gap-2">
                               <p className="font-semibold text-sm md:text-base text-[#404040] font-inter truncate">{review.name}</p>
                               <div className="flex items-center gap-0.5 shrink-0">
-                                {[...Array(review.rating)].map((_, i) => (
-                                  <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-amber-400 text-amber-400" />
-                                ))}
+                              {/* Review Rating Removed as per request */}
                               </div>
                             </div>
                             <p className="text-xs md:text-sm font-cormorant text-[#404040]/80 italic leading-relaxed">&quot;{review.comment}&quot;</p>

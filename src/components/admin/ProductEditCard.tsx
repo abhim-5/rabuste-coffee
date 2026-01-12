@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Edit2, Save, X, Upload, Tag, Eye, EyeOff, Calendar, AlertCircle, Trash2 } from 'lucide-react';
+import { Edit2, Save, X, Upload, Tag, Eye, EyeOff, Calendar, AlertCircle, Trash2, Star } from 'lucide-react';
 import { MenuItem } from '@/types/menu';
 
 interface ProductEditCardProps {
@@ -15,7 +15,13 @@ interface ProductEditCardProps {
 export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: ProductEditCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isToggling, setIsToggling] = useState(false);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+    // Optimistic State
+    const [optimisticAvailable, setOptimisticAvailable] = useState(product.available !== false);
+    useEffect(() => { setOptimisticAvailable(product.available !== false); }, [product.available]);
+
     const [formData, setFormData] = useState({
         name: product.name,
         description: product.description || '',
@@ -186,8 +192,19 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
 
     // Quick toggles
     const toggleAvailable = async () => {
-        await onUpdate(product.id, { available: !product.available });
-        onRefresh();
+        const newValue = !optimisticAvailable;
+        setOptimisticAvailable(newValue); // Instant update
+        
+        setIsToggling(true);
+        try {
+            await onUpdate(product.id, { available: newValue });
+            onRefresh();
+        } catch (error) {
+            setOptimisticAvailable(!newValue); // Revert
+            alert('Failed to update status');
+        } finally {
+            setIsToggling(false);
+        }
     };
 
     // Smart Pricing Handlers
@@ -235,14 +252,14 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                 )}
 
                 {/* Dynamic Deal Label (Top-Left) */}
-                {discountPercent > 0 && product.available && (
+                {discountPercent > 0 && optimisticAvailable && (
                     <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold shadow-sm z-10">
                         DEAL {discountPercent}% OFF
                     </div>
                 )}
 
                 {/* Out of Stock Overlay (Center/Visble) */}
-                {!product.available && (
+                {!optimisticAvailable && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-t-xl z-10 backdrop-blur-[1px]">
                          <div className="bg-white/90 text-red-600 px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider flex items-center gap-2">
                             <AlertCircle size={16} />
@@ -296,6 +313,21 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                     // View Mode
                     <>
                         <h3 className="font-bold text-lg text-gray-900 mb-1">{product.name}</h3>
+                        
+                         {/* Rating Display */}
+                         <div className="flex items-center gap-1 mb-2">
+                            {product.reviewCount > 0 ? (
+                                <>
+                                    <Star size={14} className="fill-amber-400 text-amber-400" />
+                                    <span className="text-sm font-bold text-gray-700">{product.rating.toFixed(1)}</span>
+                                    <span className="text-xs text-gray-500">({product.reviewCount} reviews)</span>
+                                </>
+                            ) : (
+                                <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+                                    New • No reviews
+                                </span>
+                            )}
+                        </div>
                         <p className="text-sm text-gray-600 mb-3 h-10 line-clamp-2">{product.description}</p>
                         
                         {/* Pricing */}
@@ -314,13 +346,14 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                         <div className="w-full flex items-center gap-2">
                             <button
                                 onClick={toggleAvailable}
+                                disabled={isToggling}
                                 className={`flex-1 h-10 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${
-                                    product.available
+                                    optimisticAvailable
                                         ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
                                         : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
                                 }`}
                             >
-                                {product.available ? (
+                                {optimisticAvailable ? (
                                     <>
                                         <EyeOff size={16} />
                                         Out of Stock

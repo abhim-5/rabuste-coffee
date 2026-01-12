@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Star } from "lucide-react";
 import { MenuItem } from "@/types/menu";
 
 interface CoffeeCardProps {
@@ -90,61 +90,92 @@ export function CoffeeCard({
                     </h4>
                 </div>
 
+                {/* Rating - Only show if there are reviews */}
+                <div className="flex items-center gap-1 mb-2">
+                    {item.reviewCount > 0 ? (
+                        <>
+                            <div className="flex items-center">
+                                <Star className="w-3 h-3 lg:w-4 lg:h-4 fill-amber-500 text-amber-500" />
+                            </div>
+                            <span className="font-sans text-xs lg:text-sm text-[#404040] font-bold pt-0.5">
+                                {item.rating.toFixed(1)}
+                            </span>
+                            <span className="font-sans text-[10px] lg:text-xs text-gray-500 pt-0.5">
+                                ({item.reviewCount})
+                            </span>
+                        </>
+                    ) : (
+                         <span className="font-sans text-[10px] lg:text-xs font-medium text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                            New
+                        </span>
+                    )}
+                </div>
+
                 {/* Description - Hidden on mobile */}
                 <p className="hidden lg:block font-sans text-sm lg:text-base text-gray-700 leading-snug mb-2 line-clamp-2 flex-1">
                     {item.description}
                 </p>
 
-                {/* Bottom Section - Price on left, Button on right */}
-                <div className="mt-auto flex items-end justify-between gap-2">
-                    {/* Price - Actual price first, then crossed price on right */}
-                    <div className="flex items-center gap-1.5">
-                        <span className="font-sans text-lg lg:text-2xl font-bold text-green-700">
-                            ₹{item.price}
-                        </span>
-                        {item.originalPrice && (
-                            <span className="font-sans text-[10px] lg:text-xs text-gray-500 line-through">
-                                ₹{item.originalPrice}
-                            </span>
-                        )}
-                    </div>
+                    {/* Bottom Section - Price on left, Button on right */}
+                    <div className="mt-auto flex items-end justify-between gap-2">
+                        {item.available ? (
+                            <>
+                                {/* Price - Actual price first, then crossed price on right */}
+                                <div className="flex items-center gap-1.5">
+                                    <span className="font-sans text-lg lg:text-2xl font-bold text-green-700">
+                                        ₹{item.price}
+                                    </span>
+                                    {item.originalPrice && (
+                                        <span className="font-sans text-[10px] lg:text-xs text-gray-500 line-through">
+                                            ₹{item.originalPrice}
+                                        </span>
+                                    )}
+                                </div>
 
-                    {/* Add to Cart / Quantity Button - Smaller on mobile */}
-                    <div className="w-20 lg:w-28">
-                        {cartQuantity === 0 ? (
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={handleAdd}
-                                className="w-full h-8 lg:h-10 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-[10px] lg:text-xs font-semibold px-2 lg:px-3 rounded-md transition-colors uppercase tracking-wider whitespace-nowrap flex items-center justify-center"
-                            >
-                                Add
-                            </motion.button>
+                                {/* Add to Cart / Quantity Button - Smaller on mobile */}
+                                <div className="w-20 lg:w-28">
+                                    {cartQuantity === 0 ? (
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={handleAdd}
+                                            className="w-full h-8 lg:h-10 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans text-[10px] lg:text-xs font-semibold px-2 lg:px-3 rounded-md transition-colors uppercase tracking-wider whitespace-nowrap flex items-center justify-center"
+                                        >
+                                            Add
+                                        </motion.button>
+                                    ) : (
+                                        <motion.div
+                                            initial={{ scale: 0.95 }}
+                                            animate={{ scale: 1 }}
+                                            className="flex items-center justify-between bg-[#8B6F47] rounded-md px-1.5 lg:px-2 h-8 lg:h-10 w-full"
+                                        >
+                                            <button
+                                                onClick={handleDecrement}
+                                                className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
+                                            >
+                                                <Minus className="w-3 h-3 text-white" />
+                                            </button>
+                                            <span className="font-sans text-sm font-bold text-white">
+                                                {cartQuantity}
+                                            </span>
+                                            <button
+                                                onClick={handleIncrement}
+                                                className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
+                                            >
+                                                <Plus className="w-3 h-3 text-white" />
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </>
                         ) : (
-                            <motion.div
-                                initial={{ scale: 0.95 }}
-                                animate={{ scale: 1 }}
-                                className="flex items-center justify-between bg-[#8B6F47] rounded-md px-1.5 lg:px-2 h-8 lg:h-10 w-full"
-                            >
-                                <button
-                                    onClick={handleDecrement}
-                                    className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
-                                >
-                                    <Minus className="w-3 h-3 text-white" />
-                                </button>
-                                <span className="font-sans text-sm font-bold text-white">
-                                    {cartQuantity}
+                            <div className="w-full flex items-center justify-center py-2 bg-gray-100 rounded-md">
+                                <span className="font-sans text-sm font-bold text-red-600 uppercase tracking-wider">
+                                    Out of Stock
                                 </span>
-                                <button
-                                    onClick={handleIncrement}
-                                    className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors flex-shrink-0"
-                                >
-                                    <Plus className="w-3 h-3 text-white" />
-                                </button>
-                            </motion.div>
+                            </div>
                         )}
                     </div>
-                </div>
             </div>
         </motion.div>
     );

@@ -13,7 +13,8 @@ import {
     Palette,
     Bell,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    MessageSquare
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -27,6 +28,7 @@ const navigation = [
     { name: 'Menu', href: '/admin/menu', icon: Coffee },
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Workshops', href: '/admin/workshops', icon: GraduationCap },
+    { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
     { name: 'Gallery', href: '/admin/gallery', icon: Palette },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];

@@ -12,8 +12,8 @@ export interface Order {
   tax: number;
   total: number;
   
-  // Status
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  // Status (Simplified to 4 states)
+  status: 'pending' | 'confirmed' | 'ready' | 'completed';
   payment_status: 'pending' | 'paid' | 'failed';
   
   // Customer info
@@ -75,4 +75,35 @@ export interface CreateOrderResponse {
 
 export interface OrderWithItems extends Order {
   items: OrderItem[];
+}
+
+// Product Rating System
+export interface ProductRating {
+  id: string;
+  user_id: string;
+  order_id: string;
+  order_item_id: string;
+  menu_item_id: string;
+  menu_item_name: string;
+  rating: number; // 1-5 stars
+  review_text?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateRatingRequest {
+  order_id: string;
+  ratings: Array<{
+    order_item_id: string;
+    menu_item_id: string;
+    menu_item_name: string;
+    rating: number;
+    review_text?: string;
+  }>;
+}
+
+export interface CreateRatingResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
 }

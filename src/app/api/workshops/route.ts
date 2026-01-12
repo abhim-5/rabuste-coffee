@@ -12,10 +12,12 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // 1. Fetch workshops
+    const { data: workshopsData, error } = await supabase
       .from('workshops')
-      .select('*')
+      .select('*, workshop_registrations(count)')
       .eq('available', true)
+      .eq('workshop_registrations.status', 'confirmed') // Only count confirmed bookings
       .order('start_date', { ascending: true });
 
     if (error) {
@@ -26,8 +28,40 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 2. Fetch reviews for these workshops
+    const workshopIds = workshopsData.map(w => w.id);
+    const { data: reviewsData, error: reviewsError } = await supabase
+      .from('workshop_reviews')
+      .select('*, profiles(full_name, avatar_url)')
+      .in('workshop_id', workshopIds)
+      .order('created_at', { ascending: false });
+
+    if (reviewsError) {
+      console.error('Error fetching reviews:', reviewsError);
+      // Continue without reviews if error
+    }
+
+    // Help map reviews to workshops
+    const reviewsByWorkshop = (reviewsData || []).reduce((acc: any, review: any) => {
+      if (!acc[review.workshop_id]) {
+        acc[review.workshop_id] = [];
+      }
+      
+      // Transform review to match frontend expectation
+      acc[review.workshop_id].push({
+        id: review.id,
+        name: review.profiles?.full_name || 'Anonymous',
+        rating: review.rating || 5,
+        date: review.created_at,
+        comment: review.review_text,
+        avatar: review.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (review.profiles?.full_name || 'Anonymous'),
+        user_id: review.user_id // For delete permission check
+      });
+      return acc;
+    }, {});
+
     // Construct full Supabase URL for images that are filenames only
-    const workshops = data.map(workshop => {
+    const workshops = workshopsData.map(workshop => {
       let imageUrl = '/workshops/1.jpg'; // Default fallback
       
       if (workshop.image_url) {
@@ -40,11 +74,11 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      console.log('Workshop:', workshop.title, 'Image URL:', imageUrl);
-      
       return {
         ...workshop,
-        image_url: imageUrl
+        image_url: imageUrl,
+        attendees: workshop.workshop_registrations?.[0]?.count || 0, // Map count to attendees
+        reviews: reviewsByWorkshop[workshop.id] || [] // Attach reviews
       };
     });
 

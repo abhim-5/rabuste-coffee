@@ -72,6 +72,10 @@ export interface Workshop {
   attended: boolean;
   status?: string; // pending, confirmed, cancelled, attended
   price?: number; // Workshop price
+  hasReviewed?: boolean;
+  reviewId?: string;
+  reviewRating?: number;
+  reviewText?: string;
 }
 
 export interface OrderItem {

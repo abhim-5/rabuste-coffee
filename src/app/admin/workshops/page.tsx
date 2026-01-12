@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import DataTable from '@/components/admin/DataTable';
 import StatCard from '@/components/admin/StatCard';
-import { GraduationCap, Users, TrendingUp, DollarSign, Clock, Mail, Phone, Instagram, Check, X, AlertCircle, Eye, Edit, Trash2, Save, Plus, RefreshCw, Upload } from 'lucide-react';
+import { Plus, Search, Filter, MoreHorizontal, Calendar, MapPin, Users, Edit, Trash2, X, ChevronDown, ChevronUp, Check, AlertCircle, Clock, CheckCircle, XCircle, Upload, GraduationCap, TrendingUp, DollarSign, Mail, Phone, Instagram, Eye, Save, RefreshCw } from "lucide-react";
 import { createClient } from '@/lib/supabase/client';
 
 interface WorkshopData {
@@ -22,7 +22,7 @@ interface WorkshopData {
     start_time?: string;
     duration?: string;
     level?: string;
-    description?: string;
+    image_url?: string;
 }
 
 interface WorkshopRequest {
@@ -61,6 +61,8 @@ export default function WorkshopsPage() {
     const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(null);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [registrationsLoading, setRegistrationsLoading] = useState(false);
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
     
     // Edit modal states
     const [showEditModal, setShowEditModal] = useState(false);
@@ -92,7 +94,9 @@ export default function WorkshopsPage() {
     const [selectedImageForCreate, setSelectedImageForCreate] = useState<File | null>(null);
     const [selectedImageForEdit, setSelectedImageForEdit] = useState<File | null>(null);
     const [imagePreviewForCreate, setImagePreviewForCreate] = useState<string>('');
+
     const [imagePreviewForEdit, setImagePreviewForEdit] = useState<string>('');
+    const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -146,6 +150,11 @@ export default function WorkshopsPage() {
                     price: workshop.price,
                     max_spots: workshop.max_spots,
                     available_spots: workshop.available_spots,
+                    image_url: workshop.image_url ? (
+                        workshop.image_url.startsWith('http') 
+                        ? workshop.image_url 
+                        : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${workshop.image_url}`
+                    ) : null,
                     capacity,
                     bookings,
                     booking_rate: Number(bookingRate.toFixed(2)),
@@ -214,10 +223,33 @@ export default function WorkshopsPage() {
         }
     };
 
+    const fetchReviews = async (workshopId: string) => {
+        setReviewsLoading(true);
+        try {
+            const supabase = createClient();
+            const { data, error } = await supabase
+                .from('workshop_reviews')
+                .select(`
+                    *,
+                    profiles:user_id (full_name, email, avatar_url)
+                `)
+                .eq('workshop_id', workshopId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setReviews(data || []);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
     const handleViewRegistrations = (workshopId: string) => {
         setSelectedWorkshopId(workshopId);
         setShowRegistrationsModal(true);
         fetchRegistrations(workshopId);
+        fetchReviews(workshopId);
     };
 
     const handleEditWorkshop = (workshop: WorkshopData) => {
@@ -232,13 +264,18 @@ export default function WorkshopsPage() {
             
             let imageUrl = editingWorkshop.image_url || '';
             if (selectedImageForEdit) {
-                // Delete old image if it exists
-                if (editingWorkshop.image_url) {
-                    await deleteImageFromSupabase(editingWorkshop.image_url);
-                }
-                // Upload new image
+                // Upload new image first
                 const uploadedUrl = await uploadImageToSupabase(selectedImageForEdit);
-                if (uploadedUrl) imageUrl = uploadedUrl;
+                
+                if (uploadedUrl) {
+                    // Update the image URL to the new one
+                    imageUrl = uploadedUrl;
+                    
+                    // Only delete the old image if the new one was uploaded successfully
+                    if (editingWorkshop.image_url) {
+                        await deleteImageFromSupabase(editingWorkshop.image_url);
+                    }
+                }
             }
             
             const { error } = await supabase
@@ -393,11 +430,14 @@ export default function WorkshopsPage() {
     };
 
     const handleToggleRegistrationStatus = async (registrationId: string, currentStatus: string) => {
+        console.log('Toggle status clicked:', { registrationId, currentStatus });
+        
         try {
             const supabase = createClient();
             
             // Toggle between confirmed and pending
             const newStatus = currentStatus === 'confirmed' ? 'pending' : 'confirmed';
+            console.log('Toggling to:', newStatus);
             
             // Optimistically update UI
             setRegistrations(prev => 
@@ -413,7 +453,12 @@ export default function WorkshopsPage() {
                 .update({ status: newStatus })
                 .eq('id', registrationId);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase update error:', error);
+                throw error;
+            }
+            
+            console.log('Status updated successfully');
             
             // Refresh to ensure consistency
             if (selectedWorkshopId) {
@@ -421,7 +466,7 @@ export default function WorkshopsPage() {
             }
         } catch (error) {
             console.error('Error toggling status:', error);
-            alert('Failed to update status');
+            alert('Failed to update status: ' + (error as any).message);
             // Revert on error
             if (selectedWorkshopId) {
                 fetchRegistrations(selectedWorkshopId);
@@ -448,18 +493,39 @@ export default function WorkshopsPage() {
 
     const deleteImageFromSupabase = async (imageUrl: string) => {
         try {
+            if (!imageUrl) return;
+            
+            // Skip deletion for default or placeholder images if needed
+            if (imageUrl.includes('default') || imageUrl.startsWith('/')) {
+                 // Adjust this check based on your actual default image naming convention
+                 // For now, checking if it is a local path or explicit default
+            }
+
             const supabase = createClient();
             
             // Extract filename - handle both full URLs and plain filenames
             let fileName: string;
+            
             if (imageUrl.startsWith('http')) {
-                // It's a full URL, extract filename from end
-                const urlParts = imageUrl.split('/');
-                fileName = urlParts[urlParts.length - 1];
+                try {
+                    const urlObj = new URL(imageUrl);
+                    const pathParts = urlObj.pathname.split('/');
+                    // Supabase storage URLs usually follow /storage/v1/object/public/bucket/filename
+                    // We want the last part, but if it was in a folder, we might need more.
+                    // Given the upload logic uses simple filenames in root, taking the last part is likely correct.
+                    // However, to be safe against query params which are handled by URL object, we use the pathname.
+                    fileName = pathParts[pathParts.length - 1];
+                } catch (e) {
+                    console.error('Error parsing URL:', e);
+                    // Fallback to split if URL parsing fails
+                    fileName = imageUrl.split('/').pop()?.split('?')[0] || imageUrl;
+                }
             } else {
-                // It's already just a filename
                 fileName = imageUrl;
             }
+
+            // Decode filename to handle encoded characters like spaces (%20)
+            fileName = decodeURIComponent(fileName);
             
             console.log('Deleting old image:', fileName);
             
@@ -835,42 +901,138 @@ export default function WorkshopsPage() {
                             </p>
                         </div>
                         <div className="p-6 overflow-y-auto max-h-[60vh]">
-                            {registrationsLoading ? (
-                                <div className="flex justify-center py-12">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8B6F47]"></div>
-                                </div>
-                            ) : registrations.length === 0 ? (
-                                <div className="text-center py-12 text-gray-500">
-                                    No registrations yet
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                   {registrations.map((reg) => (
-                                        <div key={reg.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="font-semibold text-gray-900">{reg.name}</p>
-                                                    <p className="text-sm text-gray-600">{reg.email}</p>
-                                                    <p className="text-sm text-gray-600">{reg.phone}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">Booking: {reg.booking_number}</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleToggleRegistrationStatus(reg.id, reg.status)}
-                                                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all hover:scale-105 flex items-center gap-1 ${
-                                                        reg.status === 'confirmed' 
-                                                            ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                                                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                                                    }`}
-                                                    title="Click to toggle status"
-                                                >
-                                                    <RefreshCw size={12} />
-                                                    {reg.status}
-                                                </button>
-                                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Registrations Column */}
+                                <div>
+                                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <Users className="w-4 h-4" />
+                                        Participants ({registrations.length})
+                                    </h3>
+                                    {registrationsLoading ? (
+                                        <div className="flex justify-center py-8">
+                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#8B6F47]"></div>
                                         </div>
-                                    ))}
+                                    ) : registrations.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg text-sm">
+                                            No registrations yet
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {registrations.map((reg) => (
+                                                <div key={reg.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <p className="font-semibold text-gray-900 text-sm">{reg.name}</p>
+                                                            <p className="text-xs text-gray-600">{reg.email}</p>
+                                                            <p className="text-xs text-gray-600">{reg.phone}</p>
+                                                            <p className="text-[10px] text-gray-400 mt-1 font-mono">{reg.booking_number}</p>
+                                                        </div>
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                                            reg.payment_status === 'paid' 
+                                                            ? 'bg-green-100 text-green-700' 
+                                                            : reg.payment_status === 'failed'
+                                                            ? 'bg-red-100 text-red-700'
+                                                            : 'bg-yellow-100 text-yellow-700'
+                                                        }`}>
+                                                            {reg.payment_status === 'paid' ? 'Paid' : 
+                                                             reg.payment_status === 'failed' ? 'Failed' : 
+                                                             'Pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+
+                                {/* Reviews Column */}
+                                <div>
+                                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                            </svg>
+                                            What They Said ({reviews.length})
+                                        </div>
+                                    </h3>
+                                    {reviewsLoading ? (
+                                        <div className="flex justify-center py-8">
+                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#8B6F47]"></div>
+                                        </div>
+                                    ) : reviews.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg text-sm">
+                                            No reviews yet
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {reviews.map((review) => (
+                                                <div key={review.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition bg-amber-50/30">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                                                            {review.profiles?.avatar_url ? (
+                                                                <img 
+                                                                    src={review.profiles.avatar_url} 
+                                                                    alt={review.profiles.full_name} 
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center bg-amber-100 text-amber-700 font-bold text-xs">
+                                                                    {(review.profiles?.full_name || 'U').charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <p className="font-semibold text-gray-900 text-sm truncate">
+                                                                        {review.profiles?.full_name || 'Anonymous'}
+                                                                    </p>
+                                                                    <p className="text-[10px] text-gray-400 mt-0.5">
+                                                                        {new Date(review.created_at).toLocaleString('en-IN', {
+                                                                            day: '2-digit',
+                                                                            month: '2-digit',
+                                                                            year: 'numeric',
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit',
+                                                                            hour12: true,
+                                                                            timeZone: 'Asia/Kolkata'
+                                                                        })}
+                                                                    </p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (!confirm('Are you sure you want to delete this review?')) return;
+                                                                        try {
+                                                                            const res = await fetch('/api/admin/reviews/workshops', {
+                                                                                method: 'DELETE',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ id: review.id })
+                                                                            });
+                                                                            if (!res.ok) throw new Error('Failed to delete');
+                                                                            // Refresh reviews
+                                                                            fetchReviews(selectedWorkshopId!);
+                                                                        } catch (err) {
+                                                                            console.error(err);
+                                                                            alert('Failed to delete review');
+                                                                        }
+                                                                    }}
+                                                                    className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors"
+                                                                    title="Delete Review"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                            <p className="text-sm text-gray-600 mt-2 italic leading-relaxed">
+                                                                {review.review_text}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                         <div className="p-6 border-t border-gray-200 flex justify-end">
                             <button
@@ -981,8 +1143,26 @@ export default function WorkshopsPage() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Workshop Image</label>
                                     <div className="space-y-2">
                                         {editingWorkshop?.image_url && !imagePreviewForEdit && (
-                                            <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200">
-                                                <img src={editingWorkshop.image_url} alt="Current" className="w-full h-full object-cover" />
+                                            <div 
+                                                className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 cursor-zoom-in group"
+                                                onClick={() => setEnlargedImage(
+                                                    editingWorkshop.image_url.startsWith('http') 
+                                                        ? editingWorkshop.image_url 
+                                                        : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${editingWorkshop.image_url}`
+                                                )}
+                                            >
+                                                <img 
+                                                    src={
+                                                        editingWorkshop.image_url.startsWith('http') 
+                                                            ? editingWorkshop.image_url 
+                                                            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${editingWorkshop.image_url}`
+                                                    } 
+                                                    alt="Current" 
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                    <Eye className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" size={32} />
+                                                </div>
                                                 <span className="absolute bottom-2 left-2 text-xs bg-blue-500 text-white px-2 py-1 rounded">Current Image</span>
                                             </div>
                                         )}
@@ -1231,6 +1411,27 @@ export default function WorkshopsPage() {
                                 Create Workshop
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* Enlarged Image Modal */}
+            {enlargedImage && (
+                <div 
+                    className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 cursor-zoom-out"
+                    onClick={() => setEnlargedImage(null)}
+                >
+                    <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                        <img 
+                            src={enlargedImage} 
+                            alt="Enlarged view" 
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        />
+                        <button 
+                            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition"
+                            onClick={() => setEnlargedImage(null)}
+                        >
+                            <X size={24} />
+                        </button>
                     </div>
                 </div>
             )}

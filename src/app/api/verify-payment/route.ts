@@ -23,7 +23,8 @@ export async function POST(req: Request) {
 
         console.log('Attempting to update order:', order_id);
 
-        const { data: updatedOrder, error: updateError } = await supabase
+        // Try updating by UUID first
+        let { data: updatedOrder, error: updateError } = await supabase
             .from('orders')
             .update({ 
                 status: 'preparing',
@@ -34,8 +35,25 @@ export async function POST(req: Request) {
             .select()
             .single();
 
+        // If failed, try by order_number (for retry payments)
         if (updateError) {
-             console.error('Database Update Failed for UUID:', order_id);
+            const result = await supabase
+                .from('orders')
+                .update({ 
+                    status: 'preparing',
+                    payment_status: 'paid',
+                    notes: `Paid: ${razorpay_payment_id}`
+                })
+                .eq('order_number', order_id)
+                .select()
+                .single();
+            
+            updatedOrder = result.data;
+            updateError = result.error;
+        }
+
+        if (updateError) {
+             console.error('Database Update Failed:', order_id);
              console.error('Error Details:', updateError);
              return NextResponse.json({ 
                  success: false,

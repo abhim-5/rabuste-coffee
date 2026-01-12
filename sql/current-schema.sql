@@ -136,28 +136,111 @@ CREATE TABLE public.orders (
   subtotal numeric NOT NULL,
   tax numeric DEFAULT 0,
   total numeric NOT NULL,
-  status character varying DEFAULT 'pending'::character varying CHECK (status::text = ANY (ARRAY['pending'::character varying, 'confirmed'::character varying, 'preparing'::character varying, 'ready'::character varying, 'completed'::character varying, 'cancelled'::character varying]::text[])),
+  status character varying DEFAULT 'pending'::character varying CHECK (status::text = ANY (ARRAY['pending'::character varying, 'confirmed'::character varying, 'ready'::character varying, 'completed'::character varying]::text[])),
   payment_status character varying DEFAULT 'pending'::character varying CHECK (payment_status::text = ANY (ARRAY['pending'::character varying, 'paid'::character varying, 'failed'::character varying]::text[])),
   customer_name character varying,
   customer_email character varying,
   notes text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  points_applied integer DEFAULT 0,
+  points_discount numeric DEFAULT 0.00,
+  original_total numeric,
   CONSTRAINT orders_pkey PRIMARY KEY (id),
   CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.points_admin_actions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  admin_id uuid NOT NULL,
+  action_type text NOT NULL CHECK (action_type = ANY (ARRAY['config_change'::text, 'earning_rule_create'::text, 'earning_rule_update'::text, 'earning_rule_delete'::text, 'redemption_rule_create'::text, 'redemption_rule_update'::text, 'redemption_rule_delete'::text, 'manual_grant'::text, 'manual_deduct'::text, 'freeze_user'::text, 'unfreeze_user'::text, 'reverse_transaction'::text])),
+  target_user_id uuid,
+  details jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT points_admin_actions_pkey PRIMARY KEY (id),
+  CONSTRAINT points_admin_actions_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.profiles(id),
+  CONSTRAINT points_admin_actions_target_user_id_fkey FOREIGN KEY (target_user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.points_config (
+  id integer NOT NULL DEFAULT 1 CHECK (id = 1),
+  system_enabled boolean DEFAULT true,
+  earning_enabled boolean DEFAULT true,
+  redemption_enabled boolean DEFAULT true,
+  points_to_rupee_ratio integer DEFAULT 10,
+  max_discount_percent integer DEFAULT 50,
+  min_payable_amount numeric DEFAULT 10.00,
+  order_confirmation_delay_minutes integer DEFAULT 15,
+  max_points_per_order integer DEFAULT 1000,
+  daily_earning_limit integer DEFAULT 500,
+  updated_by uuid,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT points_config_pkey PRIMARY KEY (id),
+  CONSTRAINT points_config_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.points_earning_rules (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  rule_name text NOT NULL,
+  item_type text NOT NULL CHECK (item_type = ANY (ARRAY['menu_item'::text, 'workshop'::text, 'art_piece'::text, 'global'::text])),
+  item_id uuid,
+  points_awarded integer NOT NULL CHECK (points_awarded >= 0),
+  earn_per_rupee boolean DEFAULT false,
+  enabled boolean DEFAULT true,
+  valid_from timestamp with time zone DEFAULT now(),
+  valid_until timestamp with time zone,
+  created_by uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT points_earning_rules_pkey PRIMARY KEY (id),
+  CONSTRAINT points_earning_rules_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.points_redemption_rules (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  rule_name text NOT NULL,
+  item_type text NOT NULL CHECK (item_type = ANY (ARRAY['menu_item'::text, 'workshop'::text, 'art_piece'::text, 'global'::text])),
+  item_id uuid,
+  redemption_allowed boolean DEFAULT false,
+  max_discount_amount numeric,
+  max_discount_percent integer CHECK (max_discount_percent >= 0 AND max_discount_percent <= 100),
+  enabled boolean DEFAULT true,
+  created_by uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT points_redemption_rules_pkey PRIMARY KEY (id),
+  CONSTRAINT points_redemption_rules_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id)
 );
 CREATE TABLE public.points_transactions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   points integer NOT NULL,
-  type text NOT NULL CHECK (type = ANY (ARRAY['earned'::text, 'redeemed'::text])),
-  source text NOT NULL CHECK (source = ANY (ARRAY['order'::text, 'workshop'::text, 'referral'::text, 'bonus'::text, 'redemption'::text])),
+  transaction_type text NOT NULL CHECK (transaction_type = ANY (ARRAY['earned'::text, 'redeemed'::text])),
+  source text NOT NULL CHECK (source = ANY (ARRAY['order'::text, 'workshop'::text, 'art_purchase'::text, 'referral'::text, 'bonus'::text, 'redemption'::text, 'admin_grant'::text, 'admin_deduct'::text, 'reversal'::text])),
   description text DEFAULT ''::text,
   order_id uuid,
   workshop_id uuid,
   created_at timestamp with time zone DEFAULT now(),
+  status text DEFAULT 'confirmed'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'reversed'::text, 'locked'::text])),
+  locked boolean DEFAULT false,
+  admin_id uuid,
+  reversal_reason text,
+  reversed_transaction_id uuid,
+  metadata jsonb DEFAULT '{}'::jsonb,
   CONSTRAINT points_transactions_pkey PRIMARY KEY (id),
-  CONSTRAINT points_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  CONSTRAINT points_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT points_transactions_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.profiles(id),
+  CONSTRAINT points_transactions_reversed_transaction_id_fkey FOREIGN KEY (reversed_transaction_id) REFERENCES public.points_transactions(id)
+);
+CREATE TABLE public.product_ratings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  order_id uuid NOT NULL,
+  order_item_id text NOT NULL,
+  menu_item_id text NOT NULL,
+  menu_item_name text NOT NULL,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT product_ratings_pkey PRIMARY KEY (id),
+  CONSTRAINT product_ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT product_ratings_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
 );
 CREATE TABLE public.products (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -228,9 +311,13 @@ CREATE TABLE public.workshop_registrations (
   phone text NOT NULL,
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'cancelled'::text, 'attended'::text])),
   created_at timestamp with time zone DEFAULT now(),
+  payment_status text DEFAULT 'pending'::text CHECK (payment_status = ANY (ARRAY['pending'::text, 'paid'::text, 'failed'::text])),
+  payment_id text,
+  razorpay_order_id text,
+  amount_paid numeric,
   CONSTRAINT workshop_registrations_pkey PRIMARY KEY (id),
-  CONSTRAINT workshop_registrations_workshop_id_fkey FOREIGN KEY (workshop_id) REFERENCES public.workshops(id),
-  CONSTRAINT workshop_registrations_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  CONSTRAINT workshop_registrations_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT workshop_registrations_workshop_id_fkey FOREIGN KEY (workshop_id) REFERENCES public.workshops(id)
 );
 CREATE TABLE public.workshop_requests (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -246,6 +333,18 @@ CREATE TABLE public.workshop_requests (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT workshop_requests_pkey PRIMARY KEY (id),
   CONSTRAINT workshop_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.workshop_reviews (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  workshop_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  rating integer CHECK (rating >= 1 AND rating <= 5),
+  review_text text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT workshop_reviews_pkey PRIMARY KEY (id),
+  CONSTRAINT workshop_reviews_workshop_id_fkey FOREIGN KEY (workshop_id) REFERENCES public.workshops(id),
+  CONSTRAINT workshop_reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.workshops (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

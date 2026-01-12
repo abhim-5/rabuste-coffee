@@ -86,7 +86,7 @@ export function Hero() {
             transition={{ duration: 1.2, delay: 2.4, ease: [0.22, 1, 0.36, 1] }}
             className="mt-12"
           >
-            <Link href="/" className="group">
+            <Link href="/menu" className="group">
               <span className="inline-flex items-center gap-3 rounded-full border border-white/60 bg-white/5 px-8 py-4 font-sans text-sm font-semibold uppercase tracking-[0.2em] text-white/95 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/10">
                 Shop Here
                 <svg

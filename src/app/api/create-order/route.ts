@@ -10,6 +10,49 @@ const razorpay = new Razorpay({
 
 export async function POST(request: NextRequest) {
     try {
+        const body = await request.json();
+        console.log('Create Order Request:', body);
+
+        // Check if this is a retry payment scenario
+        if (body.retryPayment && body.orderNumber) {
+            // Get order UUID from database using order_number
+            const supabase = await createClient();
+            const { data: { user }, error: authError } = await supabase.auth.getUser();
+            if (authError || !user) {
+                return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+            }
+
+            const { data: existingOrder, error: orderError } = await supabase
+                .from('orders')
+                .select('id, total')
+                .eq('order_number', body.orderNumber)
+                .eq('user_id', user.id)
+                .single();
+
+            if (orderError || !existingOrder) {
+                return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 });
+            }
+
+            // For retry payment, create Razorpay order with existing order total
+            const amount = Math.round((body.total || existingOrder.total) * 100); // Convert to paise
+
+            const razorpayOrder = await razorpay.orders.create({
+                amount,
+                currency: 'INR',
+                receipt: `retry_${body.orderNumber}_${Date.now()}`,
+            });
+
+            return NextResponse.json({
+                success: true,
+                razorpayOrderId: razorpayOrder.id,
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency,
+                orderNumber: body.orderNumber,
+                dbOrderId: existingOrder.id // Return actual UUID
+            });
+        }
+
+        // Original order creation logic for new orders
         const supabase = await createClient();
         
         // 1. Authenticate User
@@ -18,8 +61,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
         }
 
-        const body: CreateOrderRequest = await request.json();
-        const { orderType, scheduledTime, items, subtotal, tax, total, notes } = body;
+        const { orderType, scheduledTime, items, subtotal, tax, total, notes } = body as CreateOrderRequest;
 
         // 2. Create Order in Supabase
         const { data: orderNumberData, error: numError } = await supabase.rpc('generate_order_number');

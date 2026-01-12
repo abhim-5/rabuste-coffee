@@ -142,7 +142,17 @@ export function WorkshopCard({
                                         </div>
                                         <div className="flex-1">
                                             <p className="font-oswald text-sm font-bold text-[#2A2A2A]">{review.name}</p>
-                                            <p className="text-xs text-[#8B6F47] font-oswald">{review.date}</p>
+                                            <span className="text-lg text-[#8B6F47] font-serif">
+                                                {new Date(review.date).toLocaleString('en-IN', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: true,
+                                                    timeZone: 'Asia/Kolkata'
+                                                })}
+                                            </span>
                                         </div>
                                     </div>
                                     <p className="font-serif text-sm md:text-base text-[#404040] leading-relaxed italic">
@@ -227,7 +237,17 @@ export function WorkshopCard({
                                                             </div>
                                                             <div>
                                                                 <p className="font-oswald text-sm font-bold text-[#2A2A2A]">{review.name}</p>
-                                                                <p className="text-xs text-[#8B6F47] font-oswald">{review.date}</p>
+                                                                <span className="text-base text-[#8B6F47] font-serif">
+                                                        {new Date(review.date).toLocaleString('en-IN', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                            hour12: true,
+                                                            timeZone: 'Asia/Kolkata'
+                                                        })}
+                                                    </span>
                                                             </div>
                                                         </div>
                                                         <p className="font-serif text-sm md:text-base text-[#404040] leading-relaxed italic">

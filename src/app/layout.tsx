@@ -82,7 +82,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css?family=Satisfy|Open+Sans+Condensed:700,300" rel="stylesheet" />
       </head>
       <body
-        className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${oswald.variable} antialiased`}
+        className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${oswald.variable} antialiased overflow-x-hidden`}
         suppressHydrationWarning={true}
       >
         <AuthProvider>
