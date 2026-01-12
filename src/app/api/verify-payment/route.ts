@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         let { data: updatedOrder, error: updateError } = await supabase
             .from('orders')
             .update({ 
-                status: 'preparing',
+                status: 'confirmed',  // Valid status: 'pending', 'confirmed', 'completed', 'cancelled'
                 payment_status: 'paid',
                 notes: `Paid: ${razorpay_payment_id}`
             })

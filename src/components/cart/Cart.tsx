@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { CartItem } from "@/types/menu";
 import { CreateOrderRequest } from "@/types/orders";
 import { User } from "@supabase/supabase-js";
+import PointsCelebration from "@/components/points/PointsCelebration";
 
 interface CartProps {
     isOpen: boolean;
@@ -48,6 +49,8 @@ export function Cart({
     const [orderType, setOrderType] = useState<OrderType>("takeaway-scheduled");
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
+    const [pointsEarned, setPointsEarned] = useState<number>(0);
+    const [completedOrderNumber, setCompletedOrderNumber] = useState<string>('');
 
     // Filter items based on cart type
     const filteredItems = cartType === 'gallery'
@@ -68,9 +71,9 @@ export function Cart({
     }).filter(id => id !== null);
 
     // Placeholder for recommendations
-    const recommendedArtworks: any[] = []; 
+    const recommendedArtworks: any[] = [];
     const cartMenuIds = filteredItems.map(item => String(item.menuItem.id)).filter(id => !id.startsWith('gallery-'));
-    const recommendedMenuItems: any[] = []; 
+    const recommendedMenuItems: any[] = [];
 
     const handleConfirmBooking = async () => {
         if (!currentUser) {
@@ -148,16 +151,16 @@ export function Cart({
             const orderPayload: CreateOrderRequest = {
                 orderType,
                 scheduledTime: orderType === 'takeaway-scheduled'
-                     ? document.querySelector<HTMLSelectElement>('select')?.value
-                     : undefined,
+                    ? document.querySelector<HTMLSelectElement>('select')?.value
+                    : undefined,
                 items: filteredItems.map(item => ({
-                     menuItemId: item.menuItem.id,
-                     menuItemName: item.menuItem.name,
-                     menuItemImage: item.menuItem.image,
-                     variationName: item.selectedVariation?.name,
-                     unitPrice: item.selectedVariation?.price || item.menuItem.price,
-                     quantity: item.quantity,
-                     subtotal: item.subtotal
+                    menuItemId: item.menuItem.id,
+                    menuItemName: item.menuItem.name,
+                    menuItemImage: item.menuItem.image,
+                    variationName: item.selectedVariation?.name,
+                    unitPrice: item.selectedVariation?.price || item.menuItem.price,
+                    quantity: item.quantity,
+                    subtotal: item.subtotal
                 })),
                 subtotal: filteredTotal,
                 tax: 0,
@@ -232,6 +235,10 @@ export function Cart({
                                 paymentMethod: 'Razorpay Online'
                             });
 
+                            // Store order details for points popup
+                            setPointsEarned(data.pointsEarned || 0);
+                            setCompletedOrderNumber(data.orderNumber);
+
                             setIsPaymentSuccess(true);
                             onClearCart();
                             onOrderComplete(response.razorpay_payment_id);
@@ -271,7 +278,7 @@ export function Cart({
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
+                <React.Fragment key="cart-modal">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -299,7 +306,7 @@ export function Cart({
                                 <p className="font-sans text-stone-600 mb-8 max-w-xs mx-auto">
                                     Your order has been confirmed. A receipt has been downloaded to your device.
                                 </p>
-                                
+
                                 <div className="w-full space-y-3">
                                     <button
                                         onClick={() => {
@@ -310,7 +317,7 @@ export function Cart({
                                     >
                                         View Order Details
                                     </button>
-                                    
+
                                     <button
                                         onClick={onClose}
                                         className="w-full bg-white border border-[#e7e5e4] text-[#78716c] font-sans font-semibold py-4 rounded-xl hover:bg-stone-50 transition-colors"
@@ -421,8 +428,8 @@ export function Cart({
                                                                         ) : (
                                                                             // Gallery Items: Show simple Remove button and Qty 1
                                                                             <>
-                                                                                 <span className="font-sans text-sm text-[#404040] mr-2">Qty: 1</span>
-                                                                                 <button
+                                                                                <span className="font-sans text-sm text-[#404040] mr-2">Qty: 1</span>
+                                                                                <button
                                                                                     onClick={() => onRemoveItem(index)}
                                                                                     className="text-xs text-red-500 hover:text-red-700 underline"
                                                                                 >
@@ -668,7 +675,20 @@ export function Cart({
                             </>
                         )}
                     </motion.div>
-                </>
+                </React.Fragment>
+            )}
+
+            {/* Points Celebration Popup */}
+            {pointsEarned > 0 && isPaymentSuccess && (
+                <PointsCelebration
+                    key="points-celebration"
+                    pointsEarned={pointsEarned}
+                    orderNumber={completedOrderNumber}
+                    onClose={() => {
+                        setPointsEarned(0);
+                        setIsPaymentSuccess(false);
+                    }}
+                />
             )}
         </AnimatePresence>
     );

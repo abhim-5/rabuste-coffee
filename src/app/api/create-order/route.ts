@@ -123,6 +123,31 @@ export async function POST(request: NextRequest) {
 
         const razorpayOrder = await razorpay.orders.create(options);
 
+        // 3.5 Award points immediately after order creation
+        let pointsEarned = 0;
+        try {
+            const { awardPointsForOrder } = await import('@/lib/points/award-points');
+            const pointsResult = await awardPointsForOrder({
+                userId: user.id,
+                orderId: order.id,
+                orderTotal: total,
+                items: items.map((item: any) => ({
+                    id: item.menuItemId,
+                    name: item.menuItemName,
+                    price: item.unitPrice,
+                    quantity: item.quantity
+                }))
+            });
+            
+            if (pointsResult.success) {
+                pointsEarned = pointsResult.points_awarded || 0;
+                console.log(`✅ POINTS AWARDED: ${pointsEarned} points for order ${orderNumber}`);
+            }
+        } catch (pointsError) {
+            console.error('Failed to award points:', pointsError);
+            // Don't fail the order if points fail
+        }
+
         // 4. Return Data
         return NextResponse.json({
             success: true,
@@ -130,7 +155,8 @@ export async function POST(request: NextRequest) {
             razorpayOrderId: razorpayOrder.id, // order_...
             amount: razorpayOrder.amount,
             currency: razorpayOrder.currency,
-            orderNumber: orderNumber
+            orderNumber: orderNumber,
+            pointsEarned: pointsEarned  // Include points in response
         });
 
     } catch (error: any) {

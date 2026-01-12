@@ -197,16 +197,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Use getUser() instead of getSession() for secure authentication
+        // This validates the session with Supabase Auth server
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error('Error getting user:', error);
+          if (mounted) {
+            setUser(null);
+            setSession(null);
+            setLoading(false);
+          }
+          return;
+        }
 
         if (mounted) {
+          setUser(user);
+          // Get the session after validating user
+          const { data: { session } } = await supabase.auth.getSession();
           setSession(session);
-          setUser(session?.user ?? null);
           setLoading(false); // Set loading false IMMEDIATELY after getting user
 
           // Load profile in background (don't block on it)
-          if (session?.user) {
-            loadProfile(session.user.id); // Don't await - let it load async
+          if (user) {
+            loadProfile(user.id); // Don't await - let it load async
           }
         }
       } catch (error) {

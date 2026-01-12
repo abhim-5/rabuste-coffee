@@ -70,6 +70,7 @@ export interface CreateOrderResponse {
   success: boolean;
   orderNumber?: string;
   orderId?: string;
+  pointsEarned?: number;  // Points earned from this order
   error?: string;
 }
 

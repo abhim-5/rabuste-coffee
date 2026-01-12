@@ -104,11 +104,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Return success
+    // Award points for the order (happens immediately after successful payment)
+    let pointsEarned = 0;
+    try {
+      const { awardPointsForOrder } = await import('@/lib/points/award-points');
+      const pointsResult = await awardPointsForOrder({
+        userId: user.id,
+        orderId: order.id,
+        orderTotal: total,
+        items: items.map((item: any) => ({
+          id: item.menuItemId,
+          name: item.menuItemName,
+          price: item.unitPrice,
+          quantity: item.quantity
+        }))
+      });
+      
+      if (pointsResult.success) {
+        pointsEarned = pointsResult.points_awarded || 0;
+        console.log(`✅ User earned ${pointsEarned} points!`);
+      }
+    } catch (pointsError) {
+      // Don't fail the order if points fail, just log
+      console.error('Failed to award points:', pointsError);
+    }
+
+    // Return success with points earned
     return NextResponse.json({
       success: true,
       orderNumber: order.order_number,
-      orderId: order.id
+      orderId: order.id,
+      pointsEarned: pointsEarned  // Include points in response
     } as CreateOrderResponse);
 
   } catch (error) {
