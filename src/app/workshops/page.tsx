@@ -23,6 +23,7 @@ import {
 import Navbar from "@/components/navbar/Navbar";
 import { WorkshopCard } from "@/components/workshops/WorkshopCard";
 import Footer from "@/components/ui/Footer";
+import WorkshopHero from "@/components/workshops/WorkshopHero";
 import { useWorkshops } from "@/hooks/useWorkshops";
 import { WorkshopConfirmation } from "@/components/workshops/WorkshopConfirmation";
 import AuthModal from "@/components/auth/AuthModal";
@@ -42,28 +43,13 @@ export default function WorkshopsPage() {
     price: number;
   }>({ isOpen: false, bookingNumber: '', workshopTitle: '', date: '', time: '', price: 0 });
 
-  const heroRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedWorkshop, setSelectedWorkshop] = useState<any | null>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
 
   const { scrollYProgress: pageScrollProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
-
-  // Add spring smoothing to prevent jittery scroll
-  const smoothScrollProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
-  const heroScale = useTransform(smoothScrollProgress, [0, 1], [1, 1.1]);
 
   // Get current user
   useEffect(() => {
@@ -78,10 +64,10 @@ export default function WorkshopsPage() {
   return (
     <>
       <Navbar />
-      <main ref={containerRef} className="min-h-screen pt-16 lg:pt-20 relative bg-[#D8CBB8]">
+      <main ref={containerRef} className="min-h-screen relative bg-[#D8CBB8]">
 
         {/* Hero Section */}
-        <HeroSection heroRef={heroRef} heroScale={heroScale} />
+        <WorkshopHero />
 
         {/* Upcoming Workshops */}
         <UpcomingWorkshops
@@ -136,60 +122,7 @@ export default function WorkshopsPage() {
   );
 }
 
-// Hero Section - Homepage style with video/blur animations
-function HeroSection({ heroRef, heroScale }: any) {
-  return (
-    <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image - Static without Parallax */}
-      <motion.div style={{ scale: heroScale }} className="absolute inset-0 z-0">
-        <Image src="/workshops/1.jpg" alt="Workshop Background" fill className="object-cover" priority />
-        {/* Black vignette effect */}
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/20 to-black/80" />
-        {/* Grain texture */}
-        <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-40">
-          <div className="grain-texture h-full w-full" />
-        </div>
-      </motion.div>
 
-      <div className="relative z-10 text-center px-4 max-w-7xl mx-auto">
-        {/* Title matching AboutHero style */}
-        <motion.h1
-          initial={{ opacity: 0, y: 40, filter: "blur(20px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display tracking-wide text-white text-[clamp(2.5rem,8vw,6rem)] leading-tight drop-shadow-2xl uppercase"
-        >
-          WORKSHOPS
-        </motion.h1>
-
-        {/* Coffee Divider matching AboutHero */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, filter: "blur(15px)" }}
-          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 mb-8 flex items-center justify-center gap-4 text-white/90"
-        >
-          <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-          <Coffee className="h-6 w-6" />
-          <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-        </motion.div>
-
-        {/* Description */}
-        <motion.p
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="text-lg md:text-xl lg:text-2xl text-white/80 font-serif max-w-3xl mx-auto leading-relaxed"
-        >
-          Master the art of coffee with hands-on workshops led by expert baristas.
-          <br className="hidden md:block" />
-          From latte art to brewing science, elevate your coffee journey.
-        </motion.p>
-      </div>
-    </section>
-  );
-}
 
 //Upcoming Workshops - Creative Magazine-Style Layout
 function UpcomingWorkshops({ pageScrollProgress, workshops, loading, error, currentUser, onShowAuth, onRegistrationComplete }: any) {
