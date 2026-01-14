@@ -7,7 +7,43 @@ import { DATABASE_SCHEMA, BUSINESS_CONTEXT } from '@/lib/ai/schema-context';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-const SQL_GENERATOR_PROMPT = `You are a PostgreSQL expert for a café business analytics system.
+const QUESTION_CLASSIFIER_PROMPT = `You are a question classifier for Rabuste Café's AI Analytics system.
+
+Analyze the question and determine if it requires database query OR can be answered directly.
+
+## Categories:
+
+**DATA_QUERY**: Questions that need actual data from the database
+Examples:
+- "What's my revenue for last 7 days?"
+- "How many customers this week?"
+- "Top 5 selling items?"
+- "Workshop attendance rate?"
+- Any question asking for numbers, statistics, counts, trends from the database
+
+**BUSINESS_ADVICE**: Questions about coffee, café operations, business strategy (answer directly, NO SQL)
+Examples:
+- "How do I improve my café?"
+- "What coffee drinks should I add?"
+- "Best practices for running a café?"
+- "How to market my workshops?"
+- Any questions about coffee knowledge, business advice, industry best practices
+
+**OUT_OF_SCOPE**: Random questions unrelated to café/coffee business
+Examples:
+- "What is the capital of France?"
+- "Tell me a joke"
+- "Who won the world cup?"
+- Any general knowledge questions
+
+Respond with ONLY one word: DATA_QUERY, BUSINESS_ADVICE, or OUT_OF_SCOPE
+
+Question: "{{QUESTION}}"
+Category:`;
+
+const SQL_GENERATOR_PROMPT = `You are a PostgreSQL expert for Rabuste Café's business analytics system.
+
+**CRITICAL**: Study the COMPLETE database schema below BEFORE generating any query. All tables and columns are listed here.
 
 ${DATABASE_SCHEMA}
 
@@ -17,15 +53,16 @@ ${BUSINESS_CONTEXT}
 Generate ONLY valid PostgreSQL SELECT queries to answer analytical questions.
 
 ## Rules
-1. Generate ONLY SELECT statements
-2. NO: INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, GRANT, REVOKE
-3. NEVER select: email, phone, dob, date_of_birth (PII restricted)
-4. NEVER query auth.users table
-5. Always use proper JOIN syntax
-6. Add LIMIT to prevent huge results (default 100)
-7. Use aggregation for customer insights (COUNT, SUM, AVG, GROUP BY)
-8. Use date functions for time-based analysis
-9. Return ONLY the SQL query, nothing else
+1. **READ the full schema above** - don't assume tables/columns exist
+2. Generate ONLY SELECT or WITH...SELECT statements  
+3. NO: INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, GRANT, REVOKE
+4. NEVER select: email, phone, dob, date_of_birth (PII restricted)
+5. NEVER query auth.users table
+6. Always use proper JOIN syntax
+7. **ALWAYS add LIMIT** to prevent huge results (default LIMIT 100)
+8. Use aggregation for customer insights (COUNT, SUM, AVG, GROUP BY)
+9. Use date functions for time-based analysis
+10. Return ONLY the SQL query, nothing else
 
 ## Example Questions & Queries
 
@@ -56,6 +93,28 @@ WHERE o.created_at >= DATE_TRUNC('month', CURRENT_DATE)
 GROUP BY menu_item_name
 ORDER BY units_sold DESC
 LIMIT 5;
+
+Question: "How many new vs returning customers this week?"
+Query:
+WITH week_customers AS (
+  SELECT DISTINCT user_id
+  FROM orders
+  WHERE created_at >= DATE_TRUNC('week', CURRENT_DATE)
+    AND status != 'cancelled'
+    AND user_id IS NOT NULL
+),
+previous_customers AS (
+  SELECT DISTINCT user_id
+  FROM orders
+  WHERE created_at < DATE_TRUNC('week', CURRENT_DATE)
+    AND user_id IS NOT NULL
+)
+SELECT
+  COUNT(CASE WHEN pc.user_id IS NULL THEN 1 END) as new_customers,
+  COUNT(CASE WHEN pc.user_id IS NOT NULL THEN 1 END) as returning_customers,
+  COUNT(*) as total_customers
+FROM week_customers wc
+LEFT JOIN previous_customers pc ON wc.user_id = pc.user_id;
 
 Now generate a query for the following question.`;
 
@@ -159,7 +218,7 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 3. Generate SQL using Gemini
+    // 3. Initialize Gemini model
     let model;
     try {
       // Use models/gemini-2.5-flash - correct model name for v1beta API
@@ -173,9 +232,71 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
     
+    // Helper function for retry logic with exponential backoff
+    const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          return await fn();
+        } catch (error: any) {
+          const isLastRetry = i === maxRetries - 1;
+          const is503 = error.message?.includes('503') || error.message?.includes('overloaded');
+          
+          if (!is503 || isLastRetry) {
+            throw error; // If not 503 or last retry, throw the error
+          }
+          
+          // Wait with exponential backoff: 1s, 2s, 4s
+          const waitTime = Math.pow(2, i) * 1000;
+          console.log(`Gemini API overloaded, retrying in ${waitTime}ms (attempt ${i + 1}/${maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+    };
+    
+    // 4. Classify the question first
+    const classifierPrompt = QUESTION_CLASSIFIER_PROMPT.replace('{{QUESTION}}', question);
+    const classificationResult = await retryWithBackoff(() => model.generateContent(classifierPrompt));
+    const category = classificationResult.response.text().trim().toUpperCase();
+    
+    console.log(`Question classified as: ${category}`);
+    
+    // 4a. Handle non-data questions
+    if (category.includes('OUT_OF_SCOPE')) {
+      return NextResponse.json({
+        success: false,
+        error: 'Question out of scope',
+        details: 'This AI Analytics system is designed for business data analysis only. Please ask questions about your café\'s orders, revenue, customers, workshops, art sales, or other business metrics.'
+      }, { status: 400 });
+    }
+    
+    if (category.includes('BUSINESS_ADVICE')) {
+      // Answer business advice questions directly without SQL
+      const advicePrompt = `${INSIGHTS_ANALYZER_PROMPT}\n\nBusiness Question: "${question}"\n\nProvide helpful advice as JSON (no SQL query needed):`;
+      const adviceResult = await retryWithBackoff(() => model.generateContent(advicePrompt));
+      let adviceText = adviceResult.response.text().trim()
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
+      
+      const advice = JSON.parse(adviceText);
+      
+      return NextResponse.json({
+        success: true,
+        question: question,
+        sql_executed: null, // No SQL for advice questions
+        raw_results: null,
+        insights: advice,
+        timestamp: new Date().toISOString(),
+        type: 'business_advice'
+      });
+    }
+    
+    // 5. Generate SQL for DATA_QUERY questions
     const sqlPrompt = `${SQL_GENERATOR_PROMPT}\n\nQuestion: "${question}"\n\nSQL Query:`;
-    const sqlResult = await model.generateContent(sqlPrompt);
+    const sqlResult = await retryWithBackoff(() => model.generateContent(sqlPrompt));
     let generatedSQL = sqlResult.response.text().trim();
+    
+    console.log('🤖 AI Generated SQL (raw):', generatedSQL);
     
     // Clean up SQL (remove markdown code blocks if present)
     generatedSQL = generatedSQL
@@ -183,15 +304,24 @@ export async function POST(request: NextRequest) {
       .replace(/```\n?/g, '')
       .trim();
     
+    console.log('🧹 Cleaned SQL:', generatedSQL);
+    
     const normalizedSQL = normalizeSQL(generatedSQL);
+    console.log('✨ Normalized SQL:', normalizedSQL);
 
     // 4. Validate SQL safety
     const validation = validateSQLSafety(normalizedSQL);
     if (!validation.safe) {
+      console.error('SQL Safety Validation Failed:', {
+        reason: validation.reason,
+        sql: normalizedSQL,
+        question: question
+      });
       return NextResponse.json({ 
         success: false, 
         error: 'Generated query failed safety validation',
         reason: validation.reason,
+        details: `The AI generated a query that violates safety rules: ${validation.reason}. Try rephrasing your question or ask about different data.`,
         sql: normalizedSQL
       }, { status: 400 });
     }
@@ -227,7 +357,7 @@ ${JSON.stringify(queryResults, null, 2)}
 
 Provide your analysis as JSON:`;
 
-    const insightsResult = await model.generateContent(insightsPrompt);
+    const insightsResult = await retryWithBackoff(() => model.generateContent(insightsPrompt));
     let insightsText = insightsResult.response.text().trim();
     
     // Clean up JSON (remove markdown if present)

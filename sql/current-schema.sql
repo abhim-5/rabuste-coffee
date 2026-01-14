@@ -14,6 +14,17 @@ CREATE TABLE public.admin_activity_log (
   CONSTRAINT admin_activity_log_pkey PRIMARY KEY (id),
   CONSTRAINT admin_activity_log_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES auth.users(id)
 );
+CREATE TABLE public.ai_analytics_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  question text NOT NULL,
+  sql_executed text,
+  insights jsonb NOT NULL,
+  raw_results jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ai_analytics_history_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_analytics_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
 CREATE TABLE public.art_pieces (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name text NOT NULL,
@@ -344,7 +355,7 @@ CREATE TABLE public.workshop_reviews (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT workshop_reviews_pkey PRIMARY KEY (id),
   CONSTRAINT workshop_reviews_workshop_id_fkey FOREIGN KEY (workshop_id) REFERENCES public.workshops(id),
-  CONSTRAINT workshop_reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  CONSTRAINT workshop_reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
 CREATE TABLE public.workshops (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

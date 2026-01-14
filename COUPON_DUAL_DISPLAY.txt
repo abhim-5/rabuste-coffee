@@ -1,0 +1,80 @@
+{/* Coupon Progress Section - Show BOTH current and next */}
+                                            {hasMenuItems && !hasGalleryItems && currentUser && availableCoupons && (() => {
+                                                // Find all unlocked coupons sorted by discount (highest first)
+                                                const unlockedCoupons = availableCoupons.cart_coupons
+                                                    .filter(c => c.can_apply)
+                                                    .sort((a, b) => b.discount - a.discount);
+                                                
+                                                const bestUnlocked = unlockedCoupons[0];
+                                                
+                                                // Find next coupon to unlock (excluding already unlocked ones)
+                                                const nextCoupon = availableCoupons.cart_coupons
+                                                    .filter(c => !c.can_apply)
+                                                    .sort((a, b) => a.min_cart - b.min_cart)[0];
+                                                
+                                                return (
+                                                    <div className="mb-6 space-y-3">
+                                                        {/* Currently Applied Discount */}
+                                                        {bestUnlocked && (
+                                                            <motion.div
+                                                                key={`unlocked-${bestUnlocked.id}`}
+                                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                className="p-4 border-2 rounded-xl shadow-md border-green-500 bg-gradient-to-br from-green-50 to-emerald-50"
+                                                            >
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    <Gift className="w-5 h-5 text-green-600" />
+                                                                    <h4 className="font-sans text-base font-bold text-green-700 flex-1">
+                                                                        🎉 APPLIED
+                                                                    </h4>
+                                                                    <span className="text-xs px-2 py-1 bg-green-600 text-white rounded-full font-bold">
+                                                                        -{bestUnlocked.discount}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm text-green-600 font-semibold">
+                                                                    You're saving ₹{bestUnlocked.discount}!
+                                                                </p>
+                                                            </motion.div>
+                                                        )}
+
+                                                        {/* Next Milestone */}
+                                                        {nextCoupon && (
+                                                            <motion.div
+                                                                key={`next-${nextCoupon.id}`}
+                                                                className="p-4 border-2 rounded-xl shadow-md border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50"
+                                                            >
+                                                                <h4 className="font-sans text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                                                    <Gift className="w-5 h-5 text-orange-500" />
+                                                                    💰 {nextCoupon.name}
+                                                                </h4>
+                                                                
+                                                                <div className="relative w-full h-3 bg-white rounded-full overflow-hidden border-2 border-orange-300 mb-2">
+                                                                    <motion.div
+                                                                        animate={{ width: `${nextCoupon.progress}%` }}
+                                                                        transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                                                                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500"
+                                                                    />
+                                                                </div>
+                                                                
+                                                                <div className="flex justify-between text-sm mb-2">
+                                                                    <span className="font-bold text-orange-700">
+                                                                        Add just ₹{(nextCoupon.min_cart - filteredTotal).toFixed(0)} more
+                                                                    </span>
+                                                                    <span className="text-orange-600">{nextCoupon.progress.toFixed(0)}%</span>
+                                                                </div>
+                                                                
+                                                                <div className="bg-white rounded-lg p-2 border border-orange-300 text-center">
+                                                                    <span className="text-xs">
+                                                                        <span className="text-orange-600 font-bold">Almost there!</span>
+                                                                        {" "}Unlock{" "}
+                                                                        <span className="text-green-600 font-bold">₹{nextCoupon.discount} OFF</span>
+                                                                        {bestUnlocked && (
+                                                                            <span> (₹{nextCoupon.discount - bestUnlocked.discount} extra!)</span>
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}

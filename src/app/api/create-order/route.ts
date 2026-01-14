@@ -123,40 +123,58 @@ export async function POST(request: NextRequest) {
 
         const razorpayOrder = await razorpay.orders.create(options);
 
-        // 3.5 Award points immediately after order creation
-        let pointsEarned = 0;
+        // Check if user should earn a next-order coupon
+        let couponEarned = false;
         try {
-            const { awardPointsForOrder } = await import('@/lib/points/award-points');
-            const pointsResult = await awardPointsForOrder({
-                userId: user.id,
-                orderId: order.id,
-                orderTotal: total,
-                items: items.map((item: any) => ({
-                    id: item.menuItemId,
-                    name: item.menuItemName,
-                    price: item.unitPrice,
-                    quantity: item.quantity
-                }))
-            });
-            
-            if (pointsResult.success) {
-                pointsEarned = pointsResult.points_awarded || 0;
-                console.log(`✅ POINTS AWARDED: ${pointsEarned} points for order ${orderNumber}`);
+            const { data: config, error: configError } = await supabase
+                .from('coupon_config')
+                .select('*')
+                .single();
+
+            if (!configError && config?.system_enabled && total >= config.next_order_min_earn) {
+                // Check if user already has an active coupon
+                const { data: existingCoupon } = await supabase
+                    .from('user_coupons')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('is_used', false)
+                    .single();
+
+                // Only award if they don't have one already
+                if (!existingCoupon) {
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + (config.next_order_expiry_days || 30));
+
+                    const { error: couponError } = await supabase
+                        .from('user_coupons')
+                        .insert({
+                            user_id: user.id,
+                            discount_amount: config.next_order_discount || 40,
+                            min_order_value: 100,
+                            earned_from_order_id: order.id,
+                            expires_at: expiryDate.toISOString()
+                        });
+
+                    if (!couponError) {
+                        couponEarned = true;
+                        console.log(`✅ User earned ₹${config.next_order_discount} coupon!`);
+                    }
+                }
             }
-        } catch (pointsError) {
-            console.error('Failed to award points:', pointsError);
-            // Don't fail the order if points fail
+        } catch (couponError) {
+            console.error('Failed to award coupon:', couponError);
         }
 
         // 4. Return Data
         return NextResponse.json({
             success: true,
-            dbOrderId: order.id, // UUID
-            razorpayOrderId: razorpayOrder.id, // order_...
-            amount: razorpayOrder.amount,
-            currency: razorpayOrder.currency,
-            orderNumber: orderNumber,
-            pointsEarned: pointsEarned  // Include points in response
+            orderNumber: order.order_number,
+            orderId: order.id,
+            amount: total * 100,
+            currency: 'INR',
+            razorpayOrderId: razorpayOrder.id,
+            dbOrderId: order.id,
+            couponEarned: couponEarned
         });
 
     } catch (error: any) {

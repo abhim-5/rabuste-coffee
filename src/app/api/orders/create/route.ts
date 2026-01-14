@@ -104,37 +104,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Award points for the order (happens immediately after successful payment)
-    let pointsEarned = 0;
+    // Check if user should earn a next-order coupon
+    let couponEarned = false;
     try {
-      const { awardPointsForOrder } = await import('@/lib/points/award-points');
-      const pointsResult = await awardPointsForOrder({
-        userId: user.id,
-        orderId: order.id,
-        orderTotal: total,
-        items: items.map((item: any) => ({
-          id: item.menuItemId,
-          name: item.menuItemName,
-          price: item.unitPrice,
-          quantity: item.quantity
-        }))
-      });
-      
-      if (pointsResult.success) {
-        pointsEarned = pointsResult.points_awarded || 0;
-        console.log(`✅ User earned ${pointsEarned} points!`);
+      const { data: config } = await supabase
+        .from('coupon_config')
+        .select('*')
+        .single();
+
+      // Check if order qualifies for next-order coupon
+      if (config?.system_enabled && total >= config.next_order_min_earn) {
+        // Check if user already has an active coupon
+        const { data: existingCoupon } = await supabase
+          .from('user_coupons')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_used', false)
+          .single();
+
+        // Only award if they don't have one already
+        if (!existingCoupon) {
+          const expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + config.next_order_expiry_days);
+
+          const { error: couponError } = await supabase
+            .from('user_coupons')
+            .insert({
+              user_id: user.id,
+              discount_amount: config.next_order_discount,
+              min_order_value: 100, // Can be configurable
+              earned_from_order_id: order.id,
+              expires_at: expiryDate.toISOString()
+            });
+
+          if (!couponError) {
+            couponEarned = true;
+            console.log(`✅ User earned ₹${config.next_order_discount} coupon!`);
+          }
+        }
       }
-    } catch (pointsError) {
-      // Don't fail the order if points fail, just log
-      console.error('Failed to award points:', pointsError);
+    } catch (couponError) {
+      // Don't fail the order if coupon fails, just log
+      console.error('Failed to award coupon:', couponError);
     }
 
-    // Return success with points earned
+    // Return success with coupon status
     return NextResponse.json({
       success: true,
       orderNumber: order.order_number,
       orderId: order.id,
-      pointsEarned: pointsEarned  // Include points in response
+      couponEarned: couponEarned  // Include coupon status in response
     } as CreateOrderResponse);
 
   } catch (error) {

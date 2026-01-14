@@ -15,7 +15,7 @@ import { CafeReviewsSection } from "@/components/profile/CafeReviewsSection";
 import { FranchiseRequestsSection } from "@/components/profile/FranchiseRequestsSection";
 import { WorkshopRequestsSection } from "@/components/profile/WorkshopRequestsSection";
 import {
-    LogOut, Edit2, ShoppingBag, GraduationCap, Palette, Coins,
+    LogOut, Edit2, ShoppingBag, GraduationCap, Palette, Gift,
     Settings, Bell, Heart, MapPin, Calendar, TrendingUp, Award,
     ChevronRight, User, Mail, Clock, X, Upload, Lock, Save, Camera, Star, Building2
 } from "lucide-react";
@@ -25,6 +25,7 @@ import { useProfileStats } from "@/hooks/useProfileStats";
 import { useProfileOrders } from "@/hooks/useProfileOrders";
 import { useProfileWorkshops } from "@/hooks/useProfileWorkshops";
 import { useProfileArt } from "@/hooks/useProfileArt";
+import { MyCouponsSection } from "@/components/profile/MyCouponsSection";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function ProfilePage() {
     // Handle deep linking to tabs
     useEffect(() => {
         const tab = searchParams.get('tab');
-        if (tab && ['orders', 'workshops', 'art', 'points', 'reviews', 'franchise-requests', 'workshop-requests'].includes(tab)) {
+        if (tab && ['orders', 'workshops', 'art', 'coupons', 'reviews', 'franchise-requests', 'workshop-requests'].includes(tab)) {
             setActiveSection(tab);
         }
     }, [searchParams]);
@@ -186,14 +187,14 @@ export default function ProfilePage() {
         { id: "workshops", label: "Workshops", icon: GraduationCap, count: stats?.workshopsCount || 0 },
         { id: "workshop-requests", label: "Workshop Requests", icon: GraduationCap },
         { id: "art", label: "Art Collection", icon: Palette, count: stats?.artPurchasedCount || 0 },
+        { id: "coupons", label: "My Coupons", icon: Gift },
         { id: "franchise-requests", label: "Franchise Requests", icon: Building2 },
         { id: "reviews", label: "Cafe Reviews", icon: Star },
-        { id: "points", label: "Reward Points", icon: Coins, href: "/points" },
     ];
 
     const quickStats = [
         { label: "Total Orders", value: totalOrders, icon: ShoppingBag, color: "amber" },
-        { label: "Reward Points", value: profile.credits || 0, icon: Coins, color: "yellow" },
+        { label: "Workshops", value: workshops?.length || 0, icon: GraduationCap, color: "blue" },
         { label: "Total Spent", value: `₹${totalSpent.toLocaleString()}`, icon: TrendingUp, color: "green" },
         { label: "Member Tier", value: "Gold", icon: Award, color: "amber" },
     ];
@@ -224,7 +225,7 @@ export default function ProfilePage() {
                             email: userEmail,
                             avatar: profileImage,
                             memberSince: memberDuration,
-                            points: profile.credits || 0,
+                            points: 0, // Legacy field, not used
                             totalOrders: totalOrders,
                             totalSpent: totalSpent,
                         }}
@@ -452,11 +453,13 @@ export default function ProfilePage() {
                                                     {activeSection === "orders" && "Order History"}
                                                     {activeSection === "workshops" && "My Workshops"}
                                                     {activeSection === "art" && "Art Collection"}
+                                                    {activeSection === "coupons" && "My Coupons"}
                                                 </h2>
                                                 <p className="text-sm text-[#78716c] mt-1">
                                                     {activeSection === "orders" && `${stats?.ordersCount || 0} orders • ₹${ordersTotal.toLocaleString()} spent`}
                                                     {activeSection === "workshops" && `${workshops?.length || 0} workshops attended`}
                                                     {activeSection === "art" && `${artPieces?.length || 0} pieces • ₹${artTotal.toLocaleString()} value`}
+                                                    {activeSection === "coupons" && "Manage your reward coupons"}
                                                 </p>
                                             </div>
                                         </div>

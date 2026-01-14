@@ -8,10 +8,13 @@ SECURITY DEFINER
 AS $$
 DECLARE
   result_json json;
+  lower_query text;
 BEGIN
-  -- Additional safety check: ensure it's a SELECT
-  IF lower(trim(query_text)) NOT LIKE 'select%' THEN
-    RAISE EXCEPTION 'Only SELECT queries are allowed';
+  -- Additional safety check: ensure it's a SELECT or WITH clause
+  lower_query := lower(trim(query_text));
+  
+  IF NOT (lower_query LIKE 'select%' OR lower_query LIKE 'with%') THEN
+    RAISE EXCEPTION 'Only SELECT queries (including WITH clauses) are allowed';
   END IF;
   
   -- Execute the query and convert to JSON

@@ -7,12 +7,22 @@ export interface ValidationResult {
 export function validateSQLSafety(sql: string): ValidationResult {
   const lowerSQL = sql.toLowerCase().trim();
   
-  // 1. Must start with SELECT
-  if (!lowerSQL.startsWith('select')) {
+  // 1. Must start with SELECT or WITH (for CTEs - Common Table Expressions)
+  if (!lowerSQL.startsWith('select') && !lowerSQL.startsWith('with')) {
     return { 
       safe: false, 
-      reason: 'Only SELECT queries are allowed' 
+      reason: 'Only SELECT queries (including WITH clauses) are allowed' 
     };
+  }
+  
+  // If it starts with WITH, ensure it contains SELECT somewhere
+  if (lowerSQL.startsWith('with')) {
+    if (!lowerSQL.includes('select')) {
+      return {
+        safe: false,
+        reason: 'WITH clause must contain a SELECT statement'
+      };
+    }
   }
   
   // 2. Blacklist dangerous keywords

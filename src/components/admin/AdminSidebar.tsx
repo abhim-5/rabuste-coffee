@@ -12,7 +12,7 @@ import {
     GraduationCap,
     Palette,
     Bell,
-    Award,
+    Gift,
     ChevronLeft,
     ChevronRight,
     MessageSquare,
@@ -32,7 +32,7 @@ const navigation = [
     { name: 'Workshops', href: '/admin/workshops', icon: GraduationCap },
     { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
     { name: 'Gallery', href: '/admin/gallery', icon: Palette },
-    { name: 'Points System', href: '/admin/points', icon: Award },
+    { name: 'Coupons', href: '/admin/coupons', icon: Gift },
     { name: 'AI Analytics', href: '/admin/ai-analytics', icon: Brain },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];
