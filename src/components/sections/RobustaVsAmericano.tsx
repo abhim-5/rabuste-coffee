@@ -243,7 +243,7 @@ export function RobustaVsAmericano() {
       `}</style>
       <section
         ref={ref}
-        className="relative w-full overflow-hidden -mt-20 pt-16 pb-2 lg:mt-0 lg:py-16"
+        className="relative w-full overflow-hidden pt-8 pb-4 lg:py-16"
         style={{ backgroundColor: SECTION_BG }}
       >
         <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8">

@@ -590,7 +590,7 @@ function PreviousWorkshops({ pageScrollProgress, workshops, selectedWorkshop, se
           />
         </motion.div>
 
-        <p className="font-serif text-xl lg:text-2xl text-[#404040]/80 max-w-2xl mx-auto">
+        <p className="font-serif text-xl lg:text-3xl text-[#404040]/80 max-w-2xl mx-auto">
           A look back at our community gatherings.
         </p>
       </div>
@@ -712,7 +712,6 @@ function ImpactSection() {
       suffix: "+",
       label: "Lives Transformed",
       icon: Users,
-      description: "Passionate coffee enthusiasts trained to craft excellence",
       color: "from-[#8B6F47] to-[#6F4E28]" // Coffee brown
     },
     {
@@ -720,7 +719,6 @@ function ImpactSection() {
       suffix: "+",
       label: "Workshops Hosted",
       icon: Coffee,
-      description: "Immersive experiences brewing creativity & connection",
       color: "from-[#D4A574] to-[#B8864F]" // Warm caramel
     },
     {
@@ -728,7 +726,6 @@ function ImpactSection() {
       suffix: "%",
       label: "Pure Satisfaction",
       icon: Heart,
-      description: "Participants who'd return for another cup of learning",
       color: "from-[#B8704F] to-[#9A5538]" // Terracotta copper
     },
     {
@@ -736,7 +733,6 @@ function ImpactSection() {
       suffix: "/5",
       label: "Excellence Rating",
       icon: Star,
-      description: "Consistently exceptional experiences, one workshop at a time",
       color: "from-[#C89B5F] to-[#A67C45]" // Golden brown
     },
   ];
@@ -795,10 +791,10 @@ function ImpactSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-lg lg:text-xl font-serif text-[#404040]/80 text-center max-w-3xl leading-relaxed italic"
+            className="text-xl lg:text-3xl font-serif text-[#404040]/80 text-center max-w-3xl leading-relaxed italic"
           >
-            "Every workshop is a journey. Every participant, a story. Together, we've created a community
-            where coffee isn't just a drink—it's a canvas for creativity, connection, and craft."
+            Every workshop is a journey. Every participant, a story. Together, we've created a community
+            where coffee isn't just a drink—it's a canvas for creativity, connection, and craft.
           </motion.p>
         </motion.div>
 

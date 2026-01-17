@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, Coins, X, Gift, Coffee, History, Plus, Minus, ShoppingBag, Sparkles, TrendingUp, LayoutDashboard } from "lucide-react";
+import { Bell, User, Home, Info, UtensilsCrossed, Palette, Wrench, X, ShoppingBag, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -21,42 +21,7 @@ const navItems = [
 ];
 
 // Mock points transactions data
-const mockPointsTransactions = [
-  {
-    id: 1,
-    type: "earned",
-    title: "Welcome Bonus",
-    points: 100,
-    date: "Jan 1, 2026",
-    icon: Sparkles,
-  },
-  {
-    id: 2,
-    type: "earned",
-    title: "Order #1234",
-    points: 75,
-    date: "Dec 28, 2025",
-    icon: ShoppingBag,
-  },
-  {
-    id: 3,
-    type: "redeemed",
-    title: "Free Coffee Redeemed",
-    points: -50,
-    date: "Dec 25, 2025",
-    icon: Coffee,
-  },
-  {
-    id: 4,
-    type: "earned",
-    title: "Workshop Attendance",
-    points: 125,
-    date: "Dec 20, 2025",
-    icon: TrendingUp,
-  },
-];
 
-const totalPoints = 250;
 
 
 
@@ -69,10 +34,8 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]); // Use DB data
   const [bellAnimating, setBellAnimating] = useState(false);
-  const [showPoints, setShowPoints] = useState(false);
   const loginButtonRef = useRef<HTMLButtonElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
-  const pointsRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -142,9 +105,6 @@ export default function Navbar() {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
-      }
-      if (pointsRef.current && !pointsRef.current.contains(event.target as Node)) {
-        setShowPoints(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -299,7 +259,7 @@ export default function Navbar() {
                       className="relative px-4 h-full flex items-center cursor-pointer group"
                     >
                       <span
-                        className={`font-serif text-xl tracking-wider transition-all duration-300 ${isActive
+                        className={`font-serif text-[22px] tracking-wider transition-all duration-300 ${isActive
                           ? "text-[#fff9eb] font-semibold"
                           : "text-[#fff9eb]/70 group-hover:text-[#fff9eb]"
                           }`}
@@ -326,7 +286,7 @@ export default function Navbar() {
                     className="relative px-4 h-full flex items-center cursor-pointer group"
                   >
                     <span
-                      className={`font-serif text-xl tracking-wider transition-all duration-300 ${
+                      className={`font-serif text-[22px] tracking-wider transition-all duration-300 ${
                         pathname.startsWith('/admin')
                           ? "text-[#fff9eb] font-semibold"
                           : "text-[#fff9eb]/70 group-hover:text-[#fff9eb]"
@@ -489,101 +449,7 @@ export default function Navbar() {
 
                   {/* Reward Points & Profile Section */}
                   <div className="flex items-center gap-4">
-                    {/* Reward Points - Hidden for Admins */}
-                    {!(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
-                    <div className="relative" ref={pointsRef}>
-                      <motion.button
-                        initial={{ x: 100, opacity: 0, filter: "blur(10px)" }}
-                        animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-                        transition={{ duration: 0.6, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowPoints(!showPoints)}
-                        className="relative p-2 rounded-full transition-colors duration-300 group"
-                      >
-                        <Coins className="w-6 h-6 text-[#fff9eb]/80 group-hover:text-[#fff9eb] transition-colors" />
-                        <span className="absolute -top-1 -right-1 bg-[#d97706] text-[#fff9eb] text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-black/50">
-                          {totalPoints}
-                        </span>
-                      </motion.button>
 
-                      {/* Points Dropdown */}
-                      <AnimatePresence>
-                        {showPoints && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute right-0 top-16 w-80 bg-[#1a1a1a]/95 backdrop-blur-xl border border-[#fff9eb]/10 rounded-xl shadow-2xl overflow-hidden z-50 no-dark-mode"
-                          >
-                            {/* Header with Total Points */}
-                            <div className="px-6 py-6 border-b border-[#fff9eb]/10 bg-gradient-to-br from-[#d97706]/20 to-transparent">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-xs text-[#fff9eb]/60 font-medium uppercase tracking-widest">Balance</p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="font-tan-pearl text-4xl text-[#fff9eb]">{totalPoints}</span>
-                                    <span className="text-[#fff9eb]/70 text-sm font-serif italic">pts</span>
-                                  </div>
-                                </div>
-                                <div className="w-10 h-10 rounded-full bg-[#d97706]/20 flex items-center justify-center border border-[#d97706]/30">
-                                  <Sparkles className="w-5 h-5 text-[#d97706]" />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Recent Transactions */}
-                            <div className="px-5 py-3 border-b border-[#fff9eb]/10">
-                              <p className="text-[10px] text-[#fff9eb]/40 font-bold uppercase tracking-widest">Recent Activity</p>
-                            </div>
-                            <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                              {mockPointsTransactions.map((transaction, index) => {
-                                const IconComponent = transaction.icon;
-                                const isEarned = transaction.type === "earned";
-                                return (
-                                  <motion.div
-                                    key={transaction.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#fff9eb]/5 transition-colors border-b border-[#fff9eb]/5 last:border-0"
-                                  >
-                                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEarned ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
-                                      }`}>
-                                      <IconComponent className="w-3.5 h-3.5" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-sans text-sm font-medium text-[#fff9eb] line-clamp-1">
-                                        {transaction.title}
-                                      </p>
-                                      <p className="font-sans text-[10px] text-[#fff9eb]/50 mt-0.5">
-                                        {transaction.date}
-                                      </p>
-                                    </div>
-                                    <div className={`font-mono text-xs font-bold ${isEarned ? "text-green-400" : "text-red-400"
-                                      }`}>
-                                      {isEarned ? "+" : "-"}{Math.abs(transaction.points)}
-                                    </div>
-                                  </motion.div>
-                                );
-                              })}
-                            </div>
-
-                            {/* Footer with View All */}
-                            <div className="px-4 py-3 border-t border-[#fff9eb]/10 bg-[#fff9eb]/5">
-                              <Link href="/points" onClick={() => setShowPoints(false)}>
-                                <button className="w-full flex items-center justify-center gap-2 py-2 text-[#fff9eb]/70 hover:text-[#fff9eb] text-xs font-medium transition-colors border border-[#fff9eb]/10 rounded-lg hover:bg-[#fff9eb]/5">
-                                  <History className="w-3.5 h-3.5" />
-                                  View History
-                                </button>
-                              </Link>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                    )}
 
                     {/* Profile Icon */}
                     <Link href="/profile">
@@ -800,9 +666,8 @@ export default function Navbar() {
             {/* Auth Section */}
             {!loading && user ? (
               <div className="flex items-center gap-3">
-                {/* Admin Button OR Reward Points */}
-                {(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') ? (
-                  // Admin Mobile Button
+                {/* Admin Button */}
+                {(userProfile?.role === 'admin' || userProfile?.role === 'superadmin') && (
                   <Link href="/admin">
                     <motion.button
                       initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
@@ -814,101 +679,6 @@ export default function Navbar() {
                       <LayoutDashboard className="w-5 h-5 text-amber-50" />
                     </motion.button>
                   </Link>
-                ) : (
-                  // Reward Points (Customers only)
-                  <div className="relative" ref={pointsRef}>
-                    <motion.button
-                      initial={{ y: -50, opacity: 0, filter: "blur(10px)" }}
-                      animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                      transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setShowPoints(!showPoints)}
-                      className="relative p-2 rounded-full transition-colors duration-300 hover:bg-amber-900/30"
-                    >
-                      <Coins className="w-5 h-5 text-amber-400" />
-                      <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                        {totalPoints}
-                      </span>
-                    </motion.button>
-
-                    {/* Mobile Points Dropdown */}
-                    <AnimatePresence>
-                      {showPoints && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="absolute right-0 top-12 w-[90vw] max-w-[280px] bg-[#D8CBB8] border-[0.5px] border-[#8B6F47] rounded-lg shadow-2xl overflow-hidden z-50 no-dark-mode"
-                        >
-                          {/* Header with Total Points */}
-                          <div className="px-4 py-3 border-b border-[#8B6F47] bg-white">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Your Balance</p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <Coins className="w-5 h-5 text-[#8B6F47]" />
-                                  <span className="font-display text-2xl font-bold text-[#8B6F47]">{totalPoints}</span>
-                                  <span className="text-[#262626]/70 text-xs">points</span>
-                                </div>
-                              </div>
-                              <div className="w-10 h-10 rounded-full bg-[#8B6F47] flex items-center justify-center">
-                                <Sparkles className="w-5 h-5 text-white" />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Recent Transactions */}
-                          <div className="px-4 py-1.5 border-b border-[#8B6F47]">
-                            <p className="text-[10px] text-[#8B6F47]/60 font-medium uppercase tracking-wider">Recent Activity</p>
-                          </div>
-                          <div className="max-h-48 overflow-y-auto">
-                            {mockPointsTransactions.slice(0, 3).map((transaction, index) => {
-                              const IconComponent = transaction.icon;
-                              const isEarned = transaction.type === "earned";
-                              return (
-                                <motion.div
-                                  key={transaction.id}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: index * 0.05 }}
-                                  className="flex items-center gap-3 px-3 py-2.5 hover:bg-[#8B6F47]/10 active:bg-[#8B6F47]/10 transition-colors"
-                                >
-                                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isEarned ? "bg-green-600" : "bg-red-600"
-                                    }`}>
-                                    <IconComponent className={`w-4 h-4 ${isEarned ? "text-white" : "text-white"}`} />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-sans text-sm font-medium text-[#262626] line-clamp-1">
-                                      {transaction.title}
-                                    </p>
-                                    <p className="font-sans text-[10px] text-[#8B6F47]/60">
-                                      {transaction.date}
-                                    </p>
-                                  </div>
-                                  <div className={`flex items-center gap-0.5 font-semibold text-sm ${isEarned ? "text-green-700" : "text-red-600"
-                                    }`}>
-                                    {isEarned ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                                    {Math.abs(transaction.points)}
-                                  </div>
-                                </motion.div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Footer with View All */}
-                          <div className="px-4 py-2.5 border-t border-[#8B6F47] bg-[#D8CBB8]">
-                            <Link href="/points" onClick={() => setShowPoints(false)}>
-                              <button className="w-full flex items-center justify-center gap-2 py-2 bg-[#8B6F47] hover:bg-[#6B5537] text-white text-sm font-semibold transition-colors">
-                                <History className="w-4 h-4" />
-                                View All Transactions
-                              </button>
-                            </Link>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
                 )}
 
                 {/* Profile Icon */}

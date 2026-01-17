@@ -2,6 +2,7 @@
 'use client';
 
 import { LucideIcon } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface StatCardProps {
     title: string;
@@ -25,32 +26,32 @@ export default function StatCard({
     const getTrendColor = () => {
         if (trend === 'up') return 'text-green-600';
         if (trend === 'down') return 'text-red-600';
-        return 'text-gray-600';
+        return 'text-[#8B6F47]';
     };
 
     const getTrendBg = () => {
         if (trend === 'up') return 'bg-green-50';
         if (trend === 'down') return 'bg-red-50';
-        return 'bg-gray-50';
+        return 'bg-[#FFF9EB]';
     };
 
     if (loading) {
         return (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+            <div className="bg-[#FFF9EB] rounded-xl p-6 shadow-sm border border-[#8B6F47]/10">
+                <Skeleton className="h-4 w-1/2 mb-4" />
+                <Skeleton className="h-8 w-3/4" />
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <div className="bg-[#FFF9EB] rounded-xl p-6 shadow-sm border border-[#8B6F47]/10 hover:shadow-md transition-shadow">
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
                 <div>
-                    <p className="text-sm font-medium text-gray-600">{title}</p>
+                    <p className="text-sm font-medium text-[#8B6F47]">{title}</p>
                     {subtitle && (
-                        <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+                        <p className="text-xs text-[#8B6F47]/70 mt-1">{subtitle}</p>
                     )}
                 </div>
                 <div className={`p-3 rounded-lg ${getTrendBg()}`}>
@@ -60,7 +61,7 @@ export default function StatCard({
 
             {/* Value */}
             <div className="mb-2">
-                <p className="text-3xl font-bold text-gray-900">{value}</p>
+                <p className="text-3xl font-bold text-[#7f3b2d]">{value}</p>
             </div>
 
             {/* Change/Trend */}
@@ -69,7 +70,7 @@ export default function StatCard({
                     <span className={`text-sm font-medium ${getTrendColor()}`}>
                         {change > 0 ? '+' : ''}{change}%
                     </span>
-                    <span className="text-sm text-gray-500">vs last period</span>
+                    <span className="text-sm text-[#8B6F47]/70">vs last period</span>
                 </div>
             )}
         </div>

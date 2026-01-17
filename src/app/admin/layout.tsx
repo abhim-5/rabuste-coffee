@@ -31,17 +31,7 @@ export default function AdminLayout({
         }
     }, [user, profile, loading, isAdmin, router]);
 
-    // Show loading state
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-[#D8CBB8] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-[#8B6F47] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-[#4A3B28] font-serif tracking-widest text-sm font-semibold">LOADING DASHBOARD...</p>
-                </div>
-            </div>
-        );
-    }
+
 
     // Don't render if not admin
     if (!user || !isAdmin()) {
@@ -49,7 +39,7 @@ export default function AdminLayout({
     }
 
     return (
-        <div className="min-h-screen bg-[#D8CBB8] text-[#4A3B28] font-sans">
+        <div className="min-h-screen bg-[#faeade] text-[#4A3B28] font-sans">
             {/* Sidebar */}
             <AdminSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
