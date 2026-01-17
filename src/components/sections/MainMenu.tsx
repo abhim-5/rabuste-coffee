@@ -54,7 +54,7 @@ export function MainMenu() {
     <section
       ref={ref}
       className="relative w-full overflow-hidden pt-16 lg:pt-28 pb-0"
-      style={{ backgroundColor: "#D8CBB8" }}
+      style={{ backgroundColor: "#e3a458" }}
     >
       <div className="relative z-10 mx-auto w-full px-4 lg:px-6">
         {/* Heading */}
@@ -64,7 +64,7 @@ export function MainMenu() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center mb-12 lg:mb-16"
         >
-          <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#404040] mb-6 text-center">
+          <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#7f3b2d] mb-6 text-center">
             Our Main Menu
           </h2>
 
@@ -97,10 +97,10 @@ export function MainMenu() {
               ease: "linear",
             }}
           >
-            <span className="font-display text-2xl lg:text-3xl text-[#8B6F47]/40 mx-4">
+            <span className="font-display text-2xl lg:text-3xl text-[#7f3b2d]/20 mx-4">
               ✦ Classic Robusta ✦ Bold Brew ✦ Dark Roast ✦ Premium Latte ✦ Signature Coffee ✦ Espresso ✦
             </span>
-            <span className="font-display text-2xl lg:text-3xl text-[#8B6F47]/40 mx-4">
+            <span className="font-display text-2xl lg:text-3xl text-[#7f3b2d]/20 mx-4">
               ✦ Classic Robusta ✦ Bold Brew ✦ Dark Roast ✦ Premium Latte ✦ Signature Coffee ✦ Espresso ✦
             </span>
           </motion.div>
@@ -146,7 +146,7 @@ function SeeMoreButton() {
       <button
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative px-8 py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+        className="relative px-8 py-4 bg-[#7f3b2d]/5 hover:bg-[#7f3b2d]/10 border-2 border-[#7f3b2d]/20 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
       suppressHydrationWarning
     >
       <span className="flex space-x-[2px]">
@@ -165,7 +165,7 @@ function SeeMoreButton() {
                 }
                 : { y: 0 }
             }
-            className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#4a4a4a]"
+            className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#7f3b2d]"
           >
             {char === " " ? "\u00A0" : char}
           </motion.span>
@@ -257,7 +257,7 @@ function DesktopMenuItem({ item, index, isInView }: any) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -10 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-xl xl:text-2xl text-[#4a4a4a]"
+          className="font-serif text-xl xl:text-2xl text-[#7f3b2d]"
         >
           {currentName}
         </motion.h3>
@@ -267,7 +267,7 @@ function DesktopMenuItem({ item, index, isInView }: any) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 10 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-xl xl:text-2xl text-[#262626] font-bold"
+          className="font-serif text-xl xl:text-2xl text-[#7f3b2d] font-bold"
         >
           {currentPrice}
         </motion.p>
@@ -338,7 +338,7 @@ function MobileMenuItem({ item, index, isInView }: any) {
         {/* Arrow Button */}
         <button
           onClick={handleArrowClick}
-          className="absolute top-1/2 right-4 -translate-y-1/2 z-20 bg-[#8B6F47]/30 hover:bg-[#8B6F47]/50 backdrop-blur-sm border border-[#8B6F47]/40 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+          className="absolute top-1/2 right-4 -translate-y-1/2 z-20 bg-[#7f3b2d]/10 hover:bg-[#7f3b2d]/20 backdrop-blur-sm border border-[#7f3b2d]/20 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
           aria-label="Switch menu item"
         >
           <svg
@@ -350,7 +350,7 @@ function MobileMenuItem({ item, index, isInView }: any) {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-[#4a4a4a]"
+            className="text-[#7f3b2d]"
           >
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
@@ -372,7 +372,7 @@ function MobileMenuItem({ item, index, isInView }: any) {
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-lg text-[#4a4a4a]"
+          className="font-serif text-lg text-[#7f3b2d]"
         >
           {currentName}
         </motion.h3>
@@ -381,7 +381,7 @@ function MobileMenuItem({ item, index, isInView }: any) {
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-lg text-[#262626] font-bold"
+          className="font-serif text-lg text-[#7f3b2d] font-bold"
         >
           {currentPrice}
         </motion.p>

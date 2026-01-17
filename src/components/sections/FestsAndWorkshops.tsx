@@ -22,12 +22,12 @@ export default function FestsAndWorkshops() {
     return (
         <section
             className="relative w-full overflow-hidden pt-2 pb-4 lg:py-20"
-            style={{ backgroundColor: "#D8CBB8" }}
+            style={{ backgroundColor: "#e3a458" }}
         >
             <div className="relative z-10 mx-auto w-full max-w-7xl px-4 lg:px-6 flex flex-col items-center">
                 {/* Heading & Separator */}
                 <div className="relative z-10 mx-auto w-full px-4 lg:px-6 flex flex-col items-center mb-4 lg:mb-12">
-                    <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#262626] mb-4 text-center">
+                    <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#7f3b2d] mb-4 text-center">
                         Fests & Workshops
                     </h2>
                     <div className="relative w-32 h-8 lg:w-40 lg:h-10">
@@ -40,7 +40,7 @@ export default function FestsAndWorkshops() {
                     </div>
 
                     {/* Mobile Description: Placed before subheading as requested */}
-                    <p className="max-w-2xl text-center text-lg text-[#575757] font-serif mt-6 mb-2 px-2 lg:hidden">
+                    <p className="max-w-2xl text-center text-lg text-black font-serif mt-6 mb-2 px-2 lg:hidden">
                         Rabuste Cafe organizes inclusive workshops to promote artisanship and celebrate creativity. Join us to learn directly from master craftsmen and experience the joy of making.
                     </p>
 
@@ -50,7 +50,7 @@ export default function FestsAndWorkshops() {
                     </div>
 
                     {/* Subheading */}
-                    <h3 className="font-serif text-xl lg:text-2xl text-[#3d3d3d] mt-6 font-medium italic">Our Past Workshops</h3>
+                    <h3 className="font-serif text-xl lg:text-2xl text-[#7f3b2d] mt-6 font-medium italic">Our Past Workshops</h3>
 
                     {/* Marquee Text - Both Mobile and Desktop */}
                     <div className="w-full overflow-hidden mt-6 mb-4">
@@ -65,10 +65,10 @@ export default function FestsAndWorkshops() {
                                 ease: "linear",
                             }}
                         >
-                            <span className="font-display text-2xl lg:text-3xl text-[#8B6F47]/40 mx-4">
+                            <span className="font-display text-2xl lg:text-3xl text-[#7f3b2d]/20 mx-4">
                                 ✦ Pottery ✦ Coffee Brewing ✦ Latte Art ✦ Pastry Baking ✦ Coffee Tasting ✦ Live Music ✦
                             </span>
-                            <span className="font-display text-2xl lg:text-3xl text-[#8B6F47]/40 mx-4">
+                            <span className="font-display text-2xl lg:text-3xl text-[#7f3b2d]/20 mx-4">
                                 ✦ Pottery ✦ Coffee Brewing ✦ Latte Art ✦ Pastry Baking ✦ Coffee Tasting ✦ Live Music ✦
                             </span>
                         </motion.div>
@@ -86,7 +86,7 @@ export default function FestsAndWorkshops() {
                     </div>
 
                     {/* Description Text (Centered) */}
-                    <p className="max-w-3xl text-center text-lg text-[#575757] font-serif my-2 leading-relaxed px-4">
+                    <p className="max-w-3xl text-center text-lg text-black font-serif my-2 leading-relaxed px-4">
                         Rabuste Cafe organizes inclusive workshops to promote artisanship and celebrate
                         creativity. Join us to learn directly from master craftsmen and experience
                         the joy of making.
@@ -176,7 +176,7 @@ function JoinNowButton() {
           <button
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#7f3b2d]/5 hover:bg-[#7f3b2d]/10 border-2 border-[#7f3b2d]/20 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
             suppressHydrationWarning
         >
             <span className="flex space-x-[2px]">
@@ -195,7 +195,7 @@ function JoinNowButton() {
                                 }
                                 : { y: 0 }
                         }
-                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#4a4a4a]"
+                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#7f3b2d]"
                     >
                         {char === " " ? "\u00A0" : char}
                     </motion.span>
@@ -215,7 +215,7 @@ function OrganizeNowButton() {
           <button
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#7f3b2d]/5 hover:bg-[#7f3b2d]/10 border-2 border-[#7f3b2d]/20 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
             suppressHydrationWarning
         >
             <span className="flex space-x-[2px]">
@@ -234,7 +234,7 @@ function OrganizeNowButton() {
                                 }
                                 : { y: 0 }
                         }
-                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#4a4a4a]"
+                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#7f3b2d]"
                     >
                         {char === " " ? "\u00A0" : char}
                     </motion.span>

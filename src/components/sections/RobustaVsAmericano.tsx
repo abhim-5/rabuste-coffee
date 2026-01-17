@@ -274,7 +274,7 @@ export function RobustaVsAmericano() {
                   <h3 className="font-display text-xl xl:text-2xl font-semibold mb-2" style={{ color: THEME_COLOR }}>
                     {reason.title}
                   </h3>
-                  <p className="reason-description font-serif text-base xl:text-lg leading-relaxed" style={{ color: THEME_COLOR }}>
+                  <p className="reason-description font-serif text-base xl:text-lg leading-relaxed text-black">
                     {reason.description}
                   </p>
                 </div>
@@ -399,7 +399,7 @@ export function RobustaVsAmericano() {
                   <h3 className="font-display text-xl xl:text-2xl font-semibold mb-2" style={{ color: THEME_COLOR }}>
                     {reason.title}
                   </h3>
-                  <p className="reason-description font-serif text-base xl:text-lg leading-relaxed" style={{ color: THEME_COLOR }}>
+                  <p className="reason-description font-serif text-base xl:text-lg leading-relaxed text-black">
                     {reason.description}
                   </p>
                 </div>
@@ -520,7 +520,7 @@ export function RobustaVsAmericano() {
                   <h3 className="font-display text-base font-semibold mb-1.5" style={{ color: THEME_COLOR }}>
                     {reason.title}
                   </h3>
-                  <p className="reason-description font-serif text-sm leading-relaxed" style={{ color: THEME_COLOR }}>
+                  <p className="reason-description font-serif text-sm leading-relaxed text-black">
                     {reason.description}
                   </p>
                 </div>

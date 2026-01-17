@@ -105,13 +105,13 @@ export function CustomerReviews() {
     return (
         <>
             {/* Separator HR */}
-            <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
+            <div style={{ backgroundColor: "#e3a458" }} className="w-full px-4 lg:px-6 py-0">
                 <hr className="border-t border-black/10" />
             </div>
 
             <section
                 ref={sectionRef}
-                className="relative w-full overflow-hidden bg-[#D8CBB8] py-6 lg:py-8"
+                className="relative w-full overflow-hidden bg-[#e3a458] py-6 lg:py-8"
             >
                 {/* Cinematic Background Effects */}
                 <motion.div
@@ -138,10 +138,10 @@ export function CustomerReviews() {
                             transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 200 }}
                             className="inline-block mb-2 lg:mb-3"
                         >
-                            <Quote className="w-10 h-10 lg:w-14 lg:h-14 text-[#8B6F47]" />
+                            <Quote className="w-10 h-10 lg:w-14 lg:h-14 text-[#7f3b2d]/30" />
                         </motion.div>
 
-                        <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#404040] mb-3">
+                        <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#7f3b2d] mb-3">
                             Reviews of Customers
                         </h2>
 
@@ -160,7 +160,7 @@ export function CustomerReviews() {
                             />
                         </motion.div>
 
-                        <p className="font-serif text-lg lg:text-xl text-[#404040]/80 max-w-2xl mx-auto">
+                        <p className="font-serif text-lg lg:text-xl text-black max-w-2xl mx-auto">
                             Hear what our beloved customers have to say
                         </p>
                     </motion.div>
@@ -237,14 +237,14 @@ export function CustomerReviews() {
                                             className="lg:col-span-3 order-2 space-y-2 lg:space-y-3"
                                         >
                                             {/* Quote Icon */}
-                                            <Quote className="w-10 h-10 lg:w-12 lg:h-12 text-[#8B6F47]/30" />
+                                            <Quote className="w-10 h-10 lg:w-12 lg:h-12 text-[#7f3b2d]/20" />
 
                                             {/* Review Text with Unjumbled Animation */}
                                             <motion.p
                                                 initial={{ filter: "blur(4px)" }}
                                                 animate={{ filter: "blur(0px)" }}
                                                 transition={{ duration: 0.6, delay: 0.1 }}
-                                                className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-black italic"
+                                                className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-[#7f3b2d] italic"
                                             >
                                                 <motion.span
                                                     initial={{ opacity: 0 }}
@@ -278,10 +278,10 @@ export function CustomerReviews() {
                                                 transition={{ delay: 0.5, duration: 0.6 }}
                                                 className="hidden lg:block pt-6 border-t border-[#8B6F47]/20"
                                             >
-                                                <p className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-2">
+                                                <p className="font-display text-2xl lg:text-3xl font-bold text-[#7f3b2d] mb-2">
                                                     {currentReview.name}
                                                 </p>
-                                                <p className="font-serif text-lg lg:text-xl text-[#8B6F47] mb-1">
+                                                <p className="font-serif text-lg lg:text-xl text-[#7f3b2d]/90 mb-1">
                                                     {currentReview.role}
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-4 text-sm font-inter text-[#404040]/60">
@@ -299,10 +299,10 @@ export function CustomerReviews() {
                                             transition={{ delay: 0.3 }}
                                             className="mt-4 text-center lg:hidden"
                                         >
-                                            <p className="font-display text-xl font-bold text-[#404040] mb-1">
+                                            <p className="font-display text-xl font-bold text-[#7f3b2d] mb-1">
                                                 {currentReview.name}
                                             </p>
-                                            <p className="font-serif text-base text-[#8B6F47] mb-1">
+                                            <p className="font-serif text-base text-[#7f3b2d]/90 mb-1">
                                                 {currentReview.role}
                                             </p>
                                             <div className="flex justify-center flex-wrap gap-2 text-xs font-inter text-[#404040]/60">
@@ -324,9 +324,9 @@ export function CustomerReviews() {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 suppressHydrationWarning
-                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#C8BAA8]/60 backdrop-blur-sm shadow-lg hover:shadow-xl hover:bg-[#C8BAA8]/80 transition-all flex items-center justify-center group"
+                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#7f3b2d]/5 backdrop-blur-sm shadow-lg hover:shadow-xl hover:bg-[#7f3b2d]/15 transition-all flex items-center justify-center group"
                             >
-                                <ChevronLeft className="w-4 h-4 lg:w-5 lg:h-5 text-[#404040] group-hover:text-[#8B6F47] transition-colors" />
+                                <ChevronLeft className="w-4 h-4 lg:w-5 lg:h-5 text-[#7f3b2d] group-hover:text-[#7f3b2d] transition-colors" />
                             </motion.button>
 
                             {/* Indicator Dots */}
@@ -342,8 +342,8 @@ export function CustomerReviews() {
                                         whileTap={{ scale: 0.9 }}
                                         suppressHydrationWarning
                                         className={`rounded-full transition-all duration-300 ${index === currentIndex
-                                            ? "w-12 h-3 bg-[#8B6F47]"
-                                            : "w-3 h-3 bg-[#404040]/30 hover:bg-[#404040]/50"
+                                            ? "w-12 h-3 bg-[#7f3b2d]"
+                                            : "w-3 h-3 bg-[#7f3b2d]/20 hover:bg-[#7f3b2d]/40"
                                             }`}
                                     />
                                 ))}
@@ -355,9 +355,9 @@ export function CustomerReviews() {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 suppressHydrationWarning
-                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#C8BAA8]/60 backdrop-blur-sm shadow-lg hover:shadow-xl hover:bg-[#C8BAA8]/80 transition-all flex items-center justify-center group"
+                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#7f3b2d]/5 backdrop-blur-sm shadow-lg hover:shadow-xl hover:bg-[#7f3b2d]/15 transition-all flex items-center justify-center group"
                             >
-                                <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5 text-[#404040] group-hover:text-[#8B6F47] transition-colors" />
+                                <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5 text-[#7f3b2d] group-hover:text-[#7f3b2d] transition-colors" />
                             </motion.button>
                         </div>
                     </div>

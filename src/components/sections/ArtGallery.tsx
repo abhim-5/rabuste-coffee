@@ -84,10 +84,10 @@ export default function ArtGallery() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden pt-0 pb-0 lg:pb-24" style={{ backgroundColor: "#D8CBB8" }}>
+    <section className="relative w-full overflow-hidden pt-0 pb-0 lg:pb-24" style={{ backgroundColor: "#e3a458" }}>
       {/* Header Content */}
       <div className="flex flex-col items-center mb-0 relative z-10 mx-auto w-full px-4 lg:px-6 pt-0 lg:pt-12">
-        <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-center text-[#262626]">
+        <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-center text-[#7f3b2d]">
           Art Gallery
         </h2>
         <div className="relative w-32 h-8 lg:w-40 lg:h-10 mb-8">
@@ -98,7 +98,7 @@ export default function ArtGallery() {
             className="object-contain"
           />
         </div>
-        <p className="max-w-2xl text-center text-lg text-[#575757] font-serif mb-12">
+        <p className="max-w-2xl text-center text-lg text-black font-serif mb-12">
           Art connects the soul to the divine, expressing emotions that words cannot capture.
           Experience the vibrant heritage and rhythm of life through our curated collection.
         </p>

@@ -15,6 +15,7 @@ import MainMenu from "@/components/sections/MainMenu";
 import LaptopScrollAnimation from "@/components/animations/LaptopScrollAnimation";
 import MobilePhoneVideo from "@/components/animations/MobilePhoneVideo";
 import StatsCounter from "@/components/sections/StatsCounter";
+import SectionDivider from "@/components/ui/SectionDivider";
 
 export default function Home() {
   return (
@@ -25,6 +26,7 @@ export default function Home() {
         <RobustaMessage />
         <WhatIsRobusta />
         <RobustaVsAmericano />
+        <SectionDivider />
 
         {/* DESKTOP: 3D Laptop Animation */}
         <LaptopScrollAnimation />
@@ -39,24 +41,21 @@ export default function Home() {
 
         {/* Main Menu Section */}
         <MainMenu />
-        <div style={{ backgroundColor: "#D8CBB8" }} className="py-4 hidden lg:block">
-          <hr className="border-t border-black/20" />
-          <br />
-        </div>
+        <SectionDivider />
 
         {/* Art Gallery Section */}
         <ArtGallery />
 
         {/* Separator */}
-        <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-          <hr className="border-t border-black/10" />
-        </div>
+        <SectionDivider />
 
         {/* Fests & Workshops Section */}
         <FestsAndWorkshops />
+        <SectionDivider />
 
         {/* Customer Reviews Section */}
         <CustomerReviews />
+        <SectionDivider />
 
         {/* Franchise Info Section */}
         <FranchiseInfo />
