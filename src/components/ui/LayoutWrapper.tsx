@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import LottieLoader from './LottieLoader';
+import SmoothScroll from './SmoothScroll';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -69,9 +70,11 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       {isLoading && <LottieLoader onComplete={handleLoaderComplete} />}
-      <div>
-        {children}
-      </div>
+      <SmoothScroll>
+        <div>
+          {children}
+        </div>
+      </SmoothScroll>
     </>
   );
 }

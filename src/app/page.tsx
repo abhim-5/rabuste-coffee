@@ -2,6 +2,7 @@ import Navbar from "@/components/navbar/Navbar";
 import FranchiseInfo from "@/components/sections/FranchiseInfo";
 import dynamic from "next/dynamic";
 import Hero from "@/components/hero/Hero";
+import RobustaMessage from "@/components/promo/RobustaMessage";
 import WhatIsRobusta from "@/components/sections/WhatIsRobusta";
 import WhyRobusta from "@/components/sections/WhyRobusta";
 
@@ -21,6 +22,7 @@ export default function Home() {
       <Navbar />
       <main className="min-h-screen pt-16 lg:pt-20 pb-20 lg:pb-8">
         <Hero />
+        <RobustaMessage />
         <WhatIsRobusta />
         <WhyRobusta />
 
