@@ -4,6 +4,7 @@ import "./globals.css";
 import PasswordProtection from "@/components/auth/PasswordProtection";
 import AuthChecker from "@/components/auth/AuthChecker";
 import { AuthProvider } from "@/hooks/useAuth";
+import LayoutWrapper from "@/components/ui/LayoutWrapper";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -88,7 +89,9 @@ export default function RootLayout({
         <AuthProvider>
           <AuthChecker />
           <PasswordProtection>
-            {children}
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
           </PasswordProtection>
         </AuthProvider>
       </body>

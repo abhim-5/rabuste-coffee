@@ -11,6 +11,30 @@
   --font-sans: var(--font-inter);
 }
 
+/* Tan Pearl Font */
+@font-face {
+  font-family: 'TanPearl';
+  src: url('/fonts/tan-pearl.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Typography Animation Styles */
+.char-wrap {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-title {
+  line-height: 1.4;
+}
+
+.font-tan-pearl {
+  font-family: 'TanPearl', serif;
+}
+
 :root {
   --background: #fafaf9;
   --foreground: #1c1917;
@@ -110,9 +134,19 @@ img[alt*="Vercel"] {
 
 /* Password protection shake animation */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-10px);
+  }
+
+  75% {
+    transform: translateX(10px);
+  }
 }
 
 .animate-shake {
