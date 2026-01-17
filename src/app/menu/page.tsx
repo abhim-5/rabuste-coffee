@@ -132,7 +132,7 @@ export default function MenuPage() {
     return (
         <>
             <Navbar />
-            <main className="min-h-screen pt-16 lg:pt-20 pb-20 lg:pb-8">
+            <main className="min-h-screen pt-16 lg:pt-20 pb-20 lg:pb-8 bg-[#faeade]">
                 <DealSection
                     dealItems={featuredItems}
                     onItemClick={handleItemClick}

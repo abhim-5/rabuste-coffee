@@ -2,564 +2,239 @@
 
 import BlurImage from "@/components/ui/BlurImage";
 import Image from "next/image";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Splitting from "splitting";
+import "splitting/dist/splitting.css";
+import "splitting/dist/splitting-cells.css";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export function OwnerWords() {
   const ref = useRef(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const paragraphContainerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  // Parallax effect for the image
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], ["10%", "-10%"]);
+
   useEffect(() => {
-    let pfoldInstance: any = null;
-    let isInitialized = false;
-
-    // Load a script and wait for it
-    const loadScript = (src: string, id: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        // Check if already loaded
-        if (document.getElementById(id)) {
-
-          resolve();
-          return;
-        }
-
-        // Check if script is already in window
-        if (id === 'jquery-lib' && (window as any).jQuery) {
-
-          resolve();
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.id = id;
-        script.src = src;
-        script.async = false;
-
-        script.onload = () => {
-
-          resolve();
-        };
-
-        script.onerror = () => {
-          reject(new Error(`Failed to load ${src}`));
-        };
-
-        document.head.appendChild(script);
-      });
-    };
-
-    // Load all scripts in sequence
-    const loadAllScripts = async () => {
-      try {
-
-
-        // Load jQuery
-        await loadScript('https://code.jquery.com/jquery-1.8.2.min.js', 'jquery-lib');
-
-        // Small delay for jQuery to initialize
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        // Load Modernizr
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js', 'modernizr-lib');
-
-        // Load PFold
-        await loadScript('https://cdn.jsdelivr.net/gh/codrops/PFold/js/jquery.pfold.js', 'pfold-lib');
-
-        // Small delay for PFold to initialize
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-
-        return true;
-      } catch (error) {
-        return false;
-      }
-    };
-
-    // Initialize PFold
-    const initializePFold = async () => {
-      // Prevent double initialization
-      if (isInitialized) {
-
-        return;
-      }
-
-
-      const scriptsReady = await loadAllScripts();
-
-      if (!scriptsReady) {
-
-      }
-
-      // Small delay to ensure everything is ready
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Check if jQuery and PFold are now available
-      if (!(window as any).jQuery || !(window as any).jQuery.fn.pfold) {
-        return;
-      }
-
-      const $ = (window as any).jQuery;
-
-
-      const $container = $('#owner-pfold-container');
-
-
-      if ($container.length > 0 && $.fn.pfold && !isInitialized) {
-        isInitialized = true;
-
-        const pfold = $container.pfold({
-          easing: 'ease-in-out',
-          folds: 3,
-          folddirection: ['left', 'bottom', 'right'],
-          speed: 500,
-          perspective: 1200,
-          centered: false,
-          onEndUnfolding: function () {
-            // Hide the initial content and all parts
-            $container.find('.uc-initial').hide();
-            $container.find('.uc-part').remove();
-
-            // Reset container position for mobile
-            $container.css({
-              'left': '0',
-              'top': '0',
-              'transform': 'none'
-            });
-
-            // Show and keep the final content visible
-            $container.find('.uc-final-wrapper').css({
-              'display': 'block',
-              'visibility': 'visible',
-              'opacity': '1',
-              'z-index': '10'
-            }).show();
-
-            // Make sure final content children are visible
-            $container.find('.uc-final-wrapper > *').css('visibility', 'visible').show();
-            $container.find('.scrollwrap').show();
-            $container.find('.close').show();
-          },
-          onEndFolding: function () {
-            // Show the initial content only after folding is complete
-            $container.find('.uc-initial').show();
-            $container.find('.uc-initial-content').css('visibility', 'visible').show();
-            $container.find('span.clickme').show();
-
-            // Make sure final wrapper is hidden
-            $container.find('.uc-final-wrapper').hide();
-          }
+    // 1. Initialize Splitting for Heading (Words + Chars)
+    if (headingRef.current) {
+        // Reset if already split to prevent duplication/errors on re-renders
+        if (headingRef.current.querySelector('.word')) return;
+        
+        Splitting({ target: headingRef.current, by: "chars" });
+    }
+    
+    // 2. Initialize Splitting for Paragraphs (Words only)
+    if (paragraphContainerRef.current) {
+        const paragraphs = paragraphContainerRef.current.querySelectorAll('p');
+        paragraphs.forEach(p => {
+             if (p.querySelector('.word')) return; // Skip if already split
+             Splitting({ target: p, by: "words" });
         });
+    }
 
-        pfoldInstance = pfold;
+    const ctx = gsap.context(() => {
+        // give it a tick to ensure DOM updates
+        setTimeout(() => {
+            // --- Effect 28 (Liberation) for Heading ---
+            if (headingRef.current) {
+                const words = headingRef.current.querySelectorAll('.word');
+                
+                // Ensure words and chars display correctly for transforms
+                gsap.set(words, { display: 'inline-block', verticalAlign: 'top', margin: '0 0.2em' });
+                const allChars = headingRef.current.querySelectorAll('.char');
+                gsap.set(allChars, { display: 'inline-block' });
 
+                words.forEach(word => {
+                    const chars = word.querySelectorAll('.char');
+                    if (!chars.length) return;
+                    
+                    const charsTotal = chars.length;
+                    
+                    gsap.fromTo(chars, {
+                        'will-change': 'transform, filter', 
+                        transformOrigin: '50% 100%',
+                        scale: position => {
+                            const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
+                            return gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0.5, 2.1, factor);
+                        },
+                        y: position => {
+                            const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
+                            return gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0, 60, factor);
+                        },
+                        rotation: position => {
+                            const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
+                            return position < charsTotal/2 ? gsap.utils.mapRange(0, Math.ceil(charsTotal/2), -4, 0, factor) : gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0, 4, factor);
+                        },
+                        filter: 'blur(12px) opacity(0)',
+                    }, 
+                    {
+                        ease: 'power2.inOut',
+                        y: 0,
+                        rotation: 0,
+                        scale: 1,
+                        filter: 'blur(0px) opacity(1)',
+                        scrollTrigger: {
+                            trigger: headingRef.current,
+                            start: 'top bottom-=10%',
+                            end: 'bottom center',
+                            scrub: true,
+                        },
+                        stagger: {
+                            amount: 0.15,
+                            from: 'center'
+                        }
+                    });
+                });
+            }
 
-        // Ensure clickme has proper CSS for clicking
-        $container.find('span.clickme').css({
-          'cursor': 'pointer',
-          'pointer-events': 'auto',
-          'position': 'relative',
-          'z-index': '100'
-        });
+            // --- Paragraph Animation (Staggered Words) ---
+            if (paragraphContainerRef.current) {
+                const paragraphs = paragraphContainerRef.current.querySelectorAll('p');
+                paragraphs.forEach(p => {
+                    const words = p.querySelectorAll('.word');
+                    // Style words for spacing
+                    gsap.set(words, { display: 'inline-block', verticalAlign: 'top', margin: '0 0.15em' });
+                    
+                    if (words.length) {
+                        gsap.fromTo(words, {
+                            opacity: 0.1,
+                            willChange: 'opacity'
+                        }, 
+                        {
+                            ease: 'none',
+                            opacity: 1,
+                            stagger: 0.05,
+                            scrollTrigger: {
+                                trigger: p,
+                                start: 'top bottom-=5%',
+                                end: 'bottom center+=10%',
+                                scrub: true,
+                            }
+                        });
+                    }
+                });
+            }
+        }, 100); // reduced timeout 
 
-        $container.find('.uc-initial-content').css({
-          'cursor': 'pointer',
-          'pointer-events': 'auto'
-        });
+    }, ref);
 
-        // Bind click events with more robust handling
-        const clickHandler = function (e: any) {
-
-          e.preventDefault();
-          e.stopPropagation();
-          // Hide initial content immediately when clicked
-          $container.find('.uc-initial-content').css('visibility', 'hidden');
-
-          pfold.unfold();
-        };
-
-        $container.find('span.clickme').on('click', clickHandler);
-        $container.find('.uc-initial-content').on('click', clickHandler);
-
-
-
-        $container.find('span.close').on('click', function () {
-
-          $container.find('.uc-final-wrapper').css('visibility', 'hidden');
-          pfold.fold();
-        });
-      }
-    };
-
-    initializePFold();
-
-    return () => {
-      // Cleanup
-      isInitialized = false;
-      if (typeof window !== 'undefined' && (window as any).jQuery) {
-        const $ = (window as any).jQuery;
-        const $container = $('#owner-pfold-container');
-        $container.off();
-        // Try to destroy pfold instance if it exists
-        if (pfoldInstance && typeof pfoldInstance.destroy === 'function') {
-          pfoldInstance.destroy();
-        }
-      }
-    };
-  }, []); // Remove isInView dependency
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <>
-      <section
-        ref={ref}
-        className="relative w-full overflow-hidden py-10 lg:py-8 pb-[120px] md:pb-12 lg:pb-8 xl:pb-16 bg-[#D8CBB8] z-10"
-      >
-        {/* Enhanced Cinematic Background Effects */}
-        {/* Deep vignette for depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_rgba(0,0,0,0.08)_50%,_rgba(0,0,0,0.25)_100%)] pointer-events-none" />
+    <section
+      ref={ref}
+      className="relative w-full py-20 lg:py-32 overflow-hidden bg-[#faeade]"
+    >
+      {/* Background Textures */}
+      
+      {/* 1. Grain Texture */}
+      <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/concrete-wall.png')]" />
+      
+      {/* 2. Delicate Floral/Organic Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-multiply" />
 
-        {/* Subtle grain texture */}
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/concrete-wall.png')] mix-blend-multiply" />
+      {/* 3. Vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(127,59,45,0.03)_100%)] pointer-events-none" />
 
-        {/* Coffee bean pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-          backgroundImage: `url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M30 20c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 2c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8 3.6-8 8-8z" fill="%23404040" fill-opacity="0.5"%3E%3C/path%3E%3C/svg%3E')`,
-          backgroundSize: '60px 60px'
-        }} />
-
-        {/* Warm ambient light from top */}
-        <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-[#E8DCC8]/30 to-transparent pointer-events-none" />
-
-        {/* Decorative corner accents */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#8B6F47]/10 to-transparent pointer-events-none blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-[#404040]/10 to-transparent pointer-events-none blur-3xl" />
-
-        <div className="relative z-10 mx-auto max-w-[1500px] px-4 lg:px-8 xl:px-12">
-          {/* The "Rectangle Outside" - Visible only on Laptop (lg+) */}
-          <div className="relative w-full lg:bg-[#DDCFBC] lg:rounded-[2.5rem] lg:py-8 lg:px-10 lg:border lg:border-[#C8BBA8] lg:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] lg:overflow-hidden">
-
-            {/* Inner texture (Laptop only) */}
-            <div className="hidden lg:block absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-
-            {/* Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col items-center mb-8 lg:mb-6 relative z-10"
+      <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
+        
+        {/* Editorial Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+          
+          {/* Left: The Image (5 cols) */}
+          <div className="lg:col-span-5 relative">
+            <motion.div 
+              initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }}
+              animate={isInView ? { opacity: 1, clipPath: "inset(0 0% 0 0)" } : {}}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl border border-[#7f3b2d]/20"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-[1px] bg-[#8B6F47]/40"></div>
-                <span className="font-serif text-[#8B6F47] text-sm lg:text-base tracking-[0.2em] uppercase">The Vision</span>
-                <div className="w-8 h-[1px] bg-[#8B6F47]/40"></div>
-              </div>
-              <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#404040] my-2 text-center drop-shadow-sm leading-tight">
-                Words from the Owner
-              </h2>
-
-              {/* Title Separator */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="relative w-28 h-6 lg:w-40 lg:h-10 mt-4"
-              >
-                <Image
-                  src="/title-separator.png"
-                  fill
-                  alt="Decorative separator"
-                  className="object-contain opacity-80"
-                />
-              </motion.div>
+               {/* Decorative border frame offset */}
+               <div className="absolute top-4 left-4 right-4 bottom-4 border border-[#fff9ea]/30 z-20 pointer-events-none" />
+               
+               <motion.div style={{ y }} className="relative w-full h-[120%] -top-[10%]">
+                 <BlurImage
+                    src="/about us/owner_pic.png" // Use actual path
+                    alt="Vaibhav Sutaria - Founder"
+                    fill
+                    className="object-cover"
+                 />
+               </motion.div>
             </motion.div>
-
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 items-center relative z-10">
-              {/* Left: Owner Picture */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col items-center lg:items-center justify-center w-full"
-              >
-                {/* Owner Image */}
-                <div className="relative w-full max-w-[240px] lg:max-w-xs aspect-square mx-auto lg:mx-0 shadow-2xl rounded-2xl overflow-hidden border-4 border-[#fff1d0]">
-                  <motion.div
-                    style={{
-                      y: useTransform(
-                        useSpring(
-                          useScroll({ target: ref, offset: ["start end", "end start"] }).scrollYProgress,
-                          { stiffness: 400, damping: 90 }
-                        ),
-                        [0, 1],
-                        ["20%", "-20%"]
-                      ),
-                      scale: 1.5
-                    }}
-                    className="relative w-full h-full"
-                  >
-                    <BlurImage
-                      src="/about us/owner_pic.png"
-                      alt="Rabuste Founder"
-                      fill
-                      className="object-cover object-top"
-                    />
-                  </motion.div>
-                </div>
-                <div className="mt-4 text-center">
-                  <h3 className="font-display text-xl lg:text-2xl font-bold text-[#404040]">
+            
+            {/* Name Tag Floating */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.6, duration: 0.8 }}
+                className="absolute -bottom-6 -right-6 bg-[#7f3b2d] text-[#faeade] py-4 px-8 rounded-tr-3xl rounded-bl-3xl shadow-xl z-30"
+            >
+                <h3 className="font-tan-pearl text-xl lg:text-2xl tracking-wide">
                     Vaibhav Sutaria
-                  </h3>
-                  <p className="font-serif text-[#8B6F47] text-base lg:text-xl italic tracking-wide mt-1">Founder & Curator</p>
-                </div>
-              </motion.div>
+                </h3>
+                <p className="font-serif text-xs uppercase tracking-[0.2em] opacity-80 mt-1 text-center">
+                    Founder & Curator
+                </p>
+            </motion.div>
+          </div>
 
-              {/* Right: Paper Fold Effect */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="flex justify-center lg:justify-start demo-1 w-full lg:-ml-32 lg:-mt-28"
-              >
-                <div id="owner-pfold-container" className="uc-container shadow-xl">
-                  <div className="uc-initial-content">
-                    <span className="clickme"></span>
-                  </div>
-                  <div className="uc-final-content">
-                    <div className="scrollwrap">
-                      <h3 className="">Dear visitor,</h3>
-                      <p className="">
-                        Welcome to Rabuste Coffee. What started as a passion for the bold, robust flavors of coffee
-                        has grown into a mission to share the finest Robusta experience with coffee lovers everywhere.
-                      </p>
-                      <p className="">
-                        We believe that great coffee should be bold, uncompromising, and memorable just like your experience with us.
-                      </p>
-                      <p className="signature">- Vaibhav Sutaria</p>
-                    </div>
-                    <span className="close">x</span>
-                  </div>
-                </div>
-              </motion.div>
+          {/* Right: The Words (7 cols) */}
+          <div className="lg:col-span-7 space-y-8 lg:pl-10">
+            
+            {/* Header */}
+            <div className="relative">
+                <h2 ref={headingRef} className="font-tan-pearl text-4xl lg:text-7xl text-[#7f3b2d] leading-[0.9] lowercase mb-6">
+                    words from the <br/> owner
+                </h2>
             </div>
+
+            {/* Letter Content */}
+            <div 
+                ref={paragraphContainerRef}
+                className="relative space-y-6 text-lg lg:text-xl font-serif text-[#7f3b2d]/80 leading-relaxed"
+            >
+                {/* Background Quote Watermark */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10rem] lg:text-[12rem] font-tan-pearl text-[#7f3b2d] opacity-[0.07] select-none pointer-events-none blur-[2px] z-0 leading-none font-bold">
+                    "
+                </div>
+
+                <p className="relative z-10">
+                    Welcome to Rabuste Coffee. What started as a simple passion for the bold, intense flavors of Robusta has grown into a movement. We wanted to challenge the status quo and prove that coffee doesn't always have to be subtle—it can be loud, proud, and unapologetically bold.
+                </p>
+                <p className="relative z-10">
+                    We believe that every cup tells a story. From the farmers who nurture the bean to the barista who crafts the brew, it's a journey of dedication. Our mission is to share this authentic experience with you, one sip at a time.
+                </p>
+                
+                {/* Signature Image or Text (No animation needed, static is fine or simple fade) */}
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 0.8 }}
+                    transition={{ delay: 1, duration: 1 }}
+                    className="pt-8 opacity-80"
+                >
+                     <p className="font-handwriting text-3xl text-[#7f3b2d]">
+                        Vaibhav Sutaria
+                     </p>
+                </motion.div>
+            </div>
+
           </div>
         </div>
-      </section>
-      <style jsx global>{`
-        /* PFold Styles */
-        .uc-container {
-          position: relative;
-          width: 400px;
-          height: 400px;
-          top: 0;
-          left: 0;
-          perspective: 1200px;
-        }
-
-        /* Laptop specific adjustment */
-        @media (min-width: 1024px) and (max-width: 1280px) {
-          .uc-container {
-            width: 110px;
-            height: 110px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .uc-container {
-            width: 90px !important;
-            height: 140px !important;
-            margin: 0 0 0 -25% !important;
-            position: relative !important;
-            left: 0px !important;
-            transform: none !important;
-          }
-          
-          .uc-container.uc-current {
-            transform: none !important;
-            left: 0px !important;
-            top: 0 !important;
-            margin: 0 0 0 -25% !important;
-          }
-          
-          /* Make clickme button proportional */
-          .demo-1 span.clickme {
-            width: 85px !important;
-            height: 120px !important;
-            margin: 20px 0 0 0px !important;
-            background-size: contain !important;
-          }
-        }
-
-        .uc-single, 
-        .uc-final-wrapper,
-        .uc-initial-content,
-        .uc-back,
-        .uc-front {
-          background: #fff;
-        }
-
-        .uc-final,
-        .uc-initial, 
-        .uc-final-wrapper {
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
-
-        .uc-initial-content,
-        .uc-final-content {
-          width: 100%;
-          height: 100%;
-          position: relative;
-        }
-
-        .uc-final,
-        .uc-final-content {
-          display: none;
-        }
-
-        .uc-initial-content {
-          backface-visibility: hidden;
-        }
-
-        .uc-part {
-          top: 0;
-          left: 0;
-          position: absolute;
-          transform-style: preserve-3d;
-        }
-
-        .uc-part > div {
-          display: block;
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          backface-visibility: hidden;
-          transform: translateZ(0);
-        }
-
-        .uc-part .uc-back {
-          transform: rotateY(-180deg);
-        }
-
-        /* Transformation-origin classes */
-        .uc-unfold-left {
-          transform-origin: 0 50%;
-        }
-
-        .uc-unfold-right {
-          transform-origin: 100% 50%;
-        }
-
-        .uc-unfold-top {
-          transform-origin: 50% 0%;
-        }
-
-        .uc-unfold-bottom {
-          transform-origin: 50% 100%;
-        }
-
-        /* Unfolding classes */
-        .uc-unfold-left.uc-unfold {
-          transform: rotateY(-180deg);
-        }
-
-        .uc-unfold-right.uc-unfold {
-          transform: rotateY(180deg);
-        }
-
-        .uc-unfold-top.uc-unfold {
-          transform: rotateX(180deg);
-        }
-
-        .uc-unfold-bottom.uc-unfold {
-          transform: rotateX(-180deg);
-        }
-
-        .uc-overlay {
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-          background: rgba(0,0,0,0.3);
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .scrollwrap {
-          overflow: hidden;
-          font-family: 'Satisfy', cursive;
-        }
-
-        @media (max-width: 768px) {
-          .scrollwrap {
-            overflow: hidden;
-            font-size: 12px !important;
-            padding: 8px 8px 8px 10px !important;
-            line-height: 1.5 !important;
-          }
-          
-          .scrollwrap h3 {
-            font-size: 20px !important;
-            margin-bottom: 6px !important;
-            padding: 10px 0 5px 15px !important;
-          }
-          
-          .scrollwrap p {
-            font-size:  15px !important;
-            line-height: 1.3 !important;
-            margin-bottom: 4px !important;
-            padding: 0 15px !important;
-          }
-          
-          .scrollwrap p.signature {
-            font-size: 16px !important;
-            margin-top: 6px !important;
-            padding: 5px 12px 0 12px !important;
-            word-wrap: break-word;
-            white-space: normal;
-          }
-          
-          .close {
-            top: 6px !important;
-            right: 6px !important;
-            font-size: 14px !important;
-            width: 20px !important;
-            height: 20px !important;
-            line-height: 16px !important;
-            border-width: 2px !important;
-          }
-        }
-
-
-
-        .scrollwrap h3 {
-           /* Inherit Satisfy */
-        }
-
-        .scrollwrap p, .scrollwrap .signature {
-           /* Inherit Satisfy */
-        }
-
-        .scrollwrap p {
-          line-height: 1.6;
-        }
-
-        .clickme {
-          cursor: pointer;
-          display: block;
-          width: 100%;
-          height: 100%;
-        }
-
-        .close {
-          z-index: 10;
-        }
-      `}</style>
-    </>
+      </div>
+    </section>
   );
 }
 

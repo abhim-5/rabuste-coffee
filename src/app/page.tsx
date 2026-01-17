@@ -25,6 +25,7 @@ export default function Home() {
         <Hero />
         <RobustaMessage />
         <WhatIsRobusta />
+        <SectionDivider />
         <RobustaVsAmericano />
         <SectionDivider />
 
@@ -48,7 +49,7 @@ export default function Home() {
 
         {/* Fests & Workshops Section */}
         <FestsAndWorkshops />
-        <SectionDivider />
+        <SectionDivider backgroundColor="#e3a458" />
 
         {/* Customer Reviews Section */}
         <CustomerReviews />

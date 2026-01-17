@@ -147,22 +147,24 @@ export default function WhatIsRobusta() {
         </div>
 
         {/* Right Content (Image) with Parallax */}
-        <div 
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-8 order-2 md:order-2">
+          <div 
             ref={imageContainerRef}
-            className="w-full md:w-1/2 relative h-[50vh] md:h-auto overflow-hidden order-2 md:order-2"
-        >
+            className="relative w-[85%] md:w-[80%] aspect-square overflow-hidden rounded-2xl shadow-xl"
+          >
           <motion.div 
-            style={{ y, scale: 1.5 }} 
-            className="absolute inset-0 w-full h-full"
+            style={{ y, scale: 1.2 }} 
+            className="absolute inset-0 w-full h-full rounded-2xl"
           >
              <Image
               src="/what is robusta- image.jpg"
               alt="Raw Robusta Coffee Beans"
               fill
-              className="object-cover"
+              className="object-cover rounded-2xl"
               priority
             />
           </motion.div>
+        </div>
         </div>
 
       </div>

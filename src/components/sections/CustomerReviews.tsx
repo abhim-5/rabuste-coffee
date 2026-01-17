@@ -103,7 +103,7 @@ export default function CustomerReviews() {
             <div className="relative z-10 w-full overflow-hidden py-4 mb-4 flex justify-center">
                 <h2 
                     ref={titleRef} 
-                    className="font-['TanPearl'] text-5xl md:text-7xl lg:text-8xl font-bold uppercase tracking-tighter text-[#7f3b2d] flex gap-4 md:gap-6 flex-wrap justify-center leading-none"
+                    className="font-['TanPearl'] text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-[#7f3b2d] flex gap-4 md:gap-6 flex-wrap justify-center leading-none"
                 >
                     {["Reviews", "of", "Customer"].map((word, wordIndex) => (
                         <span key={wordIndex} className="word inline-block">

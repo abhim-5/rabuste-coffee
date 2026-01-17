@@ -64,10 +64,10 @@ export default function WorkshopsPage() {
   return (
     <>
       <Navbar />
-      <main ref={containerRef} className="min-h-screen relative bg-[#D8CBB8]">
+      <main ref={containerRef} className="min-h-screen relative bg-[#faeade]">
 
         {/* Hero Section */}
-        <WorkshopHero />
+        <WorkshopHero isDataLoaded={!loading} />
 
         {/* Upcoming Workshops */}
         <UpcomingWorkshops
@@ -165,8 +165,8 @@ function UpcomingWorkshops({ pageScrollProgress, workshops, loading, error, curr
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center mb-12 lg:mb-16 px-4"
         >
-          <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#404040] mb-6 text-center">
-            Upcoming Workshops
+          <h2 className="font-tan-pearl text-4xl lg:text-7xl font-bold text-[#7f3b2d] mb-6 text-center lowercase">
+            upcoming workshops
           </h2>
 
           {/* Title Separator */}
@@ -564,15 +564,15 @@ function PreviousWorkshops({ pageScrollProgress, workshops, selectedWorkshop, se
   const [activeReviewWorkshopId, setActiveReviewWorkshopId] = useState<string | null>(null);
 
   return (
-    <section ref={containerRef} className="bg-[#D8CBB8] relative pb-10">
+    <section ref={containerRef} className="bg-[#faeade] relative pb-10">
       {/* Section Header - Sticky at the very top before cards start */}
       <div className="pt-10 pb-12 px-4 flex flex-col items-center text-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#404040] mb-6"
+          className="font-tan-pearl text-4xl lg:text-6xl font-bold text-[#7f3b2d] mb-6 lowercase"
         >
-          Previous Workshops
+          previous workshops
         </motion.h2>
 
         {/* Title Separator */}
@@ -742,7 +742,7 @@ function ImpactSection() {
   ];
 
   return (
-    <section ref={sectionRef} className="relative py-16 lg:py-24 overflow-hidden bg-gradient-to-br from-[#F5EFE6] via-[#E8DBC8] to-[#D8CBB8]">
+    <section ref={sectionRef} className="relative py-16 lg:py-24 overflow-hidden bg-[#faeade]">
       {/* Decorative Elements */}
       <div className="absolute inset-0 opacity-[0.03]">
         <div className="absolute top-10 left-10 w-72 h-72 bg-[#8B6F47] rounded-full blur-3xl" />
@@ -765,13 +765,13 @@ function ImpactSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="inline-block mb-4"
           >
-            <span className="px-6 py-2 bg-gradient-to-r from-[#8B6F47] to-[#6F4E28] text-white text-xs font-bold tracking-[0.3em] uppercase rounded-full shadow-lg">
+            <span className="px-6 py-2 bg-[#7f3b2d] text-[#faeade] text-xs font-bold tracking-[0.3em] uppercase rounded-full shadow-lg">
               Our Story in Numbers
             </span>
           </motion.div>
 
-          <h2 className="font-display text-4xl lg:text-6xl font-bold text-[#2A2A2A] mb-6 text-center bg-gradient-to-r from-[#404040] to-[#2A2A2A] bg-clip-text text-transparent">
-            Brewing Community,<br className="hidden lg:block" /> One Workshop at a Time
+          <h2 className="font-tan-pearl text-4xl lg:text-7xl font-bold text-[#7f3b2d] mb-6 text-center lowercase leading-tight">
+            brewing community,<br className="hidden lg:block" /> one workshop at a time
           </h2>
 
           {/* Coffee Bean Divider */}
@@ -967,9 +967,9 @@ function RequestWorkshopSection({ pageScrollProgress }: any) {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex-1"
           >
-            <h2 className="font-display text-5xl lg:text-7xl font-bold text-[#404040] mb-8 leading-tight">
-              Request Your <br />
-              <span className="text-[#8B6F47]">Custom Workshop</span>
+            <h2 className="font-tan-pearl text-4xl lg:text-7xl font-bold text-[#7f3b2d] mb-8 leading-tight lowercase">
+              request your <br />
+              custom workshop
             </h2>
 
             <div className="space-y-8 font-serif text-[#5C5C5C] text-lg lg:text-xl leading-relaxed">

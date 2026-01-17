@@ -9,7 +9,7 @@ interface SectionDividerProps {
 }
 
 export default function SectionDivider({ 
-  backgroundColor = "#e3a458", 
+  backgroundColor = "#faeade", 
   themeColor = "#7f3b2d" 
 }: SectionDividerProps) {
   const containerRef = useRef(null);
@@ -25,15 +25,15 @@ export default function SectionDivider({
   return (
     <div 
       ref={containerRef}
-      className="w-full py-12 lg:py-20 flex items-center justify-center overflow-hidden"
+      className="w-full py-2 lg:py-4 flex items-center justify-center overflow-hidden"
       style={{ backgroundColor }}
     >
-      <div className="w-full h-12 lg:h-20">
+      <div className="w-full h-8 lg:h-12">
         <motion.svg
           viewBox="0 0 1200 60"
           preserveAspectRatio="none"
           className="w-[150%] h-full ml-[-25%]" // Wider than 100% to allow for horizontal movement
-          style={{ color: `${themeColor}33`, x }}
+          style={{ color: themeColor, x }}
         >
           <motion.path
             d="M-200,30 C50,30 150,10 300,10 C450,10 550,50 700,50 C850,50 950,10 1100,10 C1250,10 1350,30 1500,30"

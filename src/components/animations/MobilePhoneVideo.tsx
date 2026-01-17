@@ -29,7 +29,7 @@ export default function MobilePhoneVideo() {
         // Visible only on Mobile/Tablet (hidden on lg and up)
         <div
             ref={containerRef}
-            className="relative w-full h-screen bg-[#e3a458] flex items-center justify-center overflow-hidden lg:hidden"
+            className="relative w-full h-screen bg-[#faeade] flex items-center justify-center overflow-hidden lg:hidden"
         >
 
             {/* PHONE CONTAINER

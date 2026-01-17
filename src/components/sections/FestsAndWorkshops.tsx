@@ -114,7 +114,7 @@ export default function FestsAndWorkshops() {
 
             {/* Action Buttons: Unified Bottom Center */}
             <div className="action-buttons absolute bottom-0 pb-4 left-0 right-0 z-50 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 px-4 no-dark-mode">
-                <Link href="/workshops#upcoming">
+                <Link href="/workshops?target=upcoming">
                     <button className="group relative">
                         <div className="absolute inset-0 bg-black/20 rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
                         <div className="relative font-tan-pearl text-xl md:text-3xl text-[#faeade] bg-[#7f3b2d] px-8 md:px-12 py-3 md:py-5 rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl leading-none">
@@ -122,7 +122,7 @@ export default function FestsAndWorkshops() {
                         </div>
                     </button>
                 </Link>
-                <Link href="/workshops#request-custom-workshop">
+                <Link href="/workshops?target=request-custom-workshop">
                     <button className="group relative">
                         <div className="absolute inset-0 bg-black/20 rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
                         <div className="relative font-tan-pearl text-xl md:text-3xl text-[#7f3b2d] bg-[#faeade] px-8 md:px-12 py-3 md:py-5 rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl leading-none">

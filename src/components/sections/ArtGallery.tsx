@@ -85,7 +85,7 @@ const ArtGallery = () => {
                 scrollTrigger: {
                     trigger: textRef.current,
                     start: 'top center-=10%', // Trigger later to allow heading to finish
-                    end: '+=150%', 
+                    end: '+=70%', 
                     scrub: true,
                     pin: containerRef.current,
                 }
@@ -108,21 +108,21 @@ const ArtGallery = () => {
                         className="font-tan-pearl text-6xl md:text-8xl lg:text-[10rem] leading-[0.8] block"
                         data-splitting
                     >
-                        Rabuste
+                        rabuste
                     </span>
                     <span 
                         ref={heading2Ref}
                         className="font-tan-pearl text-2xl md:text-3xl lg:text-[3.5rem] leading-[0.8] block opacity-60"
                         data-splitting
                     >
-                        Presents
+                        presents
                     </span>
                     <span 
                         ref={heading3Ref}
                         className="font-tan-pearl text-6xl md:text-8xl lg:text-[10rem] leading-[0.8] block"
                         data-splitting
                     >
-                        Art Gallery
+                        art gallery
                     </span>
                 </div>
 

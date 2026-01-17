@@ -89,7 +89,7 @@ export default function LaptopScrollAnimation() {
     // Main Container Area (height determines scroll length, e.g. 400vh = 4 screens long)
     <div
       ref={containerRef}
-      className="relative hidden h-[400vh] w-full bg-[#e3a458] lg:block"
+      className="relative hidden h-[400vh] w-full bg-[#faeade] lg:block"
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden perspective-[2000px]">
 

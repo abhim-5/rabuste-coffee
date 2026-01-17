@@ -81,7 +81,7 @@ const About3DHero = () => {
 
                   {/* Title */}
                   <motion.h1
-                    className="font-display text-5xl lg:text-8xl font-bold text-[#E8DCC4] mb-8 leading-tight"
+                    className="font-tan-pearl text-5xl lg:text-8xl font-bold text-[#E8DCC4] mb-8 leading-tight"
                   >
                     {heroContent.title}
                   </motion.h1>

@@ -26,33 +26,33 @@ const carouselImages = [
 const reasons = [
   {
     icon: "/icon1.png",
-    title: "THE PERFECT CUP",
-    description: "Robusta delivers double the caffeine with a powerful, unapologetic flavor profile that true coffee lovers crave.",
+    title: "HIGHER CAFFEINE",
+    description: "Robusta naturally packs 2x the caffeine of Arabica, delivering a clean, sustained energy boost without the jitters.",
   },
   {
     icon: "/icon2.png",
-    title: "THE MOKA POT",
-    description: "We believe in serving bold coffee in a cozy space, perfect for your grab-and-go lifestyle with quality intact.",
+    title: "BOLD FLAVOR",
+    description: "Experience a deep, earthy, and nutty profile with zero acidity—coffee that actually tastes like coffee.",
   },
   {
     icon: "/icon3.png",
-    title: "SUPREME BEANS",
-    description: "Hand-selected Robusta beans, expertly dark roasted to bring out chocolatey notes with smooth finish.",
+    title: "RICH CREMA",
+    description: "Our beans produce a thick, golden crema that only high-quality Robusta can achieve, enhancing texture and aroma.",
   },
   {
     icon: "/icon4.png",
-    title: "THE COFFEE MACHINE",
-    description: "More than a café - we're a creative space where Surat's coffee culture meets artistic inspiration.",
+    title: "LESS SUGAR",
+    description: "With 60% less sugar and lipids than Arabica, Robusta is the cleaner, healthier choice for your daily brew.",
   },
   {
     icon: "/icon5.png",
-    title: "FRENCH PRESS",
-    description: "Named to celebrate Robusta coffee, we're Surat's first café exclusively dedicated to this bold bean variety.",
+    title: "PURE STRENGTH",
+    description: "No mild Arabica here. Just pure, unadulterated strength that respects your palate and your wake-up call.",
   },
   {
     icon: "/icon6.png",
-    title: "COFFEE TO GO",
-    description: "Every cup is a testament to our commitment to dark roast excellence and authentic coffee craftsmanship.",
+    title: "ANTIOXIDANT RICH",
+    description: "Loaded with more antioxidants than other varieties, supporting your wellness while fueling your ambition.",
   },
 ];
 
@@ -68,7 +68,7 @@ export function RobustaVsAmericano() {
   const autoPlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Theme configuration
-  const SECTION_BG = "#e3a458";
+  const SECTION_BG = "#faeade";
   const THEME_COLOR = "#7f3b2d";
 
   useEffect(() => {
@@ -254,7 +254,7 @@ export function RobustaVsAmericano() {
               className="font-['TanPearl'] text-[10vw] lg:text-[5rem] xl:text-[6rem] leading-[0.9] mb-6 text-center lg:whitespace-nowrap relative -top-12 lg:-top-24" 
               style={{ color: THEME_COLOR }}
             >
-              Robusta vs Americano
+              robusta vs arabica
             </h2>
           </div>
 
@@ -291,12 +291,12 @@ export function RobustaVsAmericano() {
           </div>
 
           {/* Center Image with Carousel */}
-          <div ref={carouselRef} className="relative flex flex-col items-center gap-1 -mt-12">
+          <div ref={carouselRef} className="relative flex flex-col items-center gap-1 mt-8">
             <motion.div
               initial={{ opacity: 0, scale: 0.85, filter: "blur(15px)" }}
               animate={isInView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
               transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-[380px] xl:w-[450px] h-[480px] xl:h-[560px] flex items-center justify-center overflow-hidden"
+              className="relative w-[380px] xl:w-[450px] aspect-square flex items-center justify-center overflow-hidden rounded-2xl"
               style={{ perspective: "1200px" }}
             >
               <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -311,13 +311,13 @@ export function RobustaVsAmericano() {
                     x: { type: "spring", stiffness: 300, damping: 40 },
                     duration: 0.5,
                   }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 rounded-2xl"
                 >
                   <BlurImage
                     src={carouselImages[currentImageIndex]}
                     fill
                     alt="Robusta Coffee"
-                    className="object-contain"
+                    className="object-cover rounded-2xl"
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 380px, 450px"
                   />
@@ -434,7 +434,7 @@ export function RobustaVsAmericano() {
               initial={{ opacity: 0, scale: 0.85, filter: "blur(15px)" }}
               animate={isInView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
               transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-full max-w-[340px] h-[320px] overflow-hidden"
+              className="relative w-full max-w-[340px] aspect-square overflow-hidden rounded-2xl"
               style={{ perspective: "1200px" }}
             >
               <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -449,13 +449,13 @@ export function RobustaVsAmericano() {
                     x: { type: "spring", stiffness: 300, damping: 40 },
                     duration: 0.5,
                   }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 rounded-2xl"
                 >
                   <BlurImage
                     src={carouselImages[currentImageIndex]}
                     fill
                     alt="Robusta Coffee"
-                    className="object-contain"
+                    className="object-cover rounded-2xl"
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, 340px"
                   />

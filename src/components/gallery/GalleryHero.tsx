@@ -48,34 +48,10 @@ export default function GalleryHero() {
                     initial={{ opacity: 0, y: 40, filter: "blur(20px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     transition={{ duration: 1.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="font-display tracking-wide text-white text-[clamp(2rem,10vw,5.5rem)] leading-tight drop-shadow-2xl"
+                    className="font-tan-pearl tracking-wide text-[#faeade] text-[clamp(3rem,12vw,8rem)] leading-none drop-shadow-2xl lowercase text-center"
                 >
-                    ART GALLERY
+                    art gallery
                 </motion.h1>
-
-                {/* Divider with icon */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8, filter: "blur(15px)" }}
-                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 1.2, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                    className="mt-6 mb-8 flex items-center gap-4 text-white/90"
-                >
-                    <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                    <Coffee className="h-6 w-6" />
-                    <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                </motion.div>
-
-                {/* Subtext */}
-                <motion.p
-                    initial={{ opacity: 0, y: 30, filter: "blur(15px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    transition={{ duration: 1.4, delay: 1.8, ease: [0.22, 1, 0.36, 1] }}
-                    className="font-serif mx-auto max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl"
-                >
-                    Discover our curated collection of nature and wildlife-inspired artwork. Each piece tells a story
-                    of tranquility, beauty, and the timeless connection between art and the natural world. From serene
-                    landscapes to vibrant still life, find the perfect piece to bring nature's elegance into your space.
-                </motion.p>
             </div>
         </section>
     );

@@ -94,7 +94,7 @@ export function DealSection({
     if (activeDeals.length === 0) return null;
 
     return (
-        <section className="relative w-full py-8 lg:py-12 bg-gradient-to-b from-[#b8a890] to-[#c5b59d]">
+        <section className="relative w-full py-8 lg:py-12 bg-[#faeade]">
             <div className="mx-auto w-full px-4 lg:px-6 max-w-7xl">
                 {/* Header */}
                 <motion.div

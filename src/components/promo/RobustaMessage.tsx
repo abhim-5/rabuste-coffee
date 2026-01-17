@@ -86,19 +86,19 @@ export default function RobustaMessage() {
           {/* Top Text */}
           <h1 
             data-splitting 
-            className="first-message text-[13.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-2xl 2xl:max-w-4xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]" 
+            className="first-message text-[11.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-6xl 2xl:max-w-7xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]" 
           >
-            AWAKEN YOUR FEARLESS SPIRIT AND
+           EXPERIENCE SURAT'S FIRST & ONLY
           </h1>
 
           {/* Center Reveal Box - Relative with Negative Margins for Overlap */}
           <div 
-            className="msg-text-scroll relative z-20 rotate-[3deg] border-[.5vw] border-[#7f3b2d] shadow-xl -my-[4vw] md:-my-14"
+            className="msg-text-scroll relative z-20 rotate-[3deg] border-[.5vw] border-[#7f3b2d] shadow-xl -my-[1vw] md:-my-4"
             style={{ clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }} // Initially closed
           >
             <div className="bg-[#e3a458] px-4 md:px-6 pb-2 md:pb-4">
-              <h2 className="text-[#7f3b2d] text-[14.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] font-bold uppercase whitespace-nowrap leading-[1] tracking-[-.2vw] scale-y-[1.1] scale-x-[0.9] origin-center transform">
-                PURE ROBUSTA
+              <h2 className="text-[#7f3b2d] text-[9.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] font-bold uppercase whitespace-normal md:whitespace-nowrap text-center leading-[0.9] md:leading-[1] tracking-[-.2vw] scale-y-[1.1] scale-x-[0.9] origin-center transform">
+                BOLD, DARK, AND STRONG
               </h2>
             </div>
           </div>
@@ -106,9 +106,9 @@ export default function RobustaMessage() {
           {/* Bottom Text */}
           <h1 
             data-splitting 
-            className="second-message text-[13.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-4xl 2xl:max-w-7xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]"
+            className="second-message text-[11.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-6xl 2xl:max-w-7xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]"
           >
-            YOUR FUTURE WITH EVERY SIP OF PURE DARK ROBUSTA
+            ROBUSTA COFFEE THAT WAKES YOU UP INSTANTLY
           </h1>
         </div>
 
