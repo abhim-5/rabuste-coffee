@@ -227,7 +227,7 @@ rabuste-coffee/
   - Save/Cancel with success animation
   - Click outside to close
 
-### 🪙 Points & Rewards (NEW)
+### 🪙 Points & Rewards (NEW feautre) 
 - **Points Page** (`/points`):
   - Hero section with dark gradient background
   - Current points balance display (large)
