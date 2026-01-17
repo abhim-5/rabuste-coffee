@@ -70,23 +70,23 @@ export default function AIAnalyticsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="min-h-screen bg-transparent py-8 px-4">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
-                            <Brain className="w-7 h-7 text-white" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-[#8B6F47] to-[#7f3b2d] rounded-xl flex items-center justify-center shadow-md">
+                            <Brain className="w-7 h-7 text-[#FFF9EB]" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">AI Analytics</h1>
-                            <p className="text-gray-600">Superadmin Intelligence System</p>
+                            <h1 className="text-3xl font-bold font-display text-[#7f3b2d]">AI Analytics</h1>
+                            <p className="text-[#8B6F47] font-medium">Superadmin Intelligence System</p>
                         </div>
                     </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                    <div className="bg-[#FFF9EB] border border-[#8B6F47]/20 rounded-lg p-4 mt-4 shadow-sm">
                         <div className="flex items-start gap-2">
-                            <Sparkles className="w-5 h-5 text-blue-600 mt-0.5" />
-                            <div className="text-sm text-blue-900">
+                            <Sparkles className="w-5 h-5 text-[#8B6F47] mt-0.5" />
+                            <div className="text-sm text-[#7f3b2d]">
                                 <strong>Ask anything</strong> about your business data. I'll analyze orders, revenue, customers, menu performance, and more - all in natural language.
                             </div>
                         </div>
@@ -94,7 +94,7 @@ export default function AIAnalyticsPage() {
                 </div>
 
                 {/* Question Input */}
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div className="bg-[#FFF9EB] rounded-xl shadow-sm p-6 mb-6 border border-[#8B6F47]/10">
                     <div className="flex gap-3">
                         <input
                             type="text"
@@ -103,12 +103,12 @@ export default function AIAnalyticsPage() {
                             onKeyPress={handleKeyPress}
                             placeholder="Ask me anything about your business..."
                             disabled={isLoading}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-3 border border-[#8B6F47]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B6F47] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed bg-white text-[#7f3b2d] placeholder-[#8B6F47]/50"
                         />
                         <button
                             onClick={handleAsk}
                             disabled={!question.trim() || isLoading}
-                            className="bg-gradient-to-r from-purple-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="bg-[#7f3b2d] text-white px-6 py-3 rounded-lg hover:bg-[#6d5638] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm font-medium"
                         >
                             {isLoading ? (
                                 <>
@@ -126,14 +126,14 @@ export default function AIAnalyticsPage() {
 
                     {/* Suggested Questions */}
                     <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">Quick questions:</p>
+                        <p className="text-sm text-[#8B6F47] mb-2 font-medium">Quick questions:</p>
                         <div className="flex flex-wrap gap-2">
                             {SUGGESTED_QUESTIONS.map((q, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setQuestion(q)}
                                     disabled={isLoading}
-                                    className="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition disabled:opacity-50"
+                                    className="text-sm px-3 py-1.5 bg-[#faeade] hover:bg-[#ebdcc8] text-[#7f3b2d] rounded-full transition disabled:opacity-50 border border-[#8B6F47]/10"
                                 >
                                     {q}
                                 </button>
@@ -171,15 +171,15 @@ export default function AIAnalyticsPage() {
                             className="space-y-6"
                         >
                             {/* Summary Card */}
-                            <div className="bg-white rounded-xl shadow-sm p-6">
+                            <div className="bg-[#FFF9EB] rounded-xl shadow-sm p-6 border border-[#8B6F47]/10">
                                 <div className="flex items-start justify-between mb-4">
                                     <div>
-                                        <h2 className="text-xl font-bold text-gray-900 mb-2">
+                                        <h2 className="text-xl font-bold font-display text-[#7f3b2d] mb-2">
                                             {result.question}
                                         </h2>
-                                        <p className="text-gray-700">{result.insights.summary}</p>
+                                        <p className="text-[#8B6F47]">{result.insights.summary}</p>
                                     </div>
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                                         <TrendingUp className="w-4 h-4" />
                                         {Math.round(result.insights.confidence * 100)}% confident
                                     </div>
@@ -189,11 +189,11 @@ export default function AIAnalyticsPage() {
                                 {result.insights.key_metrics && result.insights.key_metrics.length > 0 && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                         {result.insights.key_metrics.map((metric, idx) => (
-                                            <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4">
-                                                <p className="text-sm text-gray-600 mb-1">{metric.label}</p>
-                                                <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                                            <div key={idx} className="bg-[#faeade]/50 border border-[#8B6F47]/10 rounded-lg p-4">
+                                                <p className="text-sm text-[#8B6F47] mb-1 font-medium">{metric.label}</p>
+                                                <p className="text-2xl font-bold text-[#7f3b2d]">{metric.value}</p>
                                                 {metric.context && (
-                                                    <p className="text-xs text-gray-600 mt-1">{metric.context}</p>
+                                                    <p className="text-xs text-[#8B6F47]/70 mt-1">{metric.context}</p>
                                                 )}
                                             </div>
                                         ))}
@@ -203,14 +203,14 @@ export default function AIAnalyticsPage() {
                                 {/* Insights */}
                                 {result.insights.insights && result.insights.insights.length > 0 && (
                                     <div className="mb-6">
-                                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                            <BarChart3 className="w-5 h-5 text-purple-600" />
+                                        <h3 className="font-semibold text-[#7f3b2d] mb-3 flex items-center gap-2">
+                                            <BarChart3 className="w-5 h-5 text-[#8B6F47]" />
                                             Key Insights
                                         </h3>
                                         <ul className="space-y-2">
                                             {result.insights.insights.map((insight, idx) => (
-                                                <li key={idx} className="flex items-start gap-2 text-gray-700">
-                                                    <span className="text-purple-600 mt-1">•</span>
+                                                <li key={idx} className="flex items-start gap-2 text-[#5c4d45]">
+                                                    <span className="text-[#8B6F47] mt-1">•</span>
                                                     <span>{insight}</span>
                                                 </li>
                                             ))}

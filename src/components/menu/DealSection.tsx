@@ -104,18 +104,18 @@ export function DealSection({
                     className="flex flex-col items-center mb-10"
                 >
                     <div className="relative">
-                        <div className="flex items-center gap-3 px-8 py-3 bg-[#262626] text-[#b8a890] rounded-full shadow-xl border border-[#b8a890]/30 transform hover:scale-105 transition-transform duration-300">
-                            <Sparkles className="w-5 h-5 animate-pulse text-amber-400" />
+                        <div className="flex items-center gap-3 px-8 py-3 bg-[#7f3b2d] text-[#faeade] rounded-full shadow-xl border border-[#faeade]/20 transform hover:scale-105 transition-transform duration-300">
+                            <Sparkles className="w-5 h-5 animate-pulse text-[#e3a458]" />
                             <h2 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold uppercase tracking-[0.15em] mx-2">
                                 Limited Time Deals
                             </h2>
-                            <Sparkles className="w-5 h-5 animate-pulse text-amber-400" />
+                            <Sparkles className="w-5 h-5 animate-pulse text-[#e3a458]" />
                         </div>
                         {/* Decorative line */}
                         <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[#262626]/20 -z-10 transform scale-x-150" />
                     </div>
                     
-                    <p className="mt-4 font-sans text-[#262626]/70 text-sm font-medium">
+                    <p className="mt-4 font-sans text-[#262626]/70 text-xl font-medium">
                         Grab them before the timer runs out!
                     </p>
                 </motion.div>

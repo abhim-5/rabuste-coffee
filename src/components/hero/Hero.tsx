@@ -84,15 +84,24 @@ export default function Hero() {
       window.dispatchEvent(new Event('video-loaded'));
     }
 
+    // Function to start everything (video + text)
+    const startExperience = () => {
+       if (videoRef.current) {
+          videoRef.current.currentTime = 0; // Reset to start
+          videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+       }
+       // Small delay for text to start slightly after video begins
+       setTimeout(runAnimation, 500); 
+    };
+
     // Check if loader has been seen
     if (sessionStorage.getItem('hasSeenLoader')) {
-      // If already seen, run immediately (small delay for smoothness)
-      setTimeout(runAnimation, 500);
+      // If already seen, run immediately
+      startExperience();
     } else {
       // Otherwise wait for loader completion event
       const handleLoaderComplete = () => {
-        // DELAYED START: Wait 0.5 seconds (snappier) before starting text animation
-        setTimeout(runAnimation, 500);
+        startExperience();
       };
       
       window.addEventListener('loader-complete', handleLoaderComplete);
@@ -109,7 +118,6 @@ export default function Hero() {
         {/* Background video with optimization */}
         <video
           ref={videoRef}
-          autoPlay
           loop
           muted
           playsInline

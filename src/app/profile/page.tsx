@@ -26,6 +26,7 @@ import { useProfileOrders } from "@/hooks/useProfileOrders";
 import { useProfileWorkshops } from "@/hooks/useProfileWorkshops";
 import { useProfileArt } from "@/hooks/useProfileArt";
 import { MyCouponsSection } from "@/components/profile/MyCouponsSection";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCart } from "@/hooks/useCart";
 
 export default function ProfilePage() {
@@ -252,16 +253,16 @@ export default function ProfilePage() {
         ];
 
     const quickStats = [
-        { label: "Total Orders", value: totalOrders, icon: ShoppingBag, color: "amber" },
-        { label: "Workshops", value: workshops?.length || 0, icon: GraduationCap, color: "blue" },
+        { label: "Total Menu Orders", value: totalOrders, icon: ShoppingBag, color: "amber" },
+        { label: "Total Workshops", value: workshops?.length || 0, icon: GraduationCap, color: "blue" },
+        { label: "Total Art Items", value: artPieces?.length || 0, icon: Palette, color: "amber" },
         { label: "Total Spent", value: `₹${totalSpent.toLocaleString()}`, icon: TrendingUp, color: "green" },
-        { label: "Member Tier", value: "Gold", icon: Award, color: "amber" },
     ];
 
     return (
         <>
             <Navbar />
-            <main className="min-h-screen" style={{ backgroundColor: "#D8CBB8" }}>
+            <main className="min-h-screen" style={{ backgroundColor: "#faeade" }}>
                 {/* Reward Notification Toast */}
                 <AnimatePresence>
                     {rewardMessage && (
@@ -283,7 +284,7 @@ export default function ProfilePage() {
                             id: user?.id || 'guest',
                             name: userName,
                             email: userEmail,
-                            avatar: profileImage,
+                            avatar: profileImage ?? undefined,
                             memberSince: memberSince,
                             points: 0, // Legacy field, not used
                             totalOrders: totalOrders,
@@ -348,7 +349,9 @@ export default function ProfilePage() {
                                         {/* Avatar & Info */}
                                         <div className="relative px-6 pb-6">
                                             <div className="relative -mt-14 mb-4">
-                                                {profileImage ? (
+                                                {profileLoading ? (
+                                                     <Skeleton className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg" />
+                                                ) : profileImage ? (
                                                     <Image
                                                         src={profileImage}
                                                         alt={userName}
@@ -361,23 +364,34 @@ export default function ProfilePage() {
                                                         {generateInitials(userName)}
                                                     </div>
                                                 )}
-                                                <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-3 border-white flex items-center justify-center">
-                                                    <div className="w-2.5 h-2.5 bg-white rounded-full" />
-                                                </div>
+                                                {!profileLoading && (
+                                                    <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-3 border-white flex items-center justify-center">
+                                                        <div className="w-2.5 h-2.5 bg-white rounded-full" />
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <h2 className="font-display text-xl font-bold text-[#262626] mb-1">
-                                                {userName}
-                                            </h2>
-                                            <p className="text-sm text-[#78716c] mb-3 flex items-center gap-2">
-                                                <Mail className="w-3.5 h-3.5" />
-                                                {userEmail}
-                                            </p>
+                                            {profileLoading ? (
+                                                 <div className="space-y-2 mb-4">
+                                                     <Skeleton className="h-6 w-32" />
+                                                     <Skeleton className="h-4 w-48" />
+                                                 </div>
+                                            ) : (
+                                                <>
+                                                    <h2 className="font-display text-xl font-bold text-[#262626] mb-1">
+                                                        {userName}
+                                                    </h2>
+                                                    <p className="text-sm text-[#78716c] mb-3 flex items-center gap-2">
+                                                        <Mail className="w-3.5 h-3.5" />
+                                                        {userEmail}
+                                                    </p>
 
-                                            <div className="flex items-center gap-2 text-xs text-[#a8a29e] mb-4">
-                                                <Clock className="w-3.5 h-3.5" />
-                                                <span>Member for {memberDuration}</span>
-                                            </div>
+                                                    <div className="flex items-center gap-2 text-xs text-[#a8a29e] mb-4">
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        <span>Member for {memberDuration}</span>
+                                                    </div>
+                                                </>
+                                            )}
 
                                             {/* Quick Actions */}
                                             <div className="flex gap-2">
@@ -409,7 +423,7 @@ export default function ProfilePage() {
                                                 if (item.href) {
                                                     return (
                                                         <Link key={item.id} href={item.href}>
-                                                            <div className="flex items-center justify-between px-4 py-3 rounded-xl text-[#78716c] hover:bg-[#F5F0EB] hover:text-[#8B6F47] transition-all cursor-pointer">
+                                                        <div className="flex items-center justify-between px-4 py-3 rounded-xl text-[#78716c] hover:bg-[#fff9eb] hover:text-[#8B6F47] transition-all cursor-pointer">
                                                                 <div className="flex items-center gap-3">
                                                                     <Icon className="w-5 h-5" />
                                                                     <span className="font-sans font-medium text-sm">{item.label}</span>
@@ -426,7 +440,7 @@ export default function ProfilePage() {
                                                         onClick={() => setActiveSection(item.id)}
                                                         className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${isActive
                                                             ? "bg-[#8B6F47] text-white shadow-md"
-                                                            : "text-[#78716c] hover:bg-[#F5F0EB] hover:text-[#8B6F47]"
+                                                            : "text-[#78716c] hover:bg-[#fff9eb] hover:text-[#8B6F47]"
                                                             }`}
                                                     >
                                                         <div className="flex items-center gap-3">
@@ -434,7 +448,7 @@ export default function ProfilePage() {
                                                             <span className="font-sans font-medium text-sm">{item.label}</span>
                                                         </div>
                                                         {item.count !== undefined && (
-                                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-[#F5F0EB]"
+                                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-[#fff9eb]"
                                                                 }`}>
                                                                 {item.count}
                                                             </span>
@@ -445,27 +459,7 @@ export default function ProfilePage() {
                                         </nav>
                                     </div>
 
-                                    {/* Member Tier Card */}
-                                    <div className="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 rounded-2xl p-5 text-white relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                                        <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
 
-                                        <div className="relative z-10">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                                                    <Award className="w-6 h-6" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-amber-100 text-xs font-medium">Member Tier</p>
-                                                    <p className="font-display text-lg font-bold">Gold Member</p>
-                                                </div>
-                                            </div>
-                                            <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-                                                <div className="w-1/2 h-full bg-white rounded-full" />
-                                            </div>
-                                            <p className="text-xs text-amber-100 mt-2">250 pts to Platinum</p>
-                                        </div>
-                                    </div>
                                 </div>
                             </motion.aside>
 
@@ -495,8 +489,8 @@ export default function ProfilePage() {
                                                     <Icon className="w-5 h-5" />
                                                 </div>
                                                 <p className="text-xs text-[#78716c] font-medium mb-1">{stat.label}</p>
-                                                <p className="font-display text-xl font-bold text-[#262626]">
-                                                    {stat.value}
+                                                <p className="font-display text-xl font-bold text-[#7f3b2d]">
+                                                    {profileLoading ? <Skeleton className="h-6 w-16" /> : stat.value}
                                                 </p>
                                             </motion.div>
                                         );
@@ -509,18 +503,24 @@ export default function ProfilePage() {
                                     <div className="px-8 py-6 border-b border-[#f5f5f4]">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <h2 className="font-display text-2xl font-bold text-[#262626]">
+                                                <h2 className="font-display text-2xl font-bold text-[#7f3b2d]">
                                                     {activeSection === "orders" && "Order History"}
                                                     {activeSection === "workshops" && "My Workshops"}
                                                     {activeSection === "art" && "Art Collection"}
                                                     {activeSection === "coupons" && "My Coupons"}
                                                 </h2>
-                                                <p className="text-sm text-[#78716c] mt-1">
-                                                    {activeSection === "orders" && `${stats?.ordersCount || 0} orders • ₹${ordersTotal.toLocaleString()} spent`}
-                                                    {activeSection === "workshops" && `${workshops?.length || 0} workshops attended`}
-                                                    {activeSection === "art" && `${artPieces?.length || 0} pieces • ₹${artTotal.toLocaleString()} value`}
-                                                    {activeSection === "coupons" && "Manage your reward coupons"}
-                                                </p>
+                                                <div className="text-sm text-[#78716c] mt-1 h-5">
+                                                    {profileLoading ? (
+                                                          <Skeleton className="h-4 w-48" />
+                                                    ) : (
+                                                        <>
+                                                            {activeSection === "orders" && `${stats?.ordersCount || 0} orders • ₹${ordersTotal.toLocaleString()} spent`}
+                                                            {activeSection === "workshops" && `${workshops?.length || 0} workshops attended`}
+                                                            {activeSection === "art" && `${artPieces?.length || 0} pieces • ₹${artTotal.toLocaleString()} value`}
+                                                            {activeSection === "coupons" && "Manage your reward coupons"}
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -641,7 +641,7 @@ export default function ProfilePage() {
                                     {/* Age Field */}
                                     <div>
                                         <label className="block text-xs font-medium text-[#262626] mb-1.5">
-                                            Age {!profile.age && <span className="text-green-600">(₹50 reward!)</span>}
+                                            Age {!profile?.age && <span className="text-green-600">(₹50 reward!)</span>}
                                         </label>
                                         <input
                                             type="number"
@@ -655,7 +655,7 @@ export default function ProfilePage() {
                                     {/* Phone Field */}
                                     <div>
                                         <label className="block text-xs font-medium text-[#262626] mb-1.5">
-                                            Phone Number {!profile.phone && <span className="text-green-600">(₹25 reward!)</span>}
+                                            Phone Number {!profile?.phone && <span className="text-green-600">(₹25 reward!)</span>}
                                         </label>
                                         <input
                                             type="tel"

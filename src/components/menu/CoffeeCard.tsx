@@ -54,8 +54,8 @@ export function CoffeeCard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="relative h-full min-h-[250px] lg:min-h-0 flex flex-col cursor-pointer border-l-[0.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-black transition-shadow"
-            style={{ backgroundColor: "#D8CBB8" }}
+            className="relative h-full min-h-[250px] lg:min-h-0 flex flex-col cursor-pointer border border-[#8B6F47]/10 rounded-2xl overflow-hidden transition-shadow"
+            style={{ backgroundColor: "#faeade" }}
         >
             {/* Deal Badge - Top Left Corner */}
             {(item.isDealOfTheDay || discountPercentage > 0) && (
@@ -70,9 +70,9 @@ export function CoffeeCard({
 
             {/* Image Container - Fixed height on mobile for maximum image space */}
             <div 
-                className="relative w-full h-[170px] lg:h-auto lg:aspect-[4/3] overflow-hidden group border-b-[0.5px] border-black"
+                className="relative w-full h-[170px] lg:h-auto lg:aspect-[4/3] overflow-hidden group"
                 onClick={() => onCardClick(item)}
-                style={{ backgroundColor: "#D8CBB8" }}
+                style={{ backgroundColor: "#faeade" }}
             >
                 <img
                     src={item.image}
@@ -82,7 +82,7 @@ export function CoffeeCard({
             </div>
 
             {/* Content Section - Reduced padding for less height */}
-            <div className="p-2 lg:p-3 flex flex-col flex-1" style={{ backgroundColor: "#D8CBB8" }}>
+            <div className="p-2 lg:p-3 flex flex-col flex-1" style={{ backgroundColor: "#ffff" }}>
                 {/* Product Name */}
                 <div className="mb-1">
                     <h4 className="font-serif text-base lg:text-2xl font-bold text-[#262626] leading-tight">
@@ -105,7 +105,7 @@ export function CoffeeCard({
                             </span>
                         </>
                     ) : (
-                         <span className="font-sans text-[10px] lg:text-xs font-medium text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                         <span className="font-sans text-[10px] lg:text-xs font-medium text-[#7f3b2d] bg-[#faeade] px-1.5 py-0.5 rounded">
                             New
                         </span>
                     )}

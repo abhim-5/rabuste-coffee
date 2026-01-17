@@ -1,7 +1,7 @@
 'use client';
 
-import Lenis from 'lenis';
 import { useEffect } from 'react';
+import Lenis from 'lenis';
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -11,6 +11,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       smoothWheel: true,
     });
 
+    // Animation loop
     function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -18,6 +19,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
     requestAnimationFrame(raf);
 
+    // Cleanup
     return () => lenis.destroy();
   }, []);
 

@@ -214,7 +214,7 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
                 <img className="workshop-front" src="/gallery/hero-img-layer-2.png" alt="Workshop Foreground" />
 
                 <div className="workshop-hero-img-copy" ref={heroImgCopyRef}>
-                    <p>Scroll down to reveal</p>
+                    <p className="text-gray-400">Scroll down to reveal</p>
                 </div>
             </div>
 
@@ -240,9 +240,9 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
             <div className="workshop-logo-container"></div>
 
             <div className="workshop-overlay-copy">
-                <h1 ref={overlayCopyRef}>
+                <h1 ref={overlayCopyRef} className="text-[#7f3b2d]">
                     Immersive<br />
-                    Experiment At <br />
+                    Experience At <br />
                     Rabuste Cafe
                 </h1>
             </div>
