@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Hero from "@/components/hero/Hero";
 import RobustaMessage from "@/components/promo/RobustaMessage";
 import WhatIsRobusta from "@/components/sections/WhatIsRobusta";
-import WhyRobusta from "@/components/sections/WhyRobusta";
+import RobustaVsAmericano from "@/components/sections/RobustaVsAmericano";
 
 // Lazy load heavy below-the-fold components
 const ArtGallery = dynamic(() => import("@/components/sections/ArtGallery"));
@@ -24,7 +24,7 @@ export default function Home() {
         <Hero />
         <RobustaMessage />
         <WhatIsRobusta />
-        <WhyRobusta />
+        <RobustaVsAmericano />
 
         {/* DESKTOP: 3D Laptop Animation */}
         <LaptopScrollAnimation />
