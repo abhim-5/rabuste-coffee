@@ -49,11 +49,21 @@ export default function MenuPage() {
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setCurrentUser(session?.user ?? null);
+            setCurrentUser(session?.user || null);
         });
 
         return () => subscription.unsubscribe();
     }, []);
+
+    // Auto-open cart if coming from reorder
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('openCart') === 'true' && cart.itemCount > 0) {
+            setIsCartOpen(true);
+            // Clean up URL
+            window.history.replaceState({}, '', '/menu');
+        }
+    }, [cart.itemCount]);
 
     // Log menu status for debugging
     useEffect(() => {

@@ -82,6 +82,47 @@ CREATE TABLE public.categories (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT categories_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.coupon_config (
+  id integer NOT NULL DEFAULT 1 CHECK (id = 1),
+  system_enabled boolean DEFAULT true,
+  min_payable_amount numeric DEFAULT 50 CHECK (min_payable_amount > 0::numeric),
+  next_order_min_earn numeric DEFAULT 200,
+  next_order_discount numeric DEFAULT 40,
+  next_order_expiry_days integer DEFAULT 30,
+  updated_at timestamp with time zone DEFAULT now(),
+  updated_by uuid,
+  CONSTRAINT coupon_config_pkey PRIMARY KEY (id),
+  CONSTRAINT coupon_config_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.coupon_usage (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id uuid NOT NULL,
+  coupon_id uuid,
+  user_coupon_id uuid,
+  discount_applied numeric NOT NULL CHECK (discount_applied > 0::numeric),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT coupon_usage_pkey PRIMARY KEY (id),
+  CONSTRAINT coupon_usage_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id),
+  CONSTRAINT coupon_usage_coupon_id_fkey FOREIGN KEY (coupon_id) REFERENCES public.coupons(id),
+  CONSTRAINT coupon_usage_user_coupon_id_fkey FOREIGN KEY (user_coupon_id) REFERENCES public.user_coupons(id)
+);
+CREATE TABLE public.coupons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  type text NOT NULL CHECK (type = ANY (ARRAY['cart_value'::text, 'menu_limited'::text])),
+  name text NOT NULL,
+  description text,
+  discount_amount numeric NOT NULL CHECK (discount_amount > 0::numeric),
+  min_cart_value numeric,
+  applicable_categories ARRAY,
+  applicable_items jsonb DEFAULT '[]'::jsonb,
+  excluded_items jsonb DEFAULT '[]'::jsonb,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  created_by uuid,
+  CONSTRAINT coupons_pkey PRIMARY KEY (id),
+  CONSTRAINT coupons_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id)
+);
 CREATE TABLE public.franchise_inquiries (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name text NOT NULL,
@@ -154,90 +195,13 @@ CREATE TABLE public.orders (
   notes text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
-  points_applied integer DEFAULT 0,
-  points_discount numeric DEFAULT 0.00,
-  original_total numeric,
+  coupon_id uuid,
+  user_coupon_id uuid,
+  coupon_discount numeric DEFAULT 0.00,
   CONSTRAINT orders_pkey PRIMARY KEY (id),
-  CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.points_admin_actions (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  admin_id uuid NOT NULL,
-  action_type text NOT NULL CHECK (action_type = ANY (ARRAY['config_change'::text, 'earning_rule_create'::text, 'earning_rule_update'::text, 'earning_rule_delete'::text, 'redemption_rule_create'::text, 'redemption_rule_update'::text, 'redemption_rule_delete'::text, 'manual_grant'::text, 'manual_deduct'::text, 'freeze_user'::text, 'unfreeze_user'::text, 'reverse_transaction'::text])),
-  target_user_id uuid,
-  details jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT points_admin_actions_pkey PRIMARY KEY (id),
-  CONSTRAINT points_admin_actions_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.profiles(id),
-  CONSTRAINT points_admin_actions_target_user_id_fkey FOREIGN KEY (target_user_id) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.points_config (
-  id integer NOT NULL DEFAULT 1 CHECK (id = 1),
-  system_enabled boolean DEFAULT true,
-  earning_enabled boolean DEFAULT true,
-  redemption_enabled boolean DEFAULT true,
-  points_to_rupee_ratio integer DEFAULT 10,
-  max_discount_percent integer DEFAULT 50,
-  min_payable_amount numeric DEFAULT 10.00,
-  order_confirmation_delay_minutes integer DEFAULT 15,
-  max_points_per_order integer DEFAULT 1000,
-  daily_earning_limit integer DEFAULT 500,
-  updated_by uuid,
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT points_config_pkey PRIMARY KEY (id),
-  CONSTRAINT points_config_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.points_earning_rules (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  rule_name text NOT NULL,
-  item_type text NOT NULL CHECK (item_type = ANY (ARRAY['menu_item'::text, 'workshop'::text, 'art_piece'::text, 'global'::text])),
-  item_id uuid,
-  points_awarded integer NOT NULL CHECK (points_awarded >= 0),
-  earn_per_rupee boolean DEFAULT false,
-  enabled boolean DEFAULT true,
-  valid_from timestamp with time zone DEFAULT now(),
-  valid_until timestamp with time zone,
-  created_by uuid,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT points_earning_rules_pkey PRIMARY KEY (id),
-  CONSTRAINT points_earning_rules_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.points_redemption_rules (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  rule_name text NOT NULL,
-  item_type text NOT NULL CHECK (item_type = ANY (ARRAY['menu_item'::text, 'workshop'::text, 'art_piece'::text, 'global'::text])),
-  item_id uuid,
-  redemption_allowed boolean DEFAULT false,
-  max_discount_amount numeric,
-  max_discount_percent integer CHECK (max_discount_percent >= 0 AND max_discount_percent <= 100),
-  enabled boolean DEFAULT true,
-  created_by uuid,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT points_redemption_rules_pkey PRIMARY KEY (id),
-  CONSTRAINT points_redemption_rules_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.points_transactions (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  points integer NOT NULL,
-  transaction_type text NOT NULL CHECK (transaction_type = ANY (ARRAY['earned'::text, 'redeemed'::text])),
-  source text NOT NULL CHECK (source = ANY (ARRAY['order'::text, 'workshop'::text, 'art_purchase'::text, 'referral'::text, 'bonus'::text, 'redemption'::text, 'admin_grant'::text, 'admin_deduct'::text, 'reversal'::text])),
-  description text DEFAULT ''::text,
-  order_id uuid,
-  workshop_id uuid,
-  created_at timestamp with time zone DEFAULT now(),
-  status text DEFAULT 'confirmed'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'reversed'::text, 'locked'::text])),
-  locked boolean DEFAULT false,
-  admin_id uuid,
-  reversal_reason text,
-  reversed_transaction_id uuid,
-  metadata jsonb DEFAULT '{}'::jsonb,
-  CONSTRAINT points_transactions_pkey PRIMARY KEY (id),
-  CONSTRAINT points_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
-  CONSTRAINT points_transactions_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.profiles(id),
-  CONSTRAINT points_transactions_reversed_transaction_id_fkey FOREIGN KEY (reversed_transaction_id) REFERENCES public.points_transactions(id)
+  CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT orders_coupon_id_fkey FOREIGN KEY (coupon_id) REFERENCES public.coupons(id),
+  CONSTRAINT orders_user_coupon_id_fkey FOREIGN KEY (user_coupon_id) REFERENCES public.user_coupons(id)
 );
 CREATE TABLE public.product_ratings (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -294,14 +258,20 @@ CREATE TABLE public.profiles (
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
-CREATE TABLE public.user_points (
+CREATE TABLE public.user_coupons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
-  total_points integer DEFAULT 0,
-  total_earned integer DEFAULT 0,
-  total_redeemed integer DEFAULT 0,
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT user_points_pkey PRIMARY KEY (user_id),
-  CONSTRAINT user_points_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  discount_amount numeric NOT NULL CHECK (discount_amount > 0::numeric),
+  min_order_value numeric DEFAULT 0,
+  earned_from_order_id uuid,
+  is_used boolean DEFAULT false,
+  used_on_order_id uuid,
+  earned_at timestamp with time zone DEFAULT now(),
+  expires_at timestamp with time zone,
+  CONSTRAINT user_coupons_pkey PRIMARY KEY (id),
+  CONSTRAINT user_coupons_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT user_coupons_earned_from_order_id_fkey FOREIGN KEY (earned_from_order_id) REFERENCES public.orders(id),
+  CONSTRAINT user_coupons_used_on_order_id_fkey FOREIGN KEY (used_on_order_id) REFERENCES public.orders(id)
 );
 CREATE TABLE public.workshop_enrollments (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

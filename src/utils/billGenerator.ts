@@ -12,6 +12,7 @@ export interface BillData {
         subtotal: number;
     }[];
     subtotal: number;
+    discount?: number;
     total: number;
     paymentMethod: string;
 }
@@ -144,18 +145,29 @@ export function generateBillPDF(data: BillData) {
     doc.setTextColor(45, 45, 45);
     doc.text(`₹${data.subtotal.toFixed(2)}`, pageWidth - 25, totalsStartY, { align: 'right' });
 
+    // Discount (if applicable)
+    let currentY = totalsStartY + 7;
+    if (data.discount && data.discount > 0) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.setTextColor(34, 197, 94); // Green color for discount
+        doc.text('Coupon Discount:', totalsX, currentY);
+        doc.text(`-₹${data.discount.toFixed(2)}`, pageWidth - 25, currentY, { align: 'right' });
+        currentY += 7;
+    }
+
     // Decorative line above grand total
     doc.setDrawColor(139, 111, 71);
     doc.setLineWidth(0.5);
-    doc.line(totalsX - 5, totalsStartY + 5, pageWidth - 20, totalsStartY + 5);
+    doc.line(totalsX - 5, currentY + 3, pageWidth - 20, currentY + 3);
 
     // Grand Total
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     doc.setTextColor(74, 59, 40);
-    doc.text('Grand Total:', totalsX, totalsStartY + 15);
+    doc.text('Grand Total:', totalsX, currentY + 13);
     doc.setTextColor(34, 197, 94); // Green
-    doc.text(`₹${data.total.toFixed(2)}`, pageWidth - 25, totalsStartY + 15, { align: 'right' });
+    doc.text(`₹${data.total.toFixed(2)}`, pageWidth - 25, currentY + 13, { align: 'right' });
 
     // Footer
     const footerY = pageHeight - 30;

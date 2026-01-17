@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useRef } from 'react';
 import Lenis from '@studio-freight/lenis';
@@ -9,6 +9,12 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
   useEffect(() => {
     // Initialize Lenis
     lenisRef.current = new Lenis({
+import Lenis from 'lenis';
+import { useEffect } from 'react';
+
+export default function SmoothScroll({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const lenis = new Lenis({
       lerp: 0.05,
       duration: 2.5,
       smoothWheel: true,
@@ -17,6 +23,8 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     // Animation loop
     function raf(time: number) {
       lenisRef.current?.raf(time);
+    function raf(time: number) {
+      lenis.raf(time);
       requestAnimationFrame(raf);
     }
 
@@ -26,6 +34,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     return () => {
       lenisRef.current?.destroy();
     };
+    return () => lenis.destroy();
   }, []);
 
   return <>{children}</>;

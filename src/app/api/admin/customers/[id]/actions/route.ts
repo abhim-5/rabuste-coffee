@@ -8,9 +8,10 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: customerId } = await params;
     const supabase = await createClient();
 
     // Auth check
@@ -33,7 +34,6 @@ export async function POST(
 
     const body = await request.json();
     const { action, value, reason } = body;
-    const customerId = params.id;
 
     switch (action) {
       case 'ban':

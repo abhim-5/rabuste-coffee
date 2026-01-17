@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from '@studio-freight/lenis';
+import Lenis from 'lenis';
 import './WorkshopHero.css';
 
 // Logo SVG path data
@@ -21,7 +21,7 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
     const svgOverlayRef = useRef<HTMLDivElement>(null);
     const overlayCopyRef = useRef<HTMLHeadingElement>(null);
     const logoMaskRef = useRef<SVGPathElement>(null);
-    
+
     // Store lenis instance for access in navigation effect
     const lenisRef = useRef<Lenis | null>(null);
 
@@ -33,7 +33,7 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
             orientation: 'vertical',
             smoothWheel: true,
         });
-        
+
         lenisRef.current = lenis;
 
         function raf(time: number) {
@@ -55,7 +55,7 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
         // Setup logo mask
         const logoContainer = document.querySelector('.workshop-logo-container');
         const logoMask = logoMaskRef.current;
-        
+
         if (logoMask && logoContainer) {
             logoMask.setAttribute('d', logoData);
 
@@ -167,7 +167,7 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
     // Separate effect for navigation that waits for data to be loaded
     useEffect(() => {
         if (!isDataLoaded) return;
-        
+
         const urlParams = new URLSearchParams(window.location.search);
         const targetId = urlParams.get('target');
 
@@ -175,15 +175,15 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
             // Give a small delay for any final rendering/paint
             setTimeout(() => {
                 ScrollTrigger.refresh();
-                
+
                 const mappedId = (targetId === 'request' || targetId === 'franchise') ? 'request-custom-workshop' : targetId;
                 const target = document.getElementById(mappedId);
                 const upcomingSection = document.getElementById('upcoming');
-                
+
                 if (target && upcomingSection) {
                     const pinEndPosition = window.innerHeight * 5;
                     const relativeDistance = target.getBoundingClientRect().top - upcomingSection.getBoundingClientRect().top;
-                    
+
                     // Add offsets to skip padding/animations and show content immediately
                     let extraOffset = 0;
                     if (mappedId === 'upcoming') {
@@ -195,12 +195,12 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
 
                     const finalScrollPosition = pinEndPosition + relativeDistance + extraOffset;
 
-                    lenisRef.current?.scrollTo(finalScrollPosition, { 
-                        offset: 0, 
+                    lenisRef.current?.scrollTo(finalScrollPosition, {
+                        offset: 0,
                         immediate: true
                     });
                 }
-            }, 500); 
+            }, 500);
         }
     }, [isDataLoaded]);
 
@@ -212,14 +212,14 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
                     <img src="/gallery/LOGO2.png" alt="Vice Coast Syncate Logo" />
                 </div>
                 <img className="workshop-front" src="/gallery/hero-img-layer-2.png" alt="Workshop Foreground" />
-                
+
                 <div className="workshop-hero-img-copy" ref={heroImgCopyRef}>
                     <p className="text-gray-400">Scroll down to reveal</p>
                 </div>
             </div>
-            
+
             <div className="workshop-fade-overlay" ref={fadeOverlayRef}></div>
-            
+
             <div className="workshop-overlay" ref={svgOverlayRef}>
                 <svg width="100%" height="100%">
                     <defs>
@@ -236,9 +236,9 @@ export default function WorkshopHero({ isDataLoaded = true }: WorkshopHeroProps)
                     />
                 </svg>
             </div>
-            
+
             <div className="workshop-logo-container"></div>
-            
+
             <div className="workshop-overlay-copy">
                 <h1 ref={overlayCopyRef} className="text-[#7f3b2d]">
                     Immersive<br />

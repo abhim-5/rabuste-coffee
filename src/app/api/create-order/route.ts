@@ -61,7 +61,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
         }
 
-        const { orderType, scheduledTime, items, subtotal, tax, total, notes } = body as CreateOrderRequest;
+        const { orderType, scheduledTime, items, subtotal, tax, total, notes, regularDiscount, nextOrderDiscount, nextOrderCouponId } = body as CreateOrderRequest & {
+            regularDiscount?: number;
+            nextOrderDiscount?: number;
+            nextOrderCouponId?: string;
+        };
 
         // 2. Create Order in Supabase
         const { data: orderNumberData, error: numError } = await supabase.rpc('generate_order_number');
@@ -78,7 +82,7 @@ export async function POST(request: NextRequest) {
                 order_number: orderNumber,
                 order_type: orderType,
                 scheduled_time: scheduledTime,
-                subtotal, // Ensure these are numbers
+                subtotal,
                 tax,
                 total,
                 customer_name: profile?.full_name || user.email?.split('@')[0] || 'Customer',

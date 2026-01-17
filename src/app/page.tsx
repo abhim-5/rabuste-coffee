@@ -1,5 +1,4 @@
 import Navbar from "@/components/navbar/Navbar";
-import FranchiseInfo from "@/components/sections/FranchiseInfo";
 import dynamic from "next/dynamic";
 import Hero from "@/components/hero/Hero";
 import RobustaMessage from "@/components/promo/RobustaMessage";
