@@ -11,7 +11,7 @@ const ArtGallery = dynamic(() => import("@/components/sections/ArtGallery"));
 const FestsAndWorkshops = dynamic(() => import("@/components/sections/FestsAndWorkshops"));
 const CustomerReviews = dynamic(() => import("@/components/sections/CustomerReviews"));
 import Footer from "@/components/ui/Footer";
-import MainMenu from "@/components/sections/MainMenu";
+import MenuLabels from "@/components/sections/MenuLabels";
 import LaptopScrollAnimation from "@/components/animations/LaptopScrollAnimation";
 import MobilePhoneVideo from "@/components/animations/MobilePhoneVideo";
 import StatsCounter from "@/components/sections/StatsCounter";
@@ -40,7 +40,7 @@ export default function Home() {
         </div>
 
         {/* Main Menu Section */}
-        <MainMenu />
+        <MenuLabels />
         <SectionDivider />
 
         {/* Art Gallery Section */}
