@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Coffee } from 'lucide-react';
 import Image from 'next/image';
 import Navbar from '@/components/navbar/Navbar';
@@ -10,58 +10,18 @@ import Footer from '@/components/ui/Footer';
 import { Cart } from '@/components/cart/Cart';
 import { CartButton } from '@/components/cart/CartButton';
 import { useCart } from '@/hooks/useCart';
+import GalleryHero from '@/components/gallery/GalleryHero';
+import { GalleryBooking } from '@/components/gallery/GalleryBooking';
+import AuthModal from '@/components/auth/AuthModal';
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
 import './kinetic.css';
 
-const galleryItems = [
-  {
-    id: 1,
-    name: 'Dawn Chorus',
-    about: 'A delicate watercolor celebrating the quiet beauty of dawn, where vibrant finches perch gracefully on golden wheat stalks. The soft, earthy tones and gentle brushwork evoke the serene moment when nature awakens, and the first songbirds greet the morning light.',
-    price: 12999,
-    artist: 'Priya Malhotra',
-    artistPOV: 'I\'m captivated by those fleeting moments just before sunrise, when the world holds its breath. These finches represent hope and renewal—a reminder that each day brings fresh possibilities.'
-  },
-  {
-    id: 2,
-    name: 'Midnight Falls',
-    about: 'A dramatic nocturnal landscape where a luminous full moon illuminates a cascading waterfall through misty forests. Rich blues and teals create an ethereal atmosphere, while the play of moonlight on water captures nature\'s mystical grandeur.',
-    price: 15999,
-    artist: 'Arjun Reddy',
-    artistPOV: 'The night reveals a different world—one of mystery and magic. This painting explores the power of moonlight to transform the familiar into the extraordinary, where waterfalls become liquid silver.'
-  },
-  {
-    id: 3,
-    name: 'Wetland Companions',
-    about: 'A naturalist\'s study featuring elegant waterfowl resting on weathered driftwood, rendered in classical watercolor technique. The composition celebrates biodiversity and the interconnected lives of marsh inhabitants, from sleek ravens to mottled ducks.',
-    price: 18999,
-    artist: 'Kavya Sharma',
-    artistPOV: 'Wetlands are sanctuaries of life. Through careful observation and tender brushstrokes, I aim to honor these often-overlooked creatures and the delicate ecosystems they call home.'
-  },
-  {
-    id: 4,
-    name: 'Monsoon Transit',
-    about: 'An atmospheric urban scene capturing the romance of rain-soaked city streets, where a vintage tram glides through the drizzle as pedestrians navigate with umbrellas. Warm ochres and cool grays create a nostalgic mood of everyday poetry.',
-    price: 21999,
-    artist: 'Rahul Verma',
-    artistPOV: 'Cities transform in the rain. The reflections, the softened edges, the shared shelter of strangers—monsoons reveal the humanity in our urban landscapes. This is my love letter to rainy days.'
-  },
-  {
-    id: 5,
-    name: 'Summer Garden',
-    about: 'A vibrant celebration of nature\'s bounty, featuring cheerful daisies interwoven with ripe citrus fruits. The composition bursts with warmth and vitality, evoking sun-drenched gardens and the simple pleasures of seasonal abundance.',
-    price: 16999,
-    artist: 'Meera Kapoor',
-    artistPOV: 'Flowers and fruit together represent life\'s sweetness. I wanted to capture that feeling of walking through a garden in full bloom, where color and fragrance overwhelm the senses in the most delightful way.'
-  },
-  {
-    id: 6,
-    name: 'Bamboo Sanctuary',
-    about: 'A tranquil Asian-inspired landscape where graceful cranes wade through misty bamboo groves. Soft greens and subtle atmospheric perspective create depth and serenity, embodying the zen aesthetic of balance and natural harmony.',
-    price: 19999,
-    artist: 'Sudhir Gupta',
-    artistPOV: 'Cranes symbolize longevity and wisdom in many cultures. Set against bamboo—which bends but never breaks—this painting is a meditation on resilience, grace, and the quiet strength found in nature.'
-  }
-];
+import { useGallery, GalleryItem } from '@/hooks/useGallery';
+import './kinetic.css';
+
+// Remove static galleryItems
+// const galleryItems = ...
 
 const typeLines = [
   'RABUSTE RABUSTE RABUSTE',
@@ -78,45 +38,51 @@ const typeLines = [
 ];
 
 export default function GalleryPage() {
-  const [currentArticle, setCurrentArticle] = useState<number | null>(null);
+  const { items: galleryItems, loading, error } = useGallery();
+  const [currentArticle, setCurrentArticle] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const [showFooter, setShowFooter] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { cart, addItem, removeItem, updateQuantity } = useCart();
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [bookingConfirmation, setBookingConfirmation] = useState<{
+    isOpen: boolean;
+    bookingNumber: string;
+    artPieceName: string;
+    artist: string;
+    price: number;
+  }>({ isOpen: false, bookingNumber: '', artPieceName: '', artist: '', price: 0 });
+  const [purchasedArtIds, setPurchasedArtIds] = useState<string[]>([]);
+  const { cart, addItem, removeItem, updateQuantity, clearCart } = useCart();
+  // Removed heroRef hooks as they are moved to GalleryHero
   const typeRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const frameRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLButtonElement>(null);
   const scrollPositionRef = useRef(0);
 
-  // Parallax effect for hero image
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const smoothScrollProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
-  const heroScale = useTransform(smoothScrollProgress, [0, 1], [1, 1.1]);
-
   const isInCart = (id: string) => {
     return cart.items.some(item => item.menuItem.id === id);
   };
 
-  const handleAddToCart = (item: typeof galleryItems[0]) => {
+  const isPurchased = (id: string) => {
+    return purchasedArtIds.includes(id);
+  };
+
+  const handleAddToCart = (item: GalleryItem) => {
+    // Check if already purchased
+    if (isPurchased(item.id)) {
+      return; // Do nothing - button should be disabled anyway
+    }
+
     const cartItem = {
       id: `gallery-${item.id}`,
       name: item.name,
       price: item.price,
-      image: `/gallery/${item.id}.jpg`,
+      image: item.image_url, // Use the full URL from API
       category: 'Art Gallery' as const,
-      description: item.about,
+      description: item.description,
       rating: 5,
       reviewCount: 0,
     };
@@ -131,18 +97,74 @@ export default function GalleryPage() {
   };
 
   const handleAddRecommendedItem = (itemId: string) => {
-    // Extract the numeric ID from 'gallery-X' format
-    const match = itemId.match(/gallery-(\d+)/);
-    if (match) {
-      const id = parseInt(match[1]);
-      const galleryItem = galleryItems.find(item => item.id === id);
+    // Extract the ID from 'gallery-X' format
+    // Modified to handle both numeric (legacy) and UUID (new) IDs
+    const prefix = 'gallery-';
+    if (itemId.startsWith(prefix)) {
+      const id = itemId.substring(prefix.length);
+      const galleryItem = galleryItems.find(item => item.id.toString() === id); // toString just in case
       if (galleryItem) {
         handleAddToCart(galleryItem);
       }
     }
   };
 
-  const openArticle = (index: number) => {
+  // Get current user
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Get initial user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUser(user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch user's purchased art pieces
+  useEffect(() => {
+    if (!currentUser) {
+      setPurchasedArtIds([]);
+      return;
+    }
+
+    const fetchPurchasedArt = async () => {
+      try {
+        const response = await fetch('/api/art/purchases');
+        const data = await response.json();
+
+        if (data.success && data.purchases) {
+          const ids = data.purchases.map((p: any) => p.art_piece_id);
+          setPurchasedArtIds(ids);
+        }
+      } catch (error) {
+        console.error('Error fetching purchased art:', error);
+      }
+    };
+
+    fetchPurchasedArt();
+  }, [currentUser]);
+
+  const handleGalleryBookingComplete = (bookingNumber: string, artPieceName: string, artist: string, price: number) => {
+    setBookingConfirmation({
+      isOpen: true,
+      bookingNumber,
+      artPieceName,
+      artist,
+      price
+    });
+  };
+
+  const handleShowAuth = () => {
+    setShowAuthModal(true);
+  };
+
+  const openArticle = (id: string) => {
     if (isAnimating) return;
     setIsAnimating(true);
 
@@ -200,7 +222,7 @@ export default function GalleryPage() {
       }, 'start')
       .add(() => { typeInTimeline.play(); }, 'typeTransition')
       .add(() => {
-        setCurrentArticle(index);
+        setCurrentArticle(id);
         gsap.set(backRef.current, { pointerEvents: 'auto' });
         gsap.set('.item-wrap', { pointerEvents: 'none' });
       }, 'articleOpening')
@@ -208,7 +230,7 @@ export default function GalleryPage() {
         duration: 0.7,
         opacity: 1,
       }, 'articleOpening')
-      .fromTo(`.article-${index} .article__title, .article-${index} .article__number, .article-${index} .article__intro, .article-${index} .article__description, .article-${index} .article__about, .article-${index} .article__purchase, .article-${index} .article__artist`, {
+      .fromTo(`.article-${id} .article__title, .article-${id} .article__number, .article-${id} .article__intro, .article-${id} .article__description, .article-${id} .article__about, .article-${id} .article__purchase, .article-${id} .article__artist`, {
         opacity: 0,
         y: '50%',
       }, {
@@ -218,14 +240,14 @@ export default function GalleryPage() {
         y: '0%',
         stagger: 0.04,
       }, 'articleOpening')
-      .fromTo(`.article-${index} .article__img-wrap`, {
+      .fromTo(`.article-${id} .article__img-wrap`, {
         y: '100%',
       }, {
         duration: 1,
         ease: 'expo',
         y: '0%',
       }, 'articleOpening')
-      .fromTo(`.article-${index} .article__img`, {
+      .fromTo(`.article-${id} .article__img`, {
         y: '-100%',
       }, {
         duration: 1,
@@ -325,66 +347,12 @@ export default function GalleryPage() {
   return (
     <>
       {showNavbar && <Navbar />}
-      <main className={`gallery-main ${!showNavbar ? 'no-navbar-padding' : ''}`}>
+      <main className={`gallery-main bg-[#f7e7db] ${!showNavbar ? 'no-navbar-padding' : ''}`}>
         {/* Hero Section */}
-        <section ref={heroRef} className="relative z-30 min-h-screen w-full overflow-hidden bg-black">
-          {/* Background Image with Parallax */}
-          <motion.div style={{ scale: heroScale }} className="absolute inset-0 z-0 origin-top">
-            <Image
-              src="/gallery/gallery-hero.jpg"
-              alt="Art Gallery"
-              fill
-              className="object-cover object-top scale-125 md:scale-100"
-              priority
-            />
-          </motion.div>
-
-          {/* Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-          <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-40" aria-hidden>
-            <div className="grain-texture h-full w-full" />
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 mx-auto flex h-full min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-20 md:pt-36 md:pb-28 text-center lg:px-8 lg:pt-44">
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 40, filter: "blur(20px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 1.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display tracking-wide text-white text-[clamp(2rem,10vw,5.5rem)] leading-tight drop-shadow-2xl"
-            >
-              ART GALLERY
-            </motion.h1>
-
-            {/* Divider with icon */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, filter: "blur(15px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 1.2, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-6 mb-8 flex items-center gap-4 text-white/90"
-            >
-              <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-              <Coffee className="h-6 w-6" />
-              <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-            </motion.div>
-
-            {/* Subtext */}
-            <motion.p
-              initial={{ opacity: 0, y: 30, filter: "blur(15px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 1.4, delay: 1.8, ease: [0.22, 1, 0.36, 1] }}
-              className="font-serif mx-auto max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl"
-            >
-              Discover our curated collection of nature and wildlife-inspired artwork. Each piece tells a story
-              of tranquility, beauty, and the timeless connection between art and the natural world. From serene
-              landscapes to vibrant still life, find the perfect piece to bring nature's elegance into your space.
-            </motion.p>
-          </div>
-        </section>
+        <GalleryHero />
 
         {/* Owner's POV About Art Section */}
-        <section className="relative py-8 lg:py-12 overflow-hidden bg-gradient-to-br from-[#F5EFE6] via-[#E8DBC8] to-[#D8CBB8] z-30">
+        <section className="relative py-8 lg:py-12 overflow-hidden bg-[#faeade] z-30">
           {/* Decorative Elements */}
           <div className="absolute inset-0 opacity-[0.03]">
             <div className="absolute top-10 left-10 w-72 h-72 bg-[#8B6F47] rounded-full blur-3xl" />
@@ -400,19 +368,19 @@ export default function GalleryPage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-sm rounded-3xl p-6 lg:p-8 shadow-2xl border-2 border-[#8B6F47]/20">
+              <div className="relative bg-[#faeade] rounded-3xl p-6 lg:p-8 shadow-xl border border-[#7f3b2d]/20">
                 {/* Quote Icon */}
-                <svg className="absolute top-4 left-4 w-10 h-10 text-[#8B6F47]/20" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="absolute top-4 left-4 w-10 h-10 text-[#7f3b2d]/20" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z" />
                 </svg>
-                
+
                 <div className="relative z-10">
-                  <p className="text-lg lg:text-xl font-serif text-[#2A2A2A] italic leading-relaxed text-center mb-4">
+                  <p className="text-lg lg:text-xl font-serif text-[#7f3b2d] italic leading-relaxed text-center mb-4">
                     "Art is not just meant to be seen—it's meant to be felt, experienced, and lived with. Each piece in our gallery brings the serenity of nature into our space, creating moments of tranquility amidst the hustle. When you enjoy your coffee surrounded by beautiful art, you're not just taking a break—you're nourishing your soul."
                   </p>
-                  
-                  <div className="flex items-center justify-center gap-3 pt-3 border-t-2 border-[#8B6F47]/20">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#8B6F47]">
+
+                  <div className="flex items-center justify-center gap-3 pt-3 border-t border-[#7f3b2d]/20">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#7f3b2d]">
                       <Image
                         src="/about us/owner_pic.png"
                         alt="Rabuste Coffee"
@@ -422,13 +390,13 @@ export default function GalleryPage() {
                       />
                     </div>
                     <div className="text-left">
-                      <p className="font-display text-base text-[#2A2A2A] font-bold">Rabuste Coffee</p>
-                      <p className="text-sm text-[#404040]/70">Founder & Curator</p>
+                      <p className="font-display text-base text-[#7f3b2d] font-bold">Rabuste Coffee</p>
+                      <p className="text-sm text-[#7f3b2d]/70">Founder & Curator</p>
                     </div>
-                    
+
                     {/* Decorative Coffee Icon */}
                     <div className="ml-auto hidden lg:block">
-                      <Coffee className="w-12 h-12 text-[#8B6F47]/10" />
+                      <Coffee className="w-12 h-12 text-[#7f3b2d]/10" />
                     </div>
                   </div>
                 </div>
@@ -438,65 +406,65 @@ export default function GalleryPage() {
         </section>
 
         {/* Gallery Content Wrapper - Contains Intro, Kinetic Typography and Gallery Grid */}
-        <div className="gallery-content-wrapper">
-        
-        {/* Rabuste Art Gallery Introduction - Styled like WhatIsRobusta */}
-        <section className="relative w-full overflow-hidden py-6 lg:py-6 mt-20 lg:mt-32">
-          {/* Coffee bean decorative elements */}
-          <div className="absolute top-20 left-10 opacity-10">
-            <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
-              <ellipse cx="50" cy="50" rx="35" ry="48" fill="#404040" transform="rotate(-15 50 50)" />
-              <path d="M50 20 Q30 50 50 80" stroke="#8B4513" strokeWidth="3" fill="none" />
-            </svg>
-          </div>
-          <div className="absolute bottom-32 right-16 opacity-10">
-            <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-              <ellipse cx="50" cy="50" rx="40" ry="52" fill="#404040" transform="rotate(20 50 50)" />
-              <path d="M50 15 Q25 50 50 85" stroke="#8B4513" strokeWidth="3" fill="none" />
-            </svg>
-          </div>
-          <div className="absolute top-1/3 right-1/4 opacity-8 hidden lg:block">
-            <svg width="60" height="60" viewBox="0 0 100 100" fill="none">
-              <ellipse cx="50" cy="50" rx="30" ry="42" fill="#404040" transform="rotate(-30 50 50)" />
-              <path d="M50 18 Q32 50 50 82" stroke="#8B4513" strokeWidth="2.5" fill="none" />
-            </svg>
-          </div>
+        <div className="gallery-content-wrapper bg-[#f7e7db]">
 
-          <div className="relative z-10 mx-auto max-w-7xl lg:px-8">
-            {/* Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col items-center mb-6 lg:mb-8 px-4"
-            >
-              <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#404040] mb-6 text-center">
-                Rabuste Art Gallery
-              </h2>
+          {/* Rabuste Art Gallery Introduction - Styled like WhatIsRobusta */}
+          <section className="relative w-full overflow-hidden py-6 lg:py-6 mt-20 lg:mt-32 bg-[#f7e7db]">
+            {/* Coffee bean decorative elements */}
+            <div className="absolute top-20 left-10 opacity-10">
+              <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
+                <ellipse cx="50" cy="50" rx="35" ry="48" fill="#404040" transform="rotate(-15 50 50)" />
+                <path d="M50 20 Q30 50 50 80" stroke="#8B4513" strokeWidth="3" fill="none" />
+              </svg>
+            </div>
+            <div className="absolute bottom-32 right-16 opacity-10">
+              <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                <ellipse cx="50" cy="50" rx="40" ry="52" fill="#404040" transform="rotate(20 50 50)" />
+                <path d="M50 15 Q25 50 50 85" stroke="#8B4513" strokeWidth="3" fill="none" />
+              </svg>
+            </div>
+            <div className="absolute top-1/3 right-1/4 opacity-8 hidden lg:block">
+              <svg width="60" height="60" viewBox="0 0 100 100" fill="none">
+                <ellipse cx="50" cy="50" rx="30" ry="42" fill="#404040" transform="rotate(-30 50 50)" />
+                <path d="M50 18 Q32 50 50 82" stroke="#8B4513" strokeWidth="2.5" fill="none" />
+              </svg>
+            </div>
 
-              {/* Title Separator */}
+            <div className="relative z-10 mx-auto max-w-7xl lg:px-8">
+              {/* Heading */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="relative w-32 h-8 lg:w-40 lg:h-10"
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col items-center mb-6 lg:mb-8 px-4"
               >
-                <Image
-                  src="/title-separator.png"
-                  fill
-                  alt="Decorative separator"
-                  className="object-contain"
-                />
+                <h2 className="font-tan-pearl text-4xl lg:text-7xl font-bold text-[#7f3b2d] mb-6 text-center lowercase">
+                  rabuste art gallery
+                </h2>
+
+                {/* Title Separator */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative w-32 h-8 lg:w-40 lg:h-10"
+                >
+                  <Image
+                    src="/title-separator.png"
+                    fill
+                    alt="Decorative separator"
+                    className="object-contain"
+                  />
+                </motion.div>
               </motion.div>
-            </motion.div>
 
-           
-          </div>
-        </section>
 
-        {/* Kinetic Typography Background */}
+            </div>
+          </section>
+
+          {/* Kinetic Typography Background */}
           <div className="type" ref={typeRef} aria-hidden="true">
             {typeLines.map((line, i) => (
               <div key={i} className="type__line">
@@ -505,32 +473,50 @@ export default function GalleryPage() {
             ))}
           </div>
 
-        {/* Gallery Items */}
-        <section className={`item-wrap ${currentArticle !== null ? 'article-open' : ''}`}>
-          {galleryItems.map((item, index) => (
-            <figure
-              key={item.id}
-              className="item"
-              ref={(el) => { itemRefs.current[index] = el; }}
-              onClick={() => openArticle(item.id)}
-            >
-              <Image
-                className="item__img"
-                src={`/gallery/${item.id}.jpg`}
-                alt={item.name}
-                width={300}
-                height={400}
-                priority={index < 4}
-                unoptimized
-              />
-              <figcaption className="item__caption">
-                <h2 className="item__caption-title">
-                  {item.name}
-                </h2>
-              </figcaption>
-            </figure>
-          ))}
-        </section>
+          {/* Gallery Items */}
+          <section className={`item-wrap ${currentArticle !== null ? 'article-open' : ''}`}>
+            {loading && <div className="text-white text-center py-20">Loading art collection...</div>}
+            {error && <div className="text-white text-center py-20">Unable to load collection. Please try again.</div>}
+
+            {!loading && !error && galleryItems.map((item, index) => {
+              // Safely construct image URL
+              const getImageSrc = () => {
+                if (!item.image_url) return '/gallery/default.jpg';
+                if (item.image_url.startsWith('http')) return item.image_url;
+
+                // If it already has gallery/ prefix, respect it
+                if (item.image_url.includes('gallery/')) {
+                  return item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`;
+                }
+
+                // Otherwise assume it's in the gallery folder
+                return `/gallery/${item.image_url.startsWith('/') ? item.image_url.substring(1) : item.image_url}`;
+              };
+
+              return (
+                <figure
+                  key={item.id}
+                  className="item"
+                  ref={(el) => { itemRefs.current[index] = el; }}
+                  onClick={() => openArticle(item.id)}
+                >
+                  <img
+                    className="item__img"
+                    src={getImageSrc()}
+                    alt={item?.name || 'Artwork'}
+                    width={300}
+                    height={400}
+                    loading={index < 4 ? 'eager' : 'lazy'}
+                  />
+                  <figcaption className="item__caption">
+                    <h2 className="item__caption-title">
+                      {item.name}
+                    </h2>
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </section>
         </div>
 
         {/* Article Content */}
@@ -544,46 +530,64 @@ export default function GalleryPage() {
           {galleryItems.map((item) => (
             <article
               key={item.id}
-              className={`article article-${item.id} ${
-                currentArticle === item.id ? 'article--current' : ''
-              }`}
+              className={`article article-${item.id} ${currentArticle === item.id ? 'article--current' : ''
+                }`}
             >
               <div className="article__img-wrap">
                 <div
                   className="article__img"
                   style={{
-                    backgroundImage: `url(/gallery/${item.id}.jpg)`,
+                    backgroundImage: `url(${item.image_url.startsWith('http') ? item.image_url : `/${item.image_url}`})`,
                   }}
                 />
               </div>
-              
+
               <h2 className="article__title">{item.name}</h2>
-              
+
               <div className="article__about">
                 <h3 className="article__about-heading">About this Artwork</h3>
-                <p>{item.about}</p>
+                <p>{item.description}</p>
               </div>
 
               <div className="article__purchase">
-                <p className="article__price">₹{item.price.toLocaleString('en-IN')}</p>
-                <button 
-                  className={`article__add-to-cart ${isInCart(`gallery-${item.id}`) ? 'remove-from-cart' : ''}`}
-                  onClick={() => {
-                    if (isInCart(`gallery-${item.id}`)) {
-                      handleRemoveFromCart(`gallery-${item.id}`);
-                    } else {
-                      handleAddToCart(item);
-                    }
-                  }}
-                >
-                  {isInCart(`gallery-${item.id}`) ? 'Remove from Cart' : 'Add to Cart'}
-                </button>
+                {isPurchased(item.id) ? (
+                  <div className="w-full space-y-3">
+                    <div className="w-full text-center py-3 bg-green-50 rounded border-2 border-green-500">
+                      <span className="text-green-700 font-bold uppercase tracking-wider">✓ Already Booked</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = '/profile';
+                      }}
+                      className="w-full py-3 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold rounded-lg transition-colors"
+                    >
+                      View in Profile
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="article__price">₹{item.price.toLocaleString('en-IN')}</p>
+                    <button
+                      className={`article__add-to-cart ${isInCart(`gallery-${item.id}`) ? 'remove-from-cart' : ''}`}
+                      onClick={() => {
+                        if (isInCart(`gallery-${item.id}`)) {
+                          handleRemoveFromCart(`gallery-${item.id}`);
+                        } else {
+                          handleAddToCart(item);
+                        }
+                      }}
+                    >
+                      {isInCart(`gallery-${item.id}`) ? 'Remove from Cart' : 'Book Now'}
+                    </button>
+                  </>
+                )}
               </div>
 
               <div className="article__artist">
                 <h3 className="article__artist-heading">Artist</h3>
                 <p className="article__artist-name">{item.artist}</p>
-                <p className="article__artist-pov"><em>"{item.artistPOV}"</em></p>
+                <p className="article__artist-pov"><em>"{item.artist_pov}"</em></p>
               </div>
             </article>
           ))}
@@ -600,7 +604,25 @@ export default function GalleryPage() {
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeItem}
         onAddRecommendedItem={handleAddRecommendedItem}
+        currentUser={currentUser}
+        onOrderComplete={() => { }} // Not used for gallery
+        onClearCart={clearCart}
+        onShowAuth={handleShowAuth}
+        onGalleryBookingComplete={handleGalleryBookingComplete}
         cartType="gallery"
+      />
+      <GalleryBooking
+        isOpen={bookingConfirmation.isOpen}
+        onClose={() => setBookingConfirmation({ ...bookingConfirmation, isOpen: false })}
+        bookingNumber={bookingConfirmation.bookingNumber}
+        artPieceName={bookingConfirmation.artPieceName}
+        artist={bookingConfirmation.artist}
+        price={bookingConfirmation.price}
+      />
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        buttonRect={undefined}
       />
       <Footer />
     </>

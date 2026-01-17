@@ -4,7 +4,7 @@
     overflow: hidden;
     position: relative;
     min-height: 100vh;
-    background-color: #D8CBB8;
+    background-color: #f7e7db;
     /* Match workshop page color */
     padding-top: 0;
     /* No padding needed as hero covers full viewport */
@@ -102,11 +102,13 @@
     max-width: 1400px;
     margin: 0 auto;
     position: relative;
-    z-index: 30;    transition: margin-bottom 0.8s ease;
+    z-index: 30;
+    transition: margin-bottom 0.8s ease;
 }
 
 .item-wrap.article-open {
-    margin-bottom: 200vh;}
+    margin-bottom: 200vh;
+}
 
 .item {
     --base: 7vh;
@@ -193,12 +195,15 @@
     gap: 1rem;
     padding: 3rem 2rem 2rem;
     /* Hide scrollbar for Chrome, Safari and Opera */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
 }
 
 .article::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
 }
 
 .article--current {

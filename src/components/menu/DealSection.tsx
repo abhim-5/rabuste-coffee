@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Clock, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { MenuItem } from "@/types/menu";
 import { CoffeeCard } from "./CoffeeCard";
@@ -15,52 +15,56 @@ interface DealSectionProps {
     getCartQuantity: (itemId: string) => number;
 }
 
-function CountdownTimer() {
-    const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+interface ProductCountdownProps {
+    expiryDate: string;
+    onExpire: () => void;
+}
+
+function ProductCountdown({ expiryDate, onExpire }: ProductCountdownProps) {
+    const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number; isExpired: boolean } | null>(null);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
-            const now = new Date();
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999);
-            const diff = endOfDay.getTime() - now.getTime();
+            if (!expiryDate) return;
 
-            if (diff > 0) {
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                setTimeLeft({ hours, minutes, seconds });
+            const now = new Date().getTime();
+            const end = new Date(expiryDate).getTime();
+            const diff = end - now;
+
+            if (diff <= 0) {
+                setTimeLeft({ hours: 0, minutes: 0, seconds: 0, isExpired: true });
+                onExpire();
+                return;
             }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            setTimeLeft({ hours, minutes, seconds, isExpired: false });
         };
 
         calculateTimeLeft();
         const timer = setInterval(calculateTimeLeft, 1000);
+
         return () => clearInterval(timer);
-    }, []);
+    }, [expiryDate, onExpire]);
+
+    if (!timeLeft || timeLeft.isExpired) return null;
+
+    // Determine color based on urgency
+    const isUrgent = timeLeft.hours < 1;
+    const textColor = isUrgent ? "text-red-600" : "text-[#8B6F47]";
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-baseline justify-center gap-2"
-        >
-            <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-[#8B6F47] self-center" />
-            <span className="font-sans text-base lg:text-lg text-[#262626] font-semibold">
-                Ends in
-            </span>
-            <motion.span
-                key={timeLeft.seconds}
-                initial={{ opacity: 0.6 }}
-                animate={{ opacity: 1 }}
-                className="font-serif text-xl lg:text-2xl font-bold text-[#8B6F47] tracking-wide"
-            >
-                {String(timeLeft.hours).padStart(2, '0')}
-                <span className="text-[#262626] animate-pulse">:</span>
-                {String(timeLeft.minutes).padStart(2, '0')}
-                <span className="text-[#262626] animate-pulse">:</span>
+        <div className={`flex items-center gap-1.5 text-xs font-bold ${textColor} bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-current/20`}>
+            <Clock className="w-3 h-3" />
+            <span className="font-mono tracking-wide">
+                {String(timeLeft.hours).padStart(2, '0')}:
+                {String(timeLeft.minutes).padStart(2, '0')}:
                 {String(timeLeft.seconds).padStart(2, '0')}
-            </motion.span>
-        </motion.div>
+            </span>
+        </div>
     );
 }
 
@@ -71,50 +75,87 @@ export function DealSection({
     onUpdateQuantity,
     getCartQuantity,
 }: DealSectionProps) {
-    if (dealItems.length === 0) return null;
+    const [activeDeals, setActiveDeals] = useState<MenuItem[]>([]);
+
+    // Initialize deals and filter out already expired ones immediately
+    useEffect(() => {
+        const now = new Date().getTime();
+        const validDeals = dealItems.filter(item => {
+            if (!item.dealExpiry) return true; // Keep if no expiry set (assumed permanent deal or handle elsewhere)
+            return new Date(item.dealExpiry).getTime() > now;
+        });
+        setActiveDeals(validDeals);
+    }, [dealItems]);
+
+    const handleExpire = (itemId: string | number) => {
+        setActiveDeals(prev => prev.filter(item => item.id !== itemId));
+    };
+
+    if (activeDeals.length === 0) return null;
 
     return (
-        <section className="relative w-full py-8 lg:py-12" style={{ backgroundColor: "#b8a890" }}>
+        <section className="relative w-full py-8 lg:py-12 bg-[#faeade]">
             <div className="mx-auto w-full px-4 lg:px-6 max-w-7xl">
-                {/* Header - Matching product grid style */}
+                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="flex flex-col items-center mb-8"
+                    className="flex flex-col items-center mb-10"
                 >
-                    <div className="flex items-center justify-center py-4 border-t-[0.5px] border-b-[0.5px] border-[#8B6F47] w-full mb-6">
-                        <div className="flex items-center gap-2 lg:gap-3">
-                            <Sparkles className="w-5 h-5 lg:w-7 lg:h-7 text-amber-600 fill-amber-600 animate-pulse" />
-                            <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-[#262626] uppercase tracking-[0.1em] sm:tracking-[0.15em] lg:tracking-[0.2em] mx-2 sm:mx-4 whitespace-nowrap">
-                                Deal of the Day
+                    <div className="relative">
+                        <div className="flex items-center gap-3 px-8 py-3 bg-[#262626] text-[#b8a890] rounded-full shadow-xl border border-[#b8a890]/30 transform hover:scale-105 transition-transform duration-300">
+                            <Sparkles className="w-5 h-5 animate-pulse text-amber-400" />
+                            <h2 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold uppercase tracking-[0.15em] mx-2">
+                                Limited Time Deals
                             </h2>
-                            <Sparkles className="w-5 h-5 lg:w-7 lg:h-7 text-amber-600 fill-amber-600 animate-pulse" />
+                            <Sparkles className="w-5 h-5 animate-pulse text-amber-400" />
                         </div>
+                        {/* Decorative line */}
+                        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[#262626]/20 -z-10 transform scale-x-150" />
                     </div>
-
-                    {/* Countdown Timer */}
-                    <CountdownTimer />
+                    
+                    <p className="mt-4 font-sans text-[#262626]/70 text-sm font-medium">
+                        Grab them before the timer runs out!
+                    </p>
                 </motion.div>
 
                 {/* Deal Items Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-6">
-                    {dealItems.map((item, index) => (
-                        <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                        >
-                            <CoffeeCard
-                                item={item}
-                                onCardClick={onItemClick}
-                                onAddToCart={onAddToCart}
-                                onUpdateQuantity={onUpdateQuantity}
-                                cartQuantity={getCartQuantity(item.id)}
-                            />
-                        </motion.div>
-                    ))}
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 lg:gap-8">
+                    <AnimatePresence>
+                        {activeDeals.map((item, index) => (
+                            <motion.div
+                                key={item.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.3 } }}
+                                transition={{ duration: 0.4 }}
+                                className="relative"
+                            >
+                                {/* Countdown Overlay - Positioned appropriately for the card */}
+                                {item.dealExpiry && (
+                                    <div 
+                                        className="absolute z-20"
+                                        style={{ top: '8px', right: '8px', left: 'auto' }}
+                                    >
+                                        <ProductCountdown 
+                                            expiryDate={item.dealExpiry} 
+                                            onExpire={() => handleExpire(item.id)} 
+                                        />
+                                    </div>
+                                )}
+                                
+                                <CoffeeCard
+                                    item={item}
+                                    onCardClick={onItemClick}
+                                    onAddToCart={onAddToCart}
+                                    onUpdateQuantity={onUpdateQuantity}
+                                    cartQuantity={getCartQuantity(String(item.id))}
+                                />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
             </div>
         </section>

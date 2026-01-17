@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Calendar, User, GraduationCap, ChevronRight } from "lucide-react";
+import { Calendar, User, GraduationCap, ChevronRight, MessageSquare, Star, Trash2 } from "lucide-react";
 import { Workshop } from "@/types/menu";
+import { WorkshopReviewModal } from "@/components/workshops/WorkshopReviewModal";
 
 interface WorkshopsSectionProps {
     workshops: Workshop[];
@@ -14,6 +15,130 @@ interface WorkshopsSectionProps {
 
 export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: WorkshopsSectionProps) {
     const [showAll, setShowAll] = useState(false);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
+
+    const canReview = (workshop: Workshop) => {
+        if (workshop.status !== 'confirmed') return false;
+        const workshopDate = new Date(workshop.date);
+        return workshopDate < new Date();
+    };
+
+    const hasReviewed = (workshop: Workshop) => {
+        // Check if reviews array includes current user's review
+        // This will be populated by the useProfileWorkshops hook
+        return (workshop as any).hasReviewed || false;
+    };
+
+    const handleReviewClick = (workshop: Workshop) => {
+        setSelectedWorkshop(workshop);
+        setReviewModalOpen(true);
+    };
+
+    const handleReviewSuccess = () => {
+        window.location.reload(); // Reload to show updated review
+    };
+
+    const handleDeleteReview = async (reviewId: string) => {
+        if (!confirm('Are you sure you want to delete your review?')) return;
+
+        try {
+            const response = await fetch(`/api/workshops/reviews/${reviewId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete review');
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error deleting review:', error);
+            alert('Failed to delete review');
+        }
+    };
+
+    const handleRetryPayment = async (workshop: Workshop) => {
+        try {
+            // Load Razorpay SDK
+            const loadRazorpay = () => {
+                return new Promise((resolve) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                    script.onload = () => resolve(true);
+                    script.onerror = () => resolve(false);
+                    document.body.appendChild(script);
+                });
+            };
+
+            const isLoaded = await loadRazorpay();
+            if (!isLoaded) {
+                alert('Failed to load payment gateway');
+                return;
+            }
+
+            // Create NEW order for retry payment
+            const orderRes = await fetch('/api/workshops/retry-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    registration_id: workshop.id
+                })
+            });
+
+            const orderData = await orderRes.json();
+
+            if (!orderRes.ok) {
+                throw new Error(orderData.error || 'Failed to create payment order');
+            }
+
+            // Open Razorpay with fresh order
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: "Rabuste Coffee Workshops",
+                description: `Workshop: ${workshop.title}`,
+                order_id: orderData.razorpayOrderId,
+                handler: async function (razorpayResponse: any) {
+                    try {
+                        const verifyRes = await fetch('/api/workshops/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: razorpayResponse.razorpay_order_id,
+                                razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                                razorpay_signature: razorpayResponse.razorpay_signature,
+                                registration_id: workshop.id
+                            })
+                        });
+
+                        const verifyData = await verifyRes.json();
+
+                        if (verifyData.success) {
+                            alert('Payment successful! Your workshop is confirmed.');
+                            window.location.reload();
+                        } else {
+                            alert('Payment verification failed');
+                        }
+                    } catch (err) {
+                        console.error('Payment verification error:', err);
+                        alert('Payment processed but verification failed. Please contact support.');
+                    }
+                },
+                theme: {
+                    color: "#8B6F47"
+                }
+            };
+
+            const paymentObject = new (window as any).Razorpay(options);
+            paymentObject.open();
+
+        } catch (error) {
+            console.error('Retry payment error:', error);
+            alert((error as any).message || 'Failed to initiate payment. Please try again.');
+        }
+    };
 
     if (workshops.length === 0 && !isDesktop) return null;
 
@@ -37,11 +162,16 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                                     <div className="flex gap-4 p-4">
                                         <div className="relative h-24 w-24 flex-shrink-0 rounded-xl overflow-hidden">
                                             <Image
-                                                src={workshop.image}
+                                                src={workshop.image && workshop.image.startsWith('http') ? workshop.image : '/workshops/1.jpg'}
                                                 alt={workshop.title}
                                                 fill
                                                 className="object-cover group-hover:scale-105 transition-transform duration-500"
                                                 sizes="96px"
+                                                unoptimized
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/workshops/1.jpg';
+                                                }}
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -53,17 +183,64 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                                                     Host: {workshop.host}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                    workshop.attended 
-                                                    ? "bg-green-100 text-green-700" 
-                                                    : "bg-amber-100 text-amber-700"
-                                                }`}>
-                                                    {workshop.attended ? "Completed" : "Upcoming"}
-                                                </span>
-                                                <span className="font-display text-lg font-bold text-[#8B6F47]">
-                                                    ₹500
-                                                </span>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                                        (workshop as any).payment_status === 'paid' 
+                                                        ? "bg-green-100 text-green-700" 
+                                                        : (workshop as any).payment_status === 'failed'
+                                                        ? "bg-red-100 text-red-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                    }`}>
+                                                        {(workshop as any).payment_status === 'paid' ? "Paid & Confirmed" : 
+                                                         (workshop as any).payment_status === 'failed' ? "Payment Failed" : 
+                                                         "Payment Pending"}
+                                                    </span>
+                                                    <span className="font-display text-lg font-bold text-[#8B6F47]">
+                                                        ₹{workshop.price || 500}
+                                                    </span>
+                                                </div>
+                                                
+                                                {/* Retry Payment Button */}
+                                                {((workshop as any).payment_status === 'pending' || (workshop as any).payment_status === 'failed') && (
+                                                    <button
+                                                        onClick={() => handleRetryPayment(workshop)}
+                                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        Retry Payment
+                                                    </button>
+                                                )}
+                                                
+                                                {/* Review Button */}
+                                                {canReview(workshop) && !hasReviewed(workshop) && (workshop as any).payment_status === 'paid' && (
+                                                    <button
+                                                        onClick={() => handleReviewClick(workshop)}
+                                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#8B6F47] hover:bg-[#6d5638] text-white text-xs font-semibold rounded-lg transition-colors"
+                                                    >
+                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                        Write Review
+                                                    </button>
+                                                )}
+                                                {hasReviewed(workshop) && (
+                                                    <div className="bg-white/50 p-3 rounded-lg border border-[#8B6F47]/10">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-[10px] uppercase tracking-wider font-bold text-[#8B6F47]">Your Review</span>
+                                                            <button
+                                                                onClick={() => handleDeleteReview((workshop as any).reviewId)}
+                                                                className="text-red-500 hover:text-red-700 transition-colors p-1"
+                                                                title="Delete Review"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                        <p className="text-xs text-[#404040] italic line-clamp-2 mt-1">
+                                                            {(workshop as any).reviewText}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -98,6 +275,17 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                             Check out our upcoming workshops!
                         </p>
                     </div>
+                )}
+                
+                {/* Review Modal for Desktop */}
+                {selectedWorkshop && (
+                    <WorkshopReviewModal
+                        isOpen={reviewModalOpen}
+                        onClose={() => setReviewModalOpen(false)}
+                        workshopId={(selectedWorkshop as any).workshopId}
+                        workshopTitle={selectedWorkshop.title}
+                        onSuccess={handleReviewSuccess}
+                    />
                 )}
             </div>
         );
@@ -167,11 +355,15 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                                             </p>
                                             <div className="flex items-center gap-2">
                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                                    workshop.attended 
+                                                    workshop.status === 'confirmed' 
                                                     ? "bg-green-100 text-green-700" 
-                                                    : "bg-amber-100 text-amber-700"
+                                                    : workshop.status === 'pending'
+                                                    ? "bg-amber-100 text-amber-700"
+                                                    : "bg-gray-100 text-gray-700"
                                                 }`}>
-                                                    {workshop.attended ? "Completed" : "Upcoming"}
+                                                    {workshop.status === 'confirmed' ? "Confirmed" : 
+                                                     workshop.status === 'pending' ? "Pending" : 
+                                                     workshop.status || 'Pending'}
                                                 </span>
                                                 <span className="text-xs text-[#a8a29e]">•</span>
                                                 <span className="font-sans text-xs text-[#78716c]">
@@ -185,9 +377,51 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
 
                                         <div className="flex-shrink-0 text-right">
                                             <span className="font-sans text-sm font-bold text-[#8B6F47]">
-                                                ₹500
+                                                ₹{workshop.price || 500}
                                             </span>
                                         </div>
+                                    </div>
+                                    
+                                    {/* Mobile: Retry Payment & Review Buttons */}
+                                    <div className="px-4 pb-3 space-y-2">
+                                        {((workshop as any).payment_status === 'pending' || (workshop as any).payment_status === 'failed') && (
+                                            <button
+                                                onClick={() => handleRetryPayment(workshop)}
+                                                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                                Retry Payment
+                                            </button>
+                                        )}
+                                        
+                                        {canReview(workshop) && !hasReviewed(workshop) && (workshop as any).payment_status === 'paid' && (
+                                            <button
+                                                onClick={() => handleReviewClick(workshop)}
+                                                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-[#8B6F47] hover:bg-[#6d5638] text-white text-xs font-semibold rounded-lg transition-colors"
+                                            >
+                                                <MessageSquare className="w-4 h-4" />
+                                                Write Review
+                                            </button>
+                                        )}
+                                        {hasReviewed(workshop) && (
+                                            <div className="mt-2 text-left bg-[#F5F0EB] p-3 rounded-lg border border-[#8B6F47]/10">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <span className="text-[10px] uppercase tracking-wider font-bold text-[#8B6F47]">Your Review</span>
+                                                    <button
+                                                        onClick={() => handleDeleteReview((workshop as any).reviewId)}
+                                                        className="text-red-500 hover:text-red-700 transition-colors bg-white p-1 rounded-full shadow-sm"
+                                                        title="Delete Review"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-[#404040] font-serif italic">
+                                                    {(workshop as any).reviewText}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             );
@@ -219,6 +453,17 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
                     )}
                 </div>
             </div>
+            
+            {/* Review Modal */}
+            {selectedWorkshop && (
+                <WorkshopReviewModal
+                    isOpen={reviewModalOpen}
+                    onClose={() => setReviewModalOpen(false)}
+                    workshopId={(selectedWorkshop as any).workshopId}
+                    workshopTitle={selectedWorkshop.title}
+                    onSuccess={handleReviewSuccess}
+                />
+            )}
         </section>
     );
 }

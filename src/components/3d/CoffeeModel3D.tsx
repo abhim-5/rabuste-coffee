@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, Suspense, useEffect, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, useGLTF, ContactShadows } from '@react-three/drei';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import * as THREE from 'three';
@@ -62,9 +62,10 @@ function CoffeeModel({ rollAnimation = false, isMobile = false }: CoffeeModelPro
           startX = -30;
           endX = 0;
         } else {
-          // Desktop Animation: From far left to right side
-          startX = -40;
-          endX = 5;
+          // Desktop Animation: From far left to right side (center 0)
+          // We use camera view offset to make 0 appear on the right
+          startX = -50;
+          endX = 0;
         }
 
         const distance = endX - startX; 
@@ -192,6 +193,9 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
     zoom: 190
   };
 
+  // OrbitControls target - always center 0 now as we use view offset for positioning
+  const controlsTarget = [0, 0, 0] as [number, number, number];
+
   // Run animation on mobile too
   const activeRollAnimation = isMobile ? true : rollAnimation;
 
@@ -235,8 +239,8 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
 
         <ContactShadows position={[0, -1.2, 0]} opacity={0.7} scale={4} blur={2.1} far={4} color="rgba(18, 17, 17, 1)" />
 
-        {/* Controls: Enabled on mobile now as requested */}
         <OrbitControls
+          target={controlsTarget}
           enableZoom={false}
           enablePan={false}
           enableRotate={true} // Enable rotation on all devices
@@ -244,10 +248,41 @@ export default function CoffeeModel3D({ onLoaded, rollAnimation = false }: Coffe
           dampingFactor={0.05}
           autoRotate={false}
         />
+        <CameraAdjuster isMobile={isMobile} />
       </Canvas>
       )}
     </div>
   );
+}
+
+// Component to handle camera view offset for layout positioning
+function CameraAdjuster({ isMobile }: { isMobile: boolean }) {
+  const { camera, size } = useThree();
+  
+  useEffect(() => {
+    if (!isMobile) {
+      // Shift the view to the Left, so the object (at 0,0,0) appears to the Right.
+      // Offset x should be negative to shift the "window" left.
+      // Shift by ~25% of width to put center at 75% screen width.
+      const offset = -size.width * 0.25;
+      
+      if (camera.setViewOffset) {
+        camera.setViewOffset(size.width, size.height, offset, 0, size.width, size.height);
+      }
+    } else {
+      if (camera.clearViewOffset) {
+        camera.clearViewOffset();
+      }
+    }
+    
+    return () => {
+      if (camera.clearViewOffset) {
+        camera.clearViewOffset();
+      }
+    };
+  }, [camera, size, isMobile]);
+  
+  return null;
 }
 
 // End of file - Preload only

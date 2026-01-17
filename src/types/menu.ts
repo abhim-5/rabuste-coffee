@@ -1,27 +1,23 @@
 export type MenuCategory = 
-  | "coffee" 
-  | "pizza" 
-  | "pastries" 
-  | "sandwiches" 
-  | "beverages" 
-  | "desserts"
+  | "robusta-cold"
+  | "robusta-hot"
+  | "blend-cold"
+  | "blend-hot"
+  | "manual-brew"
+  | "shakes-tea"
+  | "food"
   | "Art Gallery";
 
-export interface VariationOption {
-  id: string;
-  name: string;
-  priceModifier: number;
-}
-
+// Variation structure with optional custom content
 export interface Variation {
-  id: string;
-  name: string;
-  required: boolean;
-  options: VariationOption[];
+  name: string;         // e.g., "Tonic", "Red Bull"
+  price: number;        // Full price for this variation
+  image?: string;       // Optional custom image (falls back to main item image)
+  description?: string; // Optional custom description (falls back to main item description)
 }
 
 export interface MenuItem {
-  id: string;
+  id: string | number;
   name: string;
   description: string;
   price: number;
@@ -31,7 +27,9 @@ export interface MenuItem {
   rating: number;
   reviewCount: number;
   isDealOfTheDay?: boolean;
-  variations?: Variation[];
+  dealExpiry?: string;
+  variations?: Variation[];  // Updated to use new structure
+  available?: boolean;
   frequentlyBoughtWith?: string[];
   similarItems?: string[];
 }
@@ -40,7 +38,7 @@ export interface CartItem {
   menuItem: MenuItem;
   quantity: number;
   subtotal: number;
-  selectedVariations?: Record<string, string>;
+  selectedVariation?: Variation;  // Full variation object instead of Record
 }
 
 export interface CartState {
@@ -72,6 +70,12 @@ export interface Workshop {
   host: string;
   date: Date;
   attended: boolean;
+  status?: string; // pending, confirmed, cancelled, attended
+  price?: number; // Workshop price
+  hasReviewed?: boolean;
+  reviewId?: string;
+  reviewRating?: number;
+  reviewText?: string;
 }
 
 export interface OrderItem {

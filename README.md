@@ -419,3 +419,7 @@ This project is proprietary software for Rabuste Coffee brand.
 ---
 
 *Last Updated: January 2026 - Added Points System, Desktop Profile Dashboard, Edit Profile Modal*
+
+
+
+

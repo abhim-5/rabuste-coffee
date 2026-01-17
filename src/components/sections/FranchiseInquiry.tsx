@@ -1,14 +1,76 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
+import AuthModal from '@/components/auth/AuthModal';
 
 const FranchiseInquiry = () => {
     const [focusedField, setFocusedField] = useState<string | null>(null);
     const [formValues, setFormValues] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const supabase = createClient();
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setCurrentUser(session?.user ?? null);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormValues({ ...formValues, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Check authentication
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitStatus('idle');
+
+        try {
+            const response = await fetch('/api/franchise', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formValues.name,
+                    email: formValues.email,
+                    phone: formValues.phone,
+                    location: formValues.location,
+                    message: formValues.message || ''
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setSubmitStatus('success');
+                setFormValues({});
+                setTimeout(() => setSubmitStatus('idle'), 5000);
+            } else {
+                setSubmitStatus('error');
+                const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to submit inquiry');
+                alert('❌ ' + errorMsg);
+                console.error('Franchise submission error:', data);
+            }
+        } catch (error) {
+            console.error('Franchise inquiry error:', error);
+            setSubmitStatus('error');
+            alert('❌ Failed to submit. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const inputs = [
@@ -19,7 +81,7 @@ const FranchiseInquiry = () => {
     ];
 
     return (
-        <section id="franchise-inquiry" className="relative w-full py-20 lg:py-32 bg-[#D8CBB8] overflow-hidden">
+        <section id="franchise-inquiry" className="relative w-full py-20 lg:py-32 bg-[#faeade] overflow-hidden">
             <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
                 <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
 
@@ -31,12 +93,12 @@ const FranchiseInquiry = () => {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="flex-1"
                     >
-                        <h2 className="font-display text-5xl lg:text-7xl font-bold text-[#404040] mb-8 leading-tight">
-                            Build Your <br />
-                            <span className="text-[#8B6F47]">Legacy</span>
+                        <h2 className="font-tan-pearl text-5xl lg:text-7xl font-bold text-[#7f3b2d] mb-8 leading-tight lowercase">
+                            build your <br />
+                            <span className="text-[#c58d4a]">legacy</span>
                         </h2>
 
-                        <div className="space-y-8 font-serif text-[#5C5C5C] text-lg lg:text-xl leading-relaxed">
+                        <div className="space-y-8 font-serif text-[#7f3b2d]/80 text-lg lg:text-xl leading-relaxed">
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -49,9 +111,8 @@ const FranchiseInquiry = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4, duration: 0.6 }}
-                                className="pl-6 border-l-2 border-[#8B6F47]"
-                            >
-                                <h3 className="font-display text-2xl font-bold text-[#404040] mb-2">Why Partner?</h3>
+                                className="pl-6 border-l-2 border-[#7f3b2d]">
+                                <h3 className="font-tan-pearl text-2xl font-bold text-[#7f3b2d] mb-2 uppercase">Why Partner?</h3>
                                 <ul className="space-y-2">
                                     <li>✦ Proven High-Yield Model</li>
                                     <li>✦ Comprehensive Operational Support</li>
@@ -69,10 +130,17 @@ const FranchiseInquiry = () => {
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                         className="flex-1"
                     >
-                        <h3 className="font-display text-3xl font-bold text-[#404040] mb-8">
-                            Unit Franchise Inquiry
+                        <h3 className="font-tan-pearl text-3xl font-bold text-[#7f3b2d] mb-8 lowercase">
+                            unit franchise inquiry
                         </h3>
-                        <form className="space-y-8">
+
+                        {submitStatus === 'success' && (
+                            <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg text-green-800">
+                                ✅ Thank you! We'll contact you soon.
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-8">
                             {inputs.map((input) => (
                                 <div key={input.name} className="relative group">
                                     <input
@@ -81,7 +149,7 @@ const FranchiseInquiry = () => {
                                         name={input.name}
                                         value={formValues[input.name] || ''}
                                         onChange={handleInputChange}
-                                        className="w-full bg-transparent border-b border-[#8B6F47]/30 py-4 text-[#404040] text-lg focus:outline-none focus:border-[#8B6F47] transition-colors duration-300 peer placeholder-transparent"
+                                        className="w-full bg-transparent border-b border-[#7f3b2d]/30 py-4 text-[#7f3b2d] text-lg focus:outline-none focus:border-[#7f3b2d] transition-colors duration-300 peer placeholder-transparent"
                                         placeholder={input.label}
                                         onFocus={() => setFocusedField(input.name)}
                                         onBlur={() => setFocusedField(null)}
@@ -91,13 +159,13 @@ const FranchiseInquiry = () => {
                                         htmlFor={input.name}
                                         className={`absolute left-0 transition-all duration-300 pointer-events-none
                                             ${focusedField === input.name || formValues[input.name]
-                                                ? '-top-3 text-xs text-[#8B6F47]'
-                                                : 'top-4 text-lg text-[#8B6F47]/60'
+                                                ? '-top-3 text-xs text-[#7f3b2d]'
+                                                : 'top-4 text-lg text-[#7f3b2d]/60'
                                             }`}
                                     >
                                         {input.label}
                                     </label>
-                                    <div className={`absolute bottom-0 left-0 h-0.5 bg-[#8B6F47] transition-all duration-500 ease-out ${focusedField === input.name ? 'w-full' : 'w-0'}`} />
+                                    <div className={`absolute bottom-0 left-0 h-0.5 bg-[#7f3b2d] transition-all duration-500 ease-out ${focusedField === input.name ? 'w-full' : 'w-0'}`} />
                                 </div>
                             ))}
 
@@ -108,7 +176,7 @@ const FranchiseInquiry = () => {
                                     rows={4}
                                     value={formValues['message'] || ''}
                                     onChange={handleInputChange}
-                                    className="w-full bg-transparent border-b border-[#8B6F47]/30 py-4 text-[#404040] text-lg focus:outline-none focus:border-[#8B6F47] transition-colors duration-300 peer placeholder-transparent resize-none"
+                                    className="w-full bg-transparent border-b border-[#7f3b2d]/30 py-4 text-[#7f3b2d] text-lg focus:outline-none focus:border-[#7f3b2d] transition-colors duration-300 peer placeholder-transparent resize-none"
                                     placeholder="Your Message/Vision"
                                     onFocus={() => setFocusedField('message')}
                                     onBlur={() => setFocusedField(null)}
@@ -118,21 +186,23 @@ const FranchiseInquiry = () => {
                                     htmlFor="message"
                                     className={`absolute left-0 transition-all duration-300 pointer-events-none
                                         ${focusedField === 'message' || formValues['message']
-                                            ? '-top-3 text-xs text-[#8B6F47]'
-                                            : 'top-4 text-lg text-[#8B6F47]/60'
+                                            ? '-top-3 text-xs text-[#7f3b2d]'
+                                            : 'top-4 text-lg text-[#7f3b2d]/60'
                                         }`}
                                 >
                                     Your Message/Vision
                                 </label>
-                                <div className={`absolute bottom-0 left-0 h-0.5 bg-[#8B6F47] transition-all duration-500 ease-out ${focusedField === 'message' ? 'w-full' : 'w-0'}`} />
+                                <div className={`absolute bottom-0 left-0 h-0.5 bg-[#7f3b2d] transition-all duration-500 ease-out ${focusedField === 'message' ? 'w-full' : 'w-0'}`} />
                             </div>
 
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="w-full py-5 bg-[#404040] text-[#D8CBB8] font-display text-xl font-bold uppercase tracking-widest hover:bg-[#2a2a2a] transition-colors duration-300 shadow-xl mt-8"
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full py-5 bg-[#7f3b2d] disabled:bg-gray-400 disabled:cursor-not-allowed text-[#faeade] font-tan-pearl text-xl font-bold uppercase tracking-widest hover:bg-[#5e2b20] transition-colors duration-300 shadow-xl mt-8"
                             >
-                                Submit Inquiry
+                                {isSubmitting ? 'SUBMITTING...' : 'Submit Inquiry'}
                             </motion.button>
                         </form>
                     </motion.div>
@@ -169,6 +239,13 @@ const FranchiseInquiry = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Auth Modal */}
+            <AuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                buttonRect={undefined}
+            />
         </section>
     );
 };

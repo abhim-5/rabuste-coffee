@@ -6,19 +6,28 @@ import { Palette, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { ArtPiece } from "@/types/menu";
 
+// Extend ArtPiece locally or ensure globally it has status. 
+// Assuming ArtPiece definition in types/menu or hooks might need update, 
+// but useProfileArt hooks defines it with status. 
+// We will cast or assume it's there.
+interface ExtendedArtPiece extends ArtPiece {
+    status?: 'pending' | 'purchased' | 'cancelled';
+}
+
 interface ArtCollectionProps {
-    artPieces: ArtPiece[];
+    artPieces: ExtendedArtPiece[];
     isDesktop?: boolean;
 }
 
 export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionProps) {
     const [showAll, setShowAll] = useState(false);
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
         return new Intl.DateTimeFormat("en-IN", {
             month: "short",
             year: "numeric",
-        }).format(date);
+        }).format(dateObj);
     };
 
     const totalValue = artPieces.reduce((sum, piece) => sum + piece.price, 0);
@@ -51,12 +60,34 @@ export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionPro
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                                             <div>
-                                                <h3 className="font-sans text-base font-semibold text-[#262626] mb-1 line-clamp-1">
-                                                    {piece.title}
-                                                </h3>
-                                                <p className="font-sans text-sm text-[#78716c]">
+                                                <div className="flex justify-between items-start mb-1">
+                                                     <h3 className="font-sans text-base font-semibold text-[#262626] line-clamp-1">
+                                                        {piece.title}
+                                                    </h3>
+                                                    {isDesktop && (
+                                                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full border ${
+                                                            piece.status === 'purchased' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                            piece.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                            'bg-amber-100 text-amber-700 border-amber-200'
+                                                        }`}>
+                                                            {piece.status || 'Pending'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="font-sans text-sm text-[#78716c] mb-1">
                                                     by {piece.artist}
                                                 </p>
+                                                 {!isDesktop && (
+                                                     <div className="mb-1">
+                                                         <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full border ${
+                                                            piece.status === 'purchased' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                            piece.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                            'bg-amber-100 text-amber-700 border-amber-200'
+                                                        }`}>
+                                                            {piece.status || 'Pending'}
+                                                        </span>
+                                                     </div>
+                                                 )}
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className="font-sans text-xs text-[#a8a29e]">
@@ -161,6 +192,7 @@ export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionPro
                                                     className="object-cover"
                                                     sizes="80px"
                                                 />
+                                                {/* No overlay needed here */}
                                             </div>
 
                                             <div className="flex-1 min-w-0">
@@ -170,9 +202,18 @@ export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionPro
                                                 <p className="font-sans text-xs text-[#78716c] mb-1">
                                                     by {piece.artist}
                                                 </p>
-                                                <p className="font-sans text-xs text-[#a8a29e]">
-                                                    {formatDate(piece.purchaseDate)}
-                                                </p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                     <p className="font-sans text-xs text-[#a8a29e]">
+                                                        {formatDate(piece.purchaseDate)}
+                                                    </p>
+                                                    <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-full border ${
+                                                        piece.status === 'purchased' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                        piece.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                        'bg-amber-100 text-amber-700 border-amber-200'
+                                                    }`}>
+                                                        {piece.status || 'Pending'}
+                                                    </span>
+                                                </div>
                                             </div>
 
                                             <div className="flex-shrink-0 text-right">

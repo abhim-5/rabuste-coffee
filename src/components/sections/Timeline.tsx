@@ -106,9 +106,9 @@ const TimelineItem = ({ data, index }: { data: typeof timelineData[0], index: nu
                     transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} // Cinematic easing
                     className="relative group w-full max-w-lg perspective-1000"
                 >
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#8B6F47] to-[#BC9F75] rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[#7f3b2d] to-[#BC9F75] rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
 
-                    <div className="relative bg-[#EBE3D9]/60 backdrop-blur-xl p-6 lg:p-8 rounded-xl shadow-2xl border border-white/40 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)]">
+                    <div className="relative bg-[#faeade]/90 backdrop-blur-xl p-6 lg:p-8 rounded-xl shadow-2xl border border-white/40 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)]">
 
                         {/* Subtle Grain Overlay on Card */}
                         <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
@@ -178,7 +178,7 @@ const MobileTimelineItem = ({ data, index }: { data: typeof timelineData[0], ind
                 </div>
             </div>
 
-            <div className="relative bg-[#EBE3D9]/80 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/30 flex-grow">
+            <div className="relative bg-[#faeade]/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/30 flex-grow">
                 <div className="relative w-full h-48 mb-5 rounded-lg overflow-hidden shadow-sm">
                     <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
                         <Image
@@ -324,7 +324,7 @@ const ZigzagLine = ({ progress }: { progress: any }) => {
                 <path
                     d={pathD}
                     fill="transparent"
-                    stroke="#8B6F47"
+                    stroke="#7f3b2d"
                     strokeWidth="5"
                     strokeOpacity="0.05"
                     strokeLinecap="butt"
@@ -360,8 +360,20 @@ const ZigzagLine = ({ progress }: { progress: any }) => {
     );
 };
 
+// ... imports ...
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Splitting from "splitting";
+import "splitting/dist/splitting.css";
+import "splitting/dist/splitting-cells.css";
+
+gsap.registerPlugin(ScrollTrigger);
+
+// ... (TimelineData, TimelineItem, MobileTimelineItem, CoffeeMachine, CoffeeCup, ZigzagLine components remain unchanged) ...
+
 const Timeline = () => {
     const containerRef = useRef(null);
+    const titleRef = useRef<HTMLHeadingElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start end", "end start"]
@@ -391,6 +403,45 @@ const Timeline = () => {
             duration: Math.random() * 10 + 10,
             targetY: Math.random() * -20
         })));
+        
+        // --- Effect 18 (Zoom In) for Title ---
+        if (titleRef.current && !titleRef.current.classList.contains('splitting')) {
+            Splitting({ target: titleRef.current, by: "chars" });
+        }
+
+        const ctx = gsap.context(() => {
+             if (titleRef.current) {
+                const chars = titleRef.current.querySelectorAll('.char');
+                
+                // Set perspective on parent of chars (words) for 3D effect
+                if (chars.length) {
+                    chars.forEach(char => {
+                         if (char.parentNode) gsap.set(char.parentNode, { perspective: 1000 });
+                         gsap.set(char, { display: 'inline-block', transformStyle: 'preserve-3d' });
+                    });
+
+                    gsap.fromTo(chars, { 
+                        'will-change': 'opacity, transform', 
+                        opacity: 0.2,
+                        z: -800
+                    }, 
+                    {
+                        ease: 'back.out(1.2)',
+                        opacity: 1,
+                        z: 0,
+                        stagger: 0.04,
+                        scrollTrigger: {
+                            trigger: titleRef.current,
+                            start: 'top bottom-=10%',
+                            end: 'bottom center',
+                            scrub: true,
+                        }
+                    });
+                }
+             }
+        }, containerRef);
+
+        return () => ctx.revert();
     }, []);
 
     const scaleY = useSpring(fastScrollProgress, {
@@ -402,7 +453,7 @@ const Timeline = () => {
     return (
         <section
             ref={containerRef}
-            className="relative w-full py-24 lg:py-40 pb-40 lg:pb-56 overflow-hidden bg-[#D8CBB8]"
+            className="relative w-full py-24 lg:py-40 pb-40 lg:pb-56 overflow-hidden bg-[#e3a458]"
         >
             {/* Cinematic Background Layers (Cleaner, No Text) */}
 
@@ -417,7 +468,7 @@ const Timeline = () => {
                 {particles.map((p, i) => (
                     <motion.div
                         key={i}
-                        className="absolute w-1 h-1 bg-[#D4AF37] rounded-full opacity-30 blur-[1px]"
+                        className="absolute w-1 h-1 bg-[#faeade] rounded-full opacity-30 blur-[1px]"
                         initial={{
                             x: p.x + "%",
                             y: p.y + "%",
@@ -438,16 +489,9 @@ const Timeline = () => {
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
                 {/* Title Section - Pushed up to make room for machine */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1 }}
-                    className="text-center mb-40 lg:mb-56"
-                >
-                    <h4 className="font-serif text-[#8B6F47] text-lg lg:text-xl tracking-[0.2em] uppercase mb-4">Since 2023</h4>
-                    <h2 className="font-display text-5xl lg:text-7xl font-bold text-[#404040] drop-shadow-sm">
-                        Our Historic Path
+                <div className="text-center mb-40 lg:mb-56">
+                    <h2 ref={titleRef} className="font-tan-pearl text-5xl lg:text-7xl font-bold text-[#7f3b2d] drop-shadow-sm lowercase">
+                        our historic path
                     </h2>
                     <div className="relative w-28 h-6 lg:w-40 lg:h-10 mx-auto mt-8">
                         <Image
@@ -457,7 +501,7 @@ const Timeline = () => {
                             className="object-contain opacity-80"
                         />
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Desktop View - Timeline with both lines originating from machine */}
                 <div className="hidden md:block relative pt-20">
@@ -467,12 +511,12 @@ const Timeline = () => {
 
                     {/* Timeline Line (Static Base) - Starts at first item, ends at last item */}
                     {/* Color changed to neutral timeline color, adjusted top/bottom to match content */}
-                    <div className="absolute left-1/2 w-[2px] bg-[#8B6F47]/20 -translate-x-1/2 rounded-full -z-10" style={{ top: '10rem', bottom: '10rem' }} />
+                    <div className="absolute left-1/2 w-[2px] bg-[#7f3b2d]/20 -translate-x-1/2 rounded-full -z-10" style={{ top: '10rem', bottom: '10rem' }} />
 
                     {/* Timeline Line (Active Fill) - Animated with scroll */}
                     <motion.div
                         style={{ scaleY, originY: 0, top: '10rem', bottom: '10rem' }}
-                        className="absolute left-1/2 w-[2px] bg-[#8B6F47] -translate-x-1/2 rounded-full -z-10"
+                        className="absolute left-1/2 w-[2px] bg-[#7f3b2d] -translate-x-1/2 rounded-full -z-10"
                     />
 
                     {/* Add extra padding at top for coffee machine */}

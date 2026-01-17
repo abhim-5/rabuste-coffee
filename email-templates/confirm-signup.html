@@ -1,0 +1,90 @@
+<!-- Rabuste Coffee - Email Verification Template -->
+<!-- Use this in Supabase Dashboard → Authentication → Email Templates → Confirm signup -->
+
+<div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background-color: #F5F0EB; padding: 0;">
+  <!-- Header with Coffee Theme -->
+  <div style="background: linear-gradient(135deg, #8B6F47 0%, #6d5638 100%); padding: 40px 20px; text-align: center;">
+    <h1 style="color: #FFFFFF; font-size: 32px; margin: 0 0 10px 0; font-weight: 700;">
+      ☕ Rabuste Coffee
+    </h1>
+    <p style="color: #F5F0EB; font-size: 14px; margin: 0; letter-spacing: 2px; text-transform: uppercase;">
+      Artisan Coffee & Culture
+    </p>
+  </div>
+
+  <!-- Main Content -->
+  <div style="background-color: #FFFFFF; padding: 40px 30px;">
+    <h2 style="color: #262626; font-size: 24px; margin: 0 0 20px 0; font-weight: 600;">
+      Welcome to Rabuste! ☕
+    </h2>
+    
+    <p style="color: #404040; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+      Thank you for joining our coffee-loving community! We're thrilled to have you.
+    </p>
+    
+    <p style="color: #404040; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+      To activate your account and start exploring our premium coffee selection, workshops, and art gallery, please confirm your email address by clicking the button below:
+    </p>
+
+    <!-- Call to Action Button -->
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="{{ .ConfirmationURL }}" 
+         style="display: inline-block; background: linear-gradient(135deg, #8B6F47 0%, #6d5638 100%); color: #FFFFFF; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 15px rgba(139, 111, 71, 0.3);">
+        ✓ Confirm Your Email
+      </a>
+    </div>
+
+    <p style="color: #78716c; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+      Or copy and paste this link into your browser:
+    </p>
+    <p style="color: #8B6F47; font-size: 12px; word-break: break-all; text-align: center; margin: 10px 0 0 0;">
+      {{ .ConfirmationURL }}
+    </p>
+  </div>
+
+  <!-- What's Next Section -->
+  <div style="background-color: #F5F0EB; padding: 30px;">
+    <h3 style="color: #262626; font-size: 18px; margin: 0 0 15px 0; font-weight: 600; text-align: center;">
+      What's waiting for you at Rabuste:
+    </h3>
+    
+    <div style="margin: 20px 0;">
+      <div style="margin-bottom: 15px;">
+        <span style="color: #8B6F47; font-size: 20px;">☕</span>
+        <strong style="color: #262626; margin-left: 10px;">Premium Coffee Menu</strong>
+        <p style="color: #78716c; margin: 5px 0 0 35px; font-size: 14px;">Explore our curated selection of artisan coffee</p>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <span style="color: #8B6F47; font-size: 20px;">🎨</span>
+        <strong style="color: #262626; margin-left: 10px;">Art Gallery</strong>
+        <p style="color: #78716c; margin: 5px 0 0 35px; font-size: 14px;">Discover and purchase beautiful coffee-themed artwork</p>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <span style="color: #8B6F47; font-size: 20px;">📚</span>
+        <strong style="color: #262626; margin-left: 10px;">Coffee Workshops</strong>
+        <p style="color: #78716c; margin: 5px 0 0 35px; font-size: 14px;">Join expert-led workshops on brewing and latte art</p>
+      </div>
+
+      <div>
+        <span style="color: #8B6F47; font-size: 20px;">🎁</span>
+        <strong style="color: #262626; margin-left: 10px;">Rewards & Credits</strong>
+        <p style="color: #78716c; margin: 5px 0 0 35px; font-size: 14px;">Earn credits on orders and profile completion</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="background-color: #262626; padding: 30px 20px; text-align: center;">
+    <p style="color: #F5F0EB; font-size: 14px; margin: 0 0 10px 0;">
+      If you didn't create this account, you can safely ignore this email.
+    </p>
+    <p style="color: #78716c; font-size: 12px; margin: 0;">
+      © 2024 Rabuste Coffee. All rights reserved.
+    </p>
+    <div style="margin-top: 20px;">
+      <span style="color: #8B6F47; font-size: 24px;">☕</span>
+    </div>
+  </div>
+</div>

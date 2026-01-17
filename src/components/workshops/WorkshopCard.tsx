@@ -8,9 +8,9 @@ import { Users, MessageSquare, X } from "lucide-react";
 interface Workshop {
     id: string;
     title: string;
-    date: string;
+    start_date: string;
     attendees: number;
-    image: string;
+    image_url: string;
     description: string;
     reviews: Array<{
         name: string;
@@ -60,7 +60,7 @@ export function WorkshopCard({
                 {/* Mobile Layout: Title First */}
                 <div className="lg:hidden px-6 pt-6 pb-2 shrink-0 text-center">
                     <div className="flex items-center justify-center gap-2 text-[#8B6F47] mb-2 text-[10px] font-bold tracking-widest uppercase font-oswald">
-                        <span>{workshop.date}</span>
+                        <span>{new Date(workshop.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                         <span className="w-1 h-1 bg-current rounded-full" />
                         <span>{workshop.attendees} Attendees</span>
                     </div>
@@ -74,13 +74,11 @@ export function WorkshopCard({
                     <div className="relative w-full h-full lg:aspect-[4/5] shadow-2xl rotate-1 group max-w-md lg:h-auto">
                         <div ref={imgRef} className="relative w-full h-full overflow-hidden">
                             <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
-                                <Image
-                                    src={workshop.image}
+                                <img
+                                    src={workshop.image_url || '/workshops/default.jpg'}
                                     alt={workshop.title}
-                                    fill
-                                    className="object-cover"
-                                    priority={index === 0}
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 33vw"
+                                    className="w-full h-full object-cover absolute inset-0"
+                                    loading={index === 0 ? "eager" : "lazy"}
                                 />
                             </motion.div>
                         </div>
@@ -90,8 +88,8 @@ export function WorkshopCard({
                         {/* Date Sticker */}
                         <div className="hidden lg:block absolute -top-6 -left-6 bg-[#8B6F47] text-white p-4 shadow-xl rotate-[-8deg] z-10">
                             <p className="font-oswald text-sm tracking-widest uppercase text-center leading-none">
-                                {workshop.date.split(" ")[0]}<br />
-                                <span className="text-2xl font-bold">{workshop.date.split(" ")[1]}</span>
+                                {new Date(workshop.start_date).toLocaleDateString('en-US', { month: 'short' })}<br />
+                                <span className="text-2xl font-bold">{new Date(workshop.start_date).toLocaleDateString('en-US', { year: 'numeric' })}</span>
                             </p>
                         </div>
 
@@ -144,7 +142,17 @@ export function WorkshopCard({
                                         </div>
                                         <div className="flex-1">
                                             <p className="font-oswald text-sm font-bold text-[#2A2A2A]">{review.name}</p>
-                                            <p className="text-xs text-[#8B6F47] font-oswald">{review.date}</p>
+                                            <span className="text-lg text-[#8B6F47] font-serif">
+                                                {new Date(review.date).toLocaleString('en-IN', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: true,
+                                                    timeZone: 'Asia/Kolkata'
+                                                })}
+                                            </span>
                                         </div>
                                     </div>
                                     <p className="font-serif text-sm md:text-base text-[#404040] leading-relaxed italic">
@@ -186,11 +194,10 @@ export function WorkshopCard({
 
                                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                         <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-xl border-8 border-white">
-                                            <Image
-                                                src={workshop.image}
+                                            <img
+                                                src={workshop.image_url || '/workshops/default.jpg'}
                                                 alt={workshop.title}
-                                                fill
-                                                className="object-cover"
+                                                className="w-full h-full object-cover absolute inset-0"
                                             />
                                         </div>
 
@@ -198,7 +205,7 @@ export function WorkshopCard({
                                             <h3 className="font-display text-2xl text-[#2A2A2A] mb-3 uppercase tracking-wide">{workshop.title}</h3>
                                             <p className="font-serif text-base text-[#404040] leading-relaxed mb-4">{workshop.description}</p>
                                             <div className="flex items-center gap-2 text-[#8B6F47] text-xs font-bold font-oswald">
-                                                <span>{workshop.date}</span>
+                                                <span>{new Date(workshop.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                                                 <span className="w-1 h-1 bg-current rounded-full" />
                                                 <span>{workshop.attendees} Attendees</span>
                                             </div>
@@ -230,7 +237,17 @@ export function WorkshopCard({
                                                             </div>
                                                             <div>
                                                                 <p className="font-oswald text-sm font-bold text-[#2A2A2A]">{review.name}</p>
-                                                                <p className="text-xs text-[#8B6F47] font-oswald">{review.date}</p>
+                                                                <span className="text-base text-[#8B6F47] font-serif">
+                                                        {new Date(review.date).toLocaleString('en-IN', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                            hour12: true,
+                                                            timeZone: 'Asia/Kolkata'
+                                                        })}
+                                                    </span>
                                                             </div>
                                                         </div>
                                                         <p className="font-serif text-sm md:text-base text-[#404040] leading-relaxed italic">

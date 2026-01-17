@@ -10,8 +10,8 @@ import FranchiseInquiry from "@/components/sections/FranchiseInquiry";
 // Lazy load OwnerWords component (heavy external scripts)
 const OwnerWordsClient = dynamic(() => import("@/components/sections/OwnerWords").then(mod => ({ default: mod.OwnerWords })), {
   ssr: false,
-  loading: () => <div className="w-full h-[600px] bg-[#D8CBB8] flex items-center justify-center">
-    <div className="animate-pulse text-[#8B6F47]">Loading...</div>
+  loading: () => <div className="w-full h-[600px] bg-[#faeade] flex items-center justify-center">
+    <div className="animate-pulse text-[#7f3b2d]">Loading...</div>
   </div>
 });
 

@@ -1,417 +1,418 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, User as UserIcon, Eye, EyeOff, Upload } from 'lucide-react';
+import { X, Mail, Lock, User as UserIcon, Eye, EyeOff, Calendar } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { validateEmail, validatePassword, validateName, validateAge, getPasswordStrengthColor, getPasswordStrengthWidth } from '@/lib/auth/utils';
 import Image from 'next/image';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string, password: string, name?: string, profileImage?: string) => void;
   buttonRect?: DOMRect;
 }
 
-const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'hotmail.com', 'yahoo.com'];
+type TabType = 'signin' | 'signup';
 
-export default function AuthModal({ isOpen, onClose, onLogin, buttonRect }: AuthModalProps) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resendVerificationEmail } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<TabType>('signin');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>('');
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [errors, setErrors] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
 
-  // Generate initials avatar from FIRST NAME ONLY
-  const generateInitialsAvatar = (name: string) => {
-    const firstName = name.trim().split(' ')[0]; // Get only first name
-    const initials = firstName
-      .slice(0, 2) // Take first 2 letters
-      .toUpperCase();
-    return initials;
+  // Sign in form
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInPassword, setSignInPassword] = useState('');
+
+  // Sign up form
+  const [signUpName, setSignUpName] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+
+  const resetForm = () => {
+    setSignInEmail('');
+    setSignInPassword('');
+    setSignUpName('');
+    setSignUpEmail('');
+    setSignUpPassword('');
+    setError('');
+    setSuccess('');
+    setShowPassword(false);
   };
 
-  // Handle name change and generate avatar
-  useEffect(() => {
-    if (!isLogin && formData.name && !profileImage) {
-      // Auto-generate initials if no image uploaded
-    }
-  }, [formData.name, isLogin, profileImage]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const validateName = (name: string) => {
-    if (/\d/.test(name)) {
-      return 'Name cannot contain numbers';
-    }
-    return '';
-  };
-
-  const validateEmail = (email: string) => {
-    if (!email.includes('@')) {
-      return 'Email must contain @';
-    }
-    if (email.indexOf('@') === 0) {
-      return 'Email cannot start with @';
-    }
-    const domain = email.split('@')[1];
-    if (!domain) {
-      return 'Email must have a domain after @';
-    }
-    if (!ALLOWED_EMAIL_DOMAINS.includes(domain)) {
-      return `Email must be from ${ALLOWED_EMAIL_DOMAINS.join(', ')}`;
-    }
-    return '';
-  };
-
-  const validatePassword = (password: string) => {
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    if (!/[A-Z]/.test(password)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!/[a-z]/.test(password)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!/\d/.test(password)) {
-      return 'Password must contain at least one number';
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return 'Password must contain at least one special character';
-    }
-    return '';
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Check captcha for signup
-    if (!isLogin && !captchaToken) {
-      alert('Please complete the captcha verification');
-      return;
-    }
-
-    // Validate all fields
-    const newErrors = {
-      name: !isLogin ? validateName(formData.name) : '',
-      email: validateEmail(formData.email),
-      password: validatePassword(formData.password),
-      confirmPassword: !isLogin && formData.password !== formData.confirmPassword 
-        ? 'Passwords do not match' 
-        : ''
-    };
-
-    setErrors(newErrors);
-
-    // Check if there are any errors
-    if (Object.values(newErrors).some(error => error !== '')) {
-      return;
-    }
-
-    // Login/Sign up - pass name and image for signup
-    if (isLogin) {
-      onLogin(formData.email, formData.password);
-    } else {
-      onLogin(formData.email, formData.password, formData.name, profileImage);
-    }
+  const handleClose = () => {
+    resetForm();
     onClose();
-    
-    // Reset captcha
-    if (recaptchaRef.current) {
-      recaptchaRef.current.reset();
-    }
-    setCaptchaToken(null);
   };
 
-  const handleCaptchaChange = (token: string | null) => {
-    setCaptchaToken(token);
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setError('');
+
+    const { error } = await signInWithGoogle();
+
+    if (error) {
+      setError(error.message || 'Failed to sign in with Google');
+      setIsLoading(false);
+    }
+    // If successful, page will redirect to Google OAuth flow
   };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    // Validation
+    const emailValidation = validateEmail(signInEmail);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || 'Invalid email');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!signInPassword) {
+      setError('Password is required');
+      setIsLoading(false);
+      return;
+    }
+
+    const { error } = await signInWithEmail(signInEmail, signInPassword);
+
+    if (error) {
+      setError(error.message || 'Invalid credentials');
+      setIsLoading(false);
+      return;
+    }
+
+    // Success - close modal
+    handleClose();
+  };
+
+  const handleEmailSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+
+    // Validation
+    const nameValidation = validateName(signUpName);
+    if (!nameValidation.isValid) {
+      setError(nameValidation.error || 'Invalid name');
+      setIsLoading(false);
+      return;
+    }
+
+    const emailValidation = validateEmail(signUpEmail);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || 'Invalid email');
+      setIsLoading(false);
+      return;
+    }
+
+    const passwordValidation = validatePassword(signUpPassword);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.error || 'Invalid password');
+      setIsLoading(false);
+      return;
+    }
+
+    const { error } = await signUpWithEmail(
+      signUpName,
+      signUpEmail,
+      signUpPassword
+    );
+
+    if (error) {
+      setError(error.message || 'Failed to create account');
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(false);
+
+    // Show verification message
+    setSuccess(
+      `✅ Account created! Please check your email (${signUpEmail}) for a verification link. Click the link to activate your account and sign in.`
+    );
+
+    // Keep modal open so user sees the message
+  };
+
+  const passwordStrength = validatePassword(signUpPassword).strength;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4"
-        >
+        <>
+          {/* Backdrop */}
           <motion.div
-            initial={buttonRect ? {
-              scale: 0,
-              x: buttonRect.left + buttonRect.width / 2 - window.innerWidth / 2,
-              y: buttonRect.top + buttonRect.height / 2 - window.innerHeight / 2,
-              borderRadius: '50px'
-            } : { scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, x: 0, y: 0, borderRadius: '24px' }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ 
-              type: 'spring', 
-              damping: 30, 
-              stiffness: 300,
-              borderRadius: { duration: 0.4 }
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md rounded-3xl shadow-2xl border border-[#8B6F47]/40 overflow-hidden"
-            style={{ backgroundColor: "#D8CBB8" }}
-          >
-            {/* Decorative coffee stains */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-[#8B6F47]/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#6d5638]/5 rounded-full blur-2xl" />
-            
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-[#8B6F47]/20 hover:bg-[#8B6F47]/40 transition-colors backdrop-blur-sm border border-[#8B6F47]/30"
-            >
-              <X className="w-5 h-5 text-[#262626]" />
-            </button>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+          />
 
-            {/* Header */}
-            <div className="relative px-8 pt-6 pb-4">
-              <div className="flex justify-center mb-4">
-                {!isLogin ? (
-                  // Profile Picture Upload (Sign Up)
-                  <div className="relative">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="relative w-24 h-24 rounded-full cursor-pointer overflow-hidden border-4 border-[#8B6F47]/40 hover:border-[#8B6F47]/70 transition-all shadow-xl"
-                    >
-                      {profileImage ? (
-                        <Image
-                          src={profileImage}
-                          alt="Profile"
-                          fill
-                          className="object-cover"
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={handleClose}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-[#8B6F47]/20"
+            >
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-[#8B6F47]/10 px-6 py-4 rounded-t-3xl z-10">
+                <button
+                  onClick={handleClose}
+                  className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+
+                <h2 className="text-2xl font-bold text-[#262626] text-center mb-4">
+                  Welcome to Rabuste
+                </h2>
+
+                {/* Tabs */}
+                <div className="flex bg-gray-100 rounded-xl p-1">
+                  <button
+                    onClick={() => {
+                      setActiveTab('signin');
+                      setError('');
+                      setSuccess('');
+                    }}
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${activeTab === 'signin'
+                      ? 'bg-white text-[#8B6F47] shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('signup');
+                      setError('');
+                      setSuccess('');
+                    }}
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${activeTab === 'signup'
+                      ? 'bg-white text-[#8B6F47] shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 py-6">
+                {/* Google Sign In Button */}
+                <button
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-[#8B6F47] rounded-xl py-3 px-4 font-medium text-gray-700 hover:text-[#8B6F47] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  Continue with Google
+                </button>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-gray-500">OR</span>
+                  </div>
+                </div>
+
+                {/* Error/Success Messages */}
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                {success && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-600">
+                    {success}
+                  </div>
+                )}
+
+                {/* Sign In Form */}
+                {activeTab === 'signin' && (
+                  <form onSubmit={handleEmailSignIn} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="email"
+                          value={signInEmail}
+                          onChange={(e) => setSignInEmail(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#8B6F47] focus:outline-none transition-colors text-gray-900"
+                          placeholder="your@email.com"
+                          required
                         />
-                      ) : formData.name.trim() ? (
-                        <div className="w-full h-full bg-gradient-to-br from-[#8B6F47] to-[#6d5638] flex items-center justify-center">
-                          <span className="text-white text-3xl font-bold font-display">
-                            {generateInitialsAvatar(formData.name)}
-                          </span>
-                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={signInPassword}
+                          onChange={(e) => setSignInPassword(e.target.value)}
+                          className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-[#8B6F47] focus:outline-none transition-colors text-gray-900"
+                          placeholder="••••••••"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full bg-gradient-to-r from-[#8B6F47] to-[#6d5638] hover:from-[#6d5638] hover:to-[#8B6F47] text-white font-bold py-3 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-[#8B6F47]/30 to-[#6d5638]/30 flex items-center justify-center">
-                          <UserIcon className="w-12 h-12 text-[#8B6F47]/50" />
+                        'Sign In'
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {/* Sign Up Form */}
+                {activeTab === 'signup' && (
+                  <form onSubmit={handleEmailSignUp} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          value={signUpName}
+                          onChange={(e) => setSignUpName(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#8B6F47] focus:outline-none transition-colors text-gray-900"
+                          placeholder="John Doe"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="email"
+                          value={signUpEmail}
+                          onChange={(e) => setSignUpEmail(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#8B6F47] focus:outline-none transition-colors text-gray-900"
+                          placeholder="your@email.com"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={signUpPassword}
+                          onChange={(e) => setSignUpPassword(e.target.value)}
+                          className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-[#8B6F47] focus:outline-none transition-colors text-gray-900"
+                          placeholder="••••••••"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+
+                      {/* Password Strength Indicator */}
+                      {signUpPassword && (
+                        <div className="mt-2">
+                          <div className="flex gap-1 mb-1">
+                            <div className={`h-1 flex-1 rounded-full transition-all ${getPasswordStrengthColor(passwordStrength)} ${getPasswordStrengthWidth(passwordStrength)}`}></div>
+                            <div className={`h-1 flex-1 rounded-full ${passwordStrength === 'medium' || passwordStrength === 'strong' ? getPasswordStrengthColor(passwordStrength) : 'bg-gray-200'}`}></div>
+                            <div className={`h-1 flex-1 rounded-full ${passwordStrength === 'strong' ? getPasswordStrengthColor(passwordStrength) : 'bg-gray-200'}`}></div>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {passwordStrength === 'weak' && 'Weak password'}
+                            {passwordStrength === 'medium' && 'Medium strength'}
+                            {passwordStrength === 'strong' && 'Strong password'}
+                          </p>
                         </div>
                       )}
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        At least 8 characters with uppercase, lowercase, and numbers
+                      </p>
                     </div>
-                    {/* Upload Badge - Always Visible */}
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-[#8B6F47] to-[#6d5638] rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-[#D8CBB8] hover:scale-110 transition-transform"
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full bg-gradient-to-r from-[#8B6F47] to-[#6d5638] hover:from-[#6d5638] hover:to-[#8B6F47] text-white font-bold py-3 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Upload className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                ) : (
-                  // Login Icon
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8B6F47] to-[#6d5638] flex items-center justify-center shadow-2xl border-4 border-[#8B6F47]/20">
-                    <UserIcon className="w-10 h-10 text-white" />
-                  </div>
+                      {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                      ) : (
+                        'Create Account'
+                      )}
+                    </button>
+
+                    <p className="text-xs text-center text-gray-500">
+                      By signing up, you agree to our Terms and Privacy Policy
+                    </p>
+                  </form>
                 )}
               </div>
-              <h2 className="text-3xl font-display font-bold text-center mb-1" style={{ color: "#262626" }}>
-                {isLogin ? 'Welcome Back' : 'Join Rabuste'}
-              </h2>
-              <p className="text-center text-[#2C2C2C] font-serif text-sm">
-                {isLogin ? 'Sign in to your account' : 'Create your coffee journey'}
-              </p>
             </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="px-8 pb-6 space-y-3">
-              {/* Name field (Sign Up only) */}
-              {!isLogin && (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium font-serif" style={{ color: "#262626" }}>Full Name</label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B6F47]/60" />
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData({ ...formData, name: value });
-                        // Real-time validation
-                        setErrors({ ...errors, name: validateName(value) });
-                      }}
-                      className="w-full pl-11 pr-4 py-2.5 bg-white/70 border border-[#8B6F47]/30 rounded-xl text-[#262626] placeholder:text-[#8B6F47]/40 focus:outline-none focus:ring-2 focus:ring-[#8B6F47]/50 focus:border-[#8B6F47]/50 transition-all"
-                      placeholder="Enter your full name"
-                      required={!isLogin}
-                    />
-                  </div>
-                  {errors.name && (
-                    <p className="text-red-600 text-xs mt-0.5 font-sans font-semibold">{errors.name}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Email */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium font-serif" style={{ color: "#262626" }}>Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B6F47]/60" />
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setFormData({ ...formData, email: value });
-                      // Real-time validation
-                      setErrors({ ...errors, email: validateEmail(value) });
-                    }}
-                    className="w-full pl-11 pr-4 py-2.5 bg-white/70 border border-[#8B6F47]/30 rounded-xl text-[#262626] placeholder:text-[#8B6F47]/40 focus:outline-none focus:ring-2 focus:ring-[#8B6F47]/50 focus:border-[#8B6F47]/50 transition-all"
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-red-600 text-xs mt-0.5 font-sans font-semibold">{errors.email}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium font-serif" style={{ color: "#262626" }}>Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B6F47]/60" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setFormData({ ...formData, password: value });
-                      // Real-time validation
-                      setErrors({ ...errors, password: validatePassword(value) });
-                    }}
-                    className="w-full pl-11 pr-12 py-2.5 bg-white/70 border border-[#8B6F47]/30 rounded-xl text-[#262626] placeholder:text-[#8B6F47]/40 focus:outline-none focus:ring-2 focus:ring-[#8B6F47]/50 focus:border-[#8B6F47]/50 transition-all"
-                    placeholder="Enter your password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B6F47]/60 hover:text-[#8B6F47] transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-red-600 text-xs mt-0.5 font-sans font-semibold">{errors.password}</p>
-                )}
-              </div>
-
-              {/* Confirm Password (Sign Up only) */}
-              {!isLogin && (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium font-serif" style={{ color: "#262626" }}>Confirm Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B6F47]/60" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.confirmPassword}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData({ ...formData, confirmPassword: value });
-                        // Real-time validation
-                        setErrors({ 
-                          ...errors, 
-                          confirmPassword: formData.password !== value ? 'Passwords do not match' : ''
-                        });
-                      }}
-                      className="w-full pl-11 pr-4 py-2.5 bg-white/70 border border-[#8B6F47]/30 rounded-xl text-[#262626] placeholder:text-[#8B6F47]/40 focus:outline-none focus:ring-2 focus:ring-[#8B6F47]/50 focus:border-[#8B6F47]/50 transition-all"
-                      placeholder="Confirm your password"
-                      required={!isLogin}
-                    />
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="text-red-600 text-xs mt-0.5 font-sans font-semibold">{errors.confirmPassword}</p>
-                  )}
-                </div>
-              )}
-
-              {/* reCAPTCHA (Sign Up only) */}
-              {!isLogin && (
-                <div className="flex justify-center py-2">
-                  <div style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}>
-                    <ReCAPTCHA
-                      ref={recaptchaRef}
-                      sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
-                      onChange={handleCaptchaChange}
-                      theme="light"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={!isLogin && !captchaToken}
-                className={`w-full py-3 mt-4 bg-gradient-to-r from-[#8B6F47] to-[#6d5638] hover:from-[#6d5638] hover:to-[#8B6F47] text-white font-bold rounded-xl shadow-lg shadow-[#8B6F47]/30 transition-all duration-300 font-display text-lg ${
-                  !isLogin && !captchaToken ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isLogin ? 'Sign In' : 'Create Account'}
-              </motion.button>
-
-              {/* Toggle Login/Signup */}
-              <div className="text-center pt-3 border-t border-[#8B6F47]/20">
-                <p className="text-[#2C2C2C] text-sm font-serif">
-                  {isLogin ? "Don't have an account?" : 'Already have an account?'}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsLogin(!isLogin);
-                      setErrors({ name: '', email: '', password: '', confirmPassword: '' });
-                      setCaptchaToken(null);
-                      if (recaptchaRef.current) {
-                        recaptchaRef.current.reset();
-                      }
-                    }}
-                    className="ml-2 text-[#8B6F47] hover:text-[#6d5638] font-semibold transition-colors font-display"
-                  >
-                    {isLogin ? 'Sign Up' : 'Sign In'}
-                  </button>
-                </p>
-              </div>
-            </form>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
