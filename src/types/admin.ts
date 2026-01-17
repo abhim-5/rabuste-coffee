@@ -54,12 +54,18 @@ export interface MenuItem {
   description: string | null;
   price: number;
   original_price: number | null;
+  discount_price?: number | null;
+  crossed_price?: number | null;
   category: string;
   image_url: string | null;
   available: boolean;
   is_deal_of_day: boolean;
+  deal_expiry?: string | null;
   rating_avg: number | null;
   rating_count: number;
+  // Aliases for compatibility
+  rating?: number;
+  reviewCount?: number;
   total_sales: number;
   created_at: string;
   updated_at: string;

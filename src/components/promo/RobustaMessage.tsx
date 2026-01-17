@@ -10,7 +10,7 @@ import "splitting/dist/splitting-cells.css";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function RobustaMessage() {
-  const sectionRef = useRef<HTMLSectionElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function RobustaMessage() {
             trigger: ".first-message",
             start: "top bottom", // Starts immediately when entering viewport
             end: "bottom center",
-            scrub: 1, 
+            scrub: 1,
           },
         });
       }
@@ -48,7 +48,7 @@ export default function RobustaMessage() {
             trigger: ".second-message",
             start: "top bottom",
             end: "bottom center",
-            scrub: 1, 
+            scrub: 1,
           },
         });
       }
@@ -59,7 +59,7 @@ export default function RobustaMessage() {
           trigger: ".msg-text-scroll",
           start: "top bottom", // Starts immediately when entering viewport
           end: "top 40%",
-          scrub: 1, 
+          scrub: 1,
         },
       });
 
@@ -74,25 +74,25 @@ export default function RobustaMessage() {
   }, []);
 
   return (
-    <section 
-      ref={sectionRef} 
+    <section
+      ref={sectionRef}
       className="message-content relative z-20 h-auto w-full overflow-hidden bg-[#7f3b2d] text-[#faeade] py-8 md:py-32 flex flex-col items-center justify-center"
     >
       <div ref={wrapperRef} className="container mx-auto px-2 md:px-4 w-full flex flex-col items-center justify-center relative">
-        
+
         {/* Main Title Group */}
         <div className="flex flex-col items-center justify-center text-center font-['Antonio'] font-bold uppercase leading-[9vw] tracking-[-.35vw] relative w-full">
-          
+
           {/* Top Text */}
-          <h1 
-            data-splitting 
-            className="first-message text-[11.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-6xl 2xl:max-w-7xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]" 
+          <h1
+            data-splitting
+            className="first-message text-[11.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-6xl 2xl:max-w-7xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]"
           >
-           EXPERIENCE SURAT'S FIRST & ONLY
+            EXPERIENCE SURAT'S FIRST & ONLY
           </h1>
 
           {/* Center Reveal Box - Relative with Negative Margins for Overlap */}
-          <div 
+          <div
             className="msg-text-scroll relative z-20 rotate-[3deg] border-[.5vw] border-[#7f3b2d] shadow-xl -my-[1vw] md:-my-4"
             style={{ clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }} // Initially closed
           >
@@ -104,8 +104,8 @@ export default function RobustaMessage() {
           </div>
 
           {/* Bottom Text */}
-          <h1 
-            data-splitting 
+          <h1
+            data-splitting
             className="second-message text-[11.5vw] md:text-[6.5rem] 2xl:text-[8.5rem] w-full max-w-none md:max-w-6xl 2xl:max-w-7xl text-center text-[#faeade10] z-0 px-1 md:px-0 leading-[1.1]"
           >
             ROBUSTA COFFEE THAT WAKES YOU UP INSTANTLY

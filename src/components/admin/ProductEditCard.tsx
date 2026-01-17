@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import { Edit2, Save, X, Upload, Tag, Eye, EyeOff, Calendar, AlertCircle, Trash2, Star } from 'lucide-react';
-import { MenuItem } from '@/types/menu';
+import { MenuItem } from '@/types/admin';
 
 interface ProductEditCardProps {
     product: MenuItem;
     onUpdate: (productId: string, updates: Partial<MenuItem>) => Promise<any>;
     onRefresh: () => void;
-    onDelete?: (productId: string) => Promise<void>; 
+    onDelete?: (productId: string) => Promise<void>;
 }
 
 export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: ProductEditCardProps) {
@@ -46,7 +46,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
         // Let's rely on formData for initialization to be safe across edits
         const currentSelling = formData.discount_price || formData.price;
         const currentOriginal = formData.crossed_price || (formData.discount_price ? formData.price : currentSelling);
-        
+
         let initialDiscount = 0;
         if (currentOriginal > currentSelling) {
             initialDiscount = Math.round(((currentOriginal - currentSelling) / currentOriginal) * 100);
@@ -85,7 +85,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ filePath: product.image_url })
                     });
-                    
+
                     if (!deleteResponse.ok) {
                         console.warn('Failed to delete old image, continuing with upload');
                     }
@@ -117,7 +117,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
             // Step 4: Auto-save the new image URL
             await onUpdate(product.id, { image_url: data.filePath });
             onRefresh();
-            
+
             alert('Image uploaded successfully!');
         } catch (error) {
             console.error('Image upload error:', error);
@@ -132,7 +132,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
         try {
             // Map smart pricing back to DB columns
             let updates = { ...formData }; // Clone
-            
+
             // Apply pricing logic finalization
             if (pricing.originalPrice > pricing.sellingPrice) {
                 // Determine it's a deal
@@ -173,19 +173,19 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
 
     const displayPrice = formData.discount_price || formData.price;
     const showCrossedPrice = formData.discount_price ? (formData.crossed_price || formData.price) : formData.crossed_price;
-    const discountPercent = (displayPrice && showCrossedPrice && showCrossedPrice > displayPrice) 
-        ? Math.round(((showCrossedPrice - displayPrice) / showCrossedPrice) * 100) 
+    const discountPercent = (displayPrice && showCrossedPrice && showCrossedPrice > displayPrice)
+        ? Math.round(((showCrossedPrice - displayPrice) / showCrossedPrice) * 100)
         : 0;
 
     // Generate correct image URL
     const getImageUrl = (imageUrl: string | undefined) => {
         if (!imageUrl) return null;
-        
+
         // Check if it's a Supabase Storage path
         if (imageUrl.startsWith('product-images/')) {
             return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${imageUrl}`;
         }
-        
+
         // Legacy local path
         return `/menu-images/${imageUrl}`;
     };
@@ -194,7 +194,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
     const toggleAvailable = async () => {
         const newValue = !optimisticAvailable;
         setOptimisticAvailable(newValue); // Instant update
-        
+
         setIsToggling(true);
         try {
             await onUpdate(product.id, { available: newValue });
@@ -234,9 +234,8 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
     };
 
     return (
-        <div className={`bg-white rounded-xl border transition ${
-            isEditing ? 'border-[#8B6F47] shadow-lg' : 'border-gray-100 shadow-sm hover:shadow-md'
-        }`}>
+        <div className={`bg-white rounded-xl border transition ${isEditing ? 'border-[#8B6F47] shadow-lg' : 'border-gray-100 shadow-sm hover:shadow-md'
+            }`}>
             {/* ... image section ... */}
             <div className="relative aspect-square">
                 {formData.image_url ? (
@@ -261,7 +260,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                 {/* Out of Stock Overlay (Center/Visble) */}
                 {!optimisticAvailable && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-t-xl z-10 backdrop-blur-[1px]">
-                         <div className="bg-white/90 text-red-600 px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider flex items-center gap-2">
+                        <div className="bg-white/90 text-red-600 px-4 py-2 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider flex items-center gap-2">
                             <AlertCircle size={16} />
                             Out of Stock
                         </div>
@@ -279,7 +278,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                     </button>
                 ) : (
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-20">
-                        <label 
+                        <label
                             htmlFor={`image-upload-${product.id}`}
                             className="cursor-pointer bg-white/90 hover:bg-white p-3 rounded-full transition flex items-center gap-2"
                         >
@@ -313,13 +312,13 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                     // View Mode
                     <>
                         <h3 className="font-bold text-lg text-gray-900 mb-1">{product.name}</h3>
-                        
-                         {/* Rating Display */}
-                         <div className="flex items-center gap-1 mb-2">
-                            {product.reviewCount > 0 ? (
+
+                        {/* Rating Display */}
+                        <div className="flex items-center gap-1 mb-2">
+                            {(product.reviewCount || 0) > 0 ? (
                                 <>
                                     <Star size={14} className="fill-amber-400 text-amber-400" />
-                                    <span className="text-sm font-bold text-gray-700">{product.rating.toFixed(1)}</span>
+                                    <span className="text-sm font-bold text-gray-700">{(product.rating || 0).toFixed(1)}</span>
                                     <span className="text-xs text-gray-500">({product.reviewCount} reviews)</span>
                                 </>
                             ) : (
@@ -329,7 +328,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                             )}
                         </div>
                         <p className="text-sm text-gray-600 mb-3 h-10 line-clamp-2">{product.description}</p>
-                        
+
                         {/* Pricing */}
                         <div className="flex items-baseline gap-2 mb-3">
                             <span className="text-2xl font-bold text-[#8B6F47]">
@@ -347,11 +346,10 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                             <button
                                 onClick={toggleAvailable}
                                 disabled={isToggling}
-                                className={`flex-1 h-10 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${
-                                    optimisticAvailable
-                                        ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
-                                        : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
-                                }`}
+                                className={`flex-1 h-10 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${optimisticAvailable
+                                    ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
+                                    : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+                                    }`}
                             >
                                 {optimisticAvailable ? (
                                     <>
@@ -365,7 +363,7 @@ export function ProductEditCard({ product, onUpdate, onRefresh, onDelete }: Prod
                                     </>
                                 )}
                             </button>
-                            
+
                             {/* Delete Button */}
                             {onDelete && (
                                 <button

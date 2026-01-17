@@ -220,7 +220,7 @@ export default function ProfilePage() {
 
     const userName = profile.full_name || user?.email?.split('@')[0] || 'User';
     const userEmail = profile.email || user?.email || '';
-    const profileImage = profile.avatar_url;
+    const profileImage = profile.avatar_url || undefined;
 
     // Calculate member duration
     const memberSince = profile.created_at ? new Date(profile.created_at) : new Date();
@@ -247,15 +247,21 @@ export default function ProfilePage() {
         return firstName.slice(0, 2).toUpperCase();
     };
 
-    const sidebarItems = [
-        { id: "orders", label: "My Orders", icon: ShoppingBag, count: stats?.ordersCount || 0 },
-        { id: "workshops", label: "Workshops", icon: GraduationCap, count: stats?.workshopsCount || 0 },
-        { id: "workshop-requests", label: "Workshop Requests", icon: GraduationCap },
-        { id: "art", label: "Art Collection", icon: Palette, count: stats?.artPurchasedCount || 0 },
-        { id: "coupons", label: "My Coupons", icon: Gift },
-        { id: "franchise-requests", label: "Franchise Requests", icon: Building2 },
-        { id: "reviews", label: "Cafe Reviews", icon: Star },
-    ];
+    const sidebarItems: Array<{
+        id: string;
+        label: string;
+        icon: any;
+        count?: number;
+        href?: string;
+    }> = [
+            { id: "orders", label: "My Orders", icon: ShoppingBag, count: stats?.ordersCount || 0 },
+            { id: "workshops", label: "Workshops", icon: GraduationCap, count: stats?.workshopsCount || 0 },
+            { id: "workshop-requests", label: "Workshop Requests", icon: GraduationCap },
+            { id: "art", label: "Art Collection", icon: Palette, count: stats?.artPurchasedCount || 0 },
+            { id: "coupons", label: "My Coupons", icon: Gift },
+            { id: "franchise-requests", label: "Franchise Requests", icon: Building2 },
+            { id: "reviews", label: "Cafe Reviews", icon: Star },
+        ];
 
     const quickStats = [
         { label: "Total Orders", value: totalOrders, icon: ShoppingBag, color: "amber" },
@@ -286,10 +292,11 @@ export default function ProfilePage() {
                 <div className="lg:hidden pt-16 pb-20">
                     <ProfileHeader
                         user={{
+                            id: user?.id || 'guest',
                             name: userName,
                             email: userEmail,
                             avatar: profileImage,
-                            memberSince: memberDuration,
+                            memberSince: memberSince,
                             points: 0, // Legacy field, not used
                             totalOrders: totalOrders,
                             totalSpent: totalSpent,
@@ -297,9 +304,9 @@ export default function ProfilePage() {
                         isEditing={isEditing}
                         setIsEditing={setIsEditing}
                     />
-                    <OrderHistory orders={orders || []} totalSpent={ordersTotal} onReorder={handleReorder} />
-                    <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} />
-                    <ArtCollection artPieces={artPieces || []} />
+                    <OrderHistory orders={(orders as any) || []} totalSpent={ordersTotal} onReorder={handleReorder} />
+                    <WorkshopsSection workshops={(workshops as any) || []} totalSpent={workshopsTotal} />
+                    <ArtCollection artPieces={(artPieces as any) || []} />
                     <div className="container mx-auto px-4 pb-8">
                         <h2 className="text-2xl font-bold text-[#292524] mb-6">Cafe Reviews</h2>
                         <CafeReviewsSection />
@@ -533,16 +540,16 @@ export default function ProfilePage() {
                                     {/* Section Content */}
                                     <div className="p-8">
                                         {activeSection === "orders" && (
-                                            <OrderHistory orders={orders || []} totalSpent={ordersTotal} isDesktop onReorder={handleReorder} />
+                                            <OrderHistory orders={(orders as any) || []} totalSpent={ordersTotal} isDesktop onReorder={handleReorder} />
                                         )}
                                         {activeSection === "workshops" && (
-                                            <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} isDesktop />
+                                            <WorkshopsSection workshops={(workshops as any) || []} totalSpent={workshopsTotal} isDesktop />
                                         )}
                                         {activeSection === "art" && (
-                                            <ArtCollection artPieces={artPieces || []} isDesktop />
+                                            <ArtCollection artPieces={(artPieces as any) || []} isDesktop />
                                         )}
-                                        {activeSection === "reviews" && (
-                                            <CafeReviewsSection />
+                                        {activeSection === "coupons" && (
+                                            <MyCouponsSection />
                                         )}
                                         {activeSection === "franchise-requests" && (
                                             <FranchiseRequestsSection />

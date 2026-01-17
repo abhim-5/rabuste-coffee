@@ -40,12 +40,24 @@ interface WorkshopRequest {
 
 interface Registration {
     id: string;
-    name: string;
-    email: string;
-    phone: string;
-    booking_number: string;
+    user_id: string;
+    workshop_id: string;
+    name?: string;
+    email?: string;
+    phone?: string;
     status: string;
+    payment_status?: string;
+    booking_number: string;
+    total_amount: number;
     created_at: string;
+    profiles?: {
+        full_name: string;
+        email: string;
+    };
+    workshops?: {
+        title: string;
+        date: string;
+    };
 }
 
 export default function WorkshopsPage() {
@@ -55,7 +67,7 @@ export default function WorkshopsPage() {
     const [loading, setLoading] = useState(true);
     const [requestsLoading, setRequestsLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
-    
+
     // Modal states
     const [showRegistrationsModal, setShowRegistrationsModal] = useState(false);
     const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(null);
@@ -63,18 +75,18 @@ export default function WorkshopsPage() {
     const [registrationsLoading, setRegistrationsLoading] = useState(false);
     const [reviews, setReviews] = useState<any[]>([]);
     const [reviewsLoading, setReviewsLoading] = useState(false);
-    
+
     // Edit modal states
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingWorkshop, setEditingWorkshop] = useState<any>(null);
-    
+
     // Delete confirmation
     const [workshopToDelete, setWorkshopToDelete] = useState<string | null>(null);
-    
+
     // Approval with workshop selection
     const [approvingRequest, setApprovingRequest] = useState<WorkshopRequest | null>(null);
     const [selectedWorkshopForApproval, setSelectedWorkshopForApproval] = useState<string>('');
-    
+
     // Create new workshop
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newWorkshop, setNewWorkshop] = useState<any>({
@@ -151,9 +163,9 @@ export default function WorkshopsPage() {
                     max_spots: workshop.max_spots,
                     available_spots: workshop.available_spots,
                     image_url: workshop.image_url ? (
-                        workshop.image_url.startsWith('http') 
-                        ? workshop.image_url 
-                        : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${workshop.image_url}`
+                        workshop.image_url.startsWith('http')
+                            ? workshop.image_url
+                            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${workshop.image_url}`
                     ) : null,
                     capacity,
                     bookings,
@@ -261,23 +273,23 @@ export default function WorkshopsPage() {
         e.preventDefault();
         try {
             const supabase = createClient();
-            
+
             let imageUrl = editingWorkshop.image_url || '';
             if (selectedImageForEdit) {
                 // Upload new image first
                 const uploadedUrl = await uploadImageToSupabase(selectedImageForEdit);
-                
+
                 if (uploadedUrl) {
                     // Update the image URL to the new one
                     imageUrl = uploadedUrl;
-                    
+
                     // Only delete the old image if the new one was uploaded successfully
                     if (editingWorkshop.image_url) {
                         await deleteImageFromSupabase(editingWorkshop.image_url);
                     }
                 }
             }
-            
+
             const { error } = await supabase
                 .from('workshops')
                 .update({
@@ -295,7 +307,7 @@ export default function WorkshopsPage() {
                 .eq('id', editingWorkshop.workshop_id);
 
             if (error) throw error;
-            
+
             setShowEditModal(false);
             setEditingWorkshop(null);
             setSelectedImageForEdit(null);
@@ -315,7 +327,7 @@ export default function WorkshopsPage() {
 
         try {
             const supabase = createClient();
-            
+
             // Check if workshop has registrations
             const { data: regs } = await supabase
                 .from('workshop_registrations')
@@ -334,7 +346,7 @@ export default function WorkshopsPage() {
                 .eq('id', workshopId);
 
             if (error) throw error;
-            
+
             setWorkshops(prev => prev.filter(w => w.workshop_id !== workshopId));
             alert('Workshop deleted successfully!');
         } catch (error) {
@@ -356,7 +368,7 @@ export default function WorkshopsPage() {
 
         try {
             const supabase = createClient();
-            
+
             // Get selected workshop
             const workshop = workshops.find(w => w.workshop_id === selectedWorkshopForApproval);
             if (!workshop) {
@@ -411,7 +423,7 @@ export default function WorkshopsPage() {
     const handleReject = async (id: string) => {
         try {
             const supabase = createClient();
-            
+
             // Optimistic update
             setWorkshopRequests(prev => prev.filter(req => req.id !== id));
 
@@ -431,19 +443,19 @@ export default function WorkshopsPage() {
 
     const handleToggleRegistrationStatus = async (registrationId: string, currentStatus: string) => {
         console.log('Toggle status clicked:', { registrationId, currentStatus });
-        
+
         try {
             const supabase = createClient();
-            
+
             // Toggle between confirmed and pending
             const newStatus = currentStatus === 'confirmed' ? 'pending' : 'confirmed';
             console.log('Toggling to:', newStatus);
-            
+
             // Optimistically update UI
-            setRegistrations(prev => 
-                prev.map(reg => 
-                    reg.id === registrationId 
-                        ? { ...reg, status: newStatus } 
+            setRegistrations(prev =>
+                prev.map(reg =>
+                    reg.id === registrationId
+                        ? { ...reg, status: newStatus }
                         : reg
                 )
             );
@@ -457,9 +469,9 @@ export default function WorkshopsPage() {
                 console.error('Supabase update error:', error);
                 throw error;
             }
-            
+
             console.log('Status updated successfully');
-            
+
             // Refresh to ensure consistency
             if (selectedWorkshopId) {
                 fetchRegistrations(selectedWorkshopId);
@@ -494,18 +506,18 @@ export default function WorkshopsPage() {
     const deleteImageFromSupabase = async (imageUrl: string) => {
         try {
             if (!imageUrl) return;
-            
+
             // Skip deletion for default or placeholder images if needed
             if (imageUrl.includes('default') || imageUrl.startsWith('/')) {
-                 // Adjust this check based on your actual default image naming convention
-                 // For now, checking if it is a local path or explicit default
+                // Adjust this check based on your actual default image naming convention
+                // For now, checking if it is a local path or explicit default
             }
 
             const supabase = createClient();
-            
+
             // Extract filename - handle both full URLs and plain filenames
             let fileName: string;
-            
+
             if (imageUrl.startsWith('http')) {
                 try {
                     const urlObj = new URL(imageUrl);
@@ -526,9 +538,9 @@ export default function WorkshopsPage() {
 
             // Decode filename to handle encoded characters like spaces (%20)
             fileName = decodeURIComponent(fileName);
-            
+
             console.log('Deleting old image:', fileName);
-            
+
             const { error } = await supabase.storage.from('workshops').remove([fileName]);
             if (error) {
                 console.error('Error deleting old image:', error);
@@ -546,18 +558,18 @@ export default function WorkshopsPage() {
             const supabase = createClient();
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-            
+
             console.log('Uploading file:', fileName, 'to bucket: workshops');
-            
+
             const { data, error } = await supabase.storage.from('workshops').upload(fileName, file);
-            
+
             if (error) {
                 console.error('Storage upload error:', error);
                 throw error;
             }
-            
+
             console.log('Upload successful, data:', data);
-            
+
             // Return only the filename, not the full URL
             console.log('Returning filename:', fileName);
             return fileName;
@@ -574,7 +586,7 @@ export default function WorkshopsPage() {
         e.preventDefault();
         try {
             const supabase = createClient();
-            
+
             let imageUrl = '';
             if (selectedImageForCreate) {
                 console.log('Uploading image...');
@@ -582,9 +594,9 @@ export default function WorkshopsPage() {
                 console.log('Uploaded URL:', uploadedUrl);
                 if (uploadedUrl) imageUrl = uploadedUrl;
             }
-            
+
             console.log('Creating workshop with image_url:', imageUrl);
-            
+
             const { error } = await supabase
                 .from('workshops')
                 .insert({
@@ -604,7 +616,7 @@ export default function WorkshopsPage() {
                 });
 
             if (error) throw error;
-            
+
             setShowCreateModal(false);
             setNewWorkshop({
                 title: '',
@@ -675,8 +687,8 @@ export default function WorkshopsPage() {
             sortable: true,
             render: (row: WorkshopData) => (
                 <span className={`font-medium ${row.booking_rate >= 80 ? 'text-green-600' :
-                        row.booking_rate >= 50 ? 'text-yellow-600' :
-                            'text-red-600'
+                    row.booking_rate >= 50 ? 'text-yellow-600' :
+                        'text-red-600'
                     }`}>
                     {row.booking_rate.toFixed(0)}%
                 </span>
@@ -927,16 +939,15 @@ export default function WorkshopsPage() {
                                                             <p className="text-xs text-gray-600">{reg.phone}</p>
                                                             <p className="text-[10px] text-gray-400 mt-1 font-mono">{reg.booking_number}</p>
                                                         </div>
-                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                                            reg.payment_status === 'paid' 
-                                                            ? 'bg-green-100 text-green-700' 
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${reg.payment_status === 'paid'
+                                                            ? 'bg-green-100 text-green-700'
                                                             : reg.payment_status === 'failed'
-                                                            ? 'bg-red-100 text-red-700'
-                                                            : 'bg-yellow-100 text-yellow-700'
-                                                        }`}>
-                                                            {reg.payment_status === 'paid' ? 'Paid' : 
-                                                             reg.payment_status === 'failed' ? 'Failed' : 
-                                                             'Pending'}
+                                                                ? 'bg-red-100 text-red-700'
+                                                                : 'bg-yellow-100 text-yellow-700'
+                                                            }`}>
+                                                            {reg.payment_status === 'paid' ? 'Paid' :
+                                                                reg.payment_status === 'failed' ? 'Failed' :
+                                                                    'Pending'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -970,9 +981,9 @@ export default function WorkshopsPage() {
                                                     <div className="flex items-start gap-3">
                                                         <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                                                             {review.profiles?.avatar_url ? (
-                                                                <img 
-                                                                    src={review.profiles.avatar_url} 
-                                                                    alt={review.profiles.full_name} 
+                                                                <img
+                                                                    src={review.profiles.avatar_url}
+                                                                    alt={review.profiles.full_name}
                                                                     className="w-full h-full object-cover"
                                                                 />
                                                             ) : (
@@ -1143,22 +1154,22 @@ export default function WorkshopsPage() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Workshop Image</label>
                                     <div className="space-y-2">
                                         {editingWorkshop?.image_url && !imagePreviewForEdit && (
-                                            <div 
+                                            <div
                                                 className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 cursor-zoom-in group"
                                                 onClick={() => setEnlargedImage(
-                                                    editingWorkshop.image_url.startsWith('http') 
-                                                        ? editingWorkshop.image_url 
+                                                    editingWorkshop.image_url.startsWith('http')
+                                                        ? editingWorkshop.image_url
                                                         : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${editingWorkshop.image_url}`
                                                 )}
                                             >
-                                                <img 
+                                                <img
                                                     src={
-                                                        editingWorkshop.image_url.startsWith('http') 
-                                                            ? editingWorkshop.image_url 
+                                                        editingWorkshop.image_url.startsWith('http')
+                                                            ? editingWorkshop.image_url
                                                             : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshops/${editingWorkshop.image_url}`
-                                                    } 
-                                                    alt="Current" 
-                                                    className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                                                    }
+                                                    alt="Current"
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                                                     <Eye className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" size={32} />
@@ -1416,17 +1427,17 @@ export default function WorkshopsPage() {
             )}
             {/* Enlarged Image Modal */}
             {enlargedImage && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 cursor-zoom-out"
                     onClick={() => setEnlargedImage(null)}
                 >
                     <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
-                        <img 
-                            src={enlargedImage} 
-                            alt="Enlarged view" 
+                        <img
+                            src={enlargedImage}
+                            alt="Enlarged view"
                             className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         />
-                        <button 
+                        <button
                             className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition"
                             onClick={() => setEnlargedImage(null)}
                         >

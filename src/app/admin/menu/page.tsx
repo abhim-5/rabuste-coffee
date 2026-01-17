@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { Search, Plus, SlidersHorizontal, Coffee } from 'lucide-react';
 import { ProductEditCard } from '@/components/admin/ProductEditCard';
 import { AddProductModal } from '@/components/admin/AddProductModal';
-import { MenuItem, MenuCategory } from '@/types/menu';
+import { MenuItem } from '@/types/admin';
+import { MenuCategory } from '@/types/menu';
 import { VoiceSearch } from '@/components/menu/VoiceSearch';
 import { analyticsService } from '@/lib/search/analytics.service';
 
@@ -23,7 +24,7 @@ const categoryFilters: { id: MenuCategory | "all"; label: string }[] = [
 export default function MenuManagementPage() {
     const [products, setProducts] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Search & Filter State
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'all'>('all');
@@ -40,7 +41,7 @@ export default function MenuManagementPage() {
     const [showHistory, setShowHistory] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    
+
     // Services
     const [searchService, setSearchService] = useState<any>(null);
     const [autocompleteService, setAutocompleteService] = useState<any>(null);
@@ -60,11 +61,11 @@ export default function MenuManagementPage() {
             setAutocompleteService(module.autocompleteService);
             // Initialize with menu items
             if (products.length > 0) {
-                module.searchService.initialize(products);
-                module.autocompleteService.buildSuggestions(products);
+                module.searchService.initialize(products as any);
+                module.autocompleteService.buildSuggestions(products as any);
             }
         });
-        
+
         // Load history
         setSearchHistory(analyticsService.getHistory());
     }, [products]);
@@ -72,7 +73,7 @@ export default function MenuManagementPage() {
     // Handle Voice
     const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
         setSearchQuery(transcript);
-        
+
         if (isFinal) {
             setIsListening(false);
             // Trigger search immediately
@@ -82,14 +83,14 @@ export default function MenuManagementPage() {
             }
         }
     };
-    
+
     // Handle Search Submit
     const handleSearchSubmit = () => {
         if (searchQuery.trim()) {
             setShowSuggestions(false);
             setShowHistory(false);
             // We use filteredProducts length below, for now just pass 0 or calculate if needed
-            analyticsService.trackSearch(searchQuery, 0); 
+            analyticsService.trackSearch(searchQuery, 0);
             setSearchHistory(analyticsService.getHistory());
         }
     };
@@ -159,13 +160,13 @@ export default function MenuManagementPage() {
             const response = await fetch(`/api/products?id=${productId}`, {
                 method: 'DELETE',
             });
-            
+
             const data = await response.json();
-            
+
             if (!response.ok || !data.success) {
                 throw new Error(data.error || 'Failed to delete product');
             }
-            
+
             // Refresh list
             fetchProducts();
         } catch (error) {
@@ -177,7 +178,7 @@ export default function MenuManagementPage() {
     // Intelligent Search + Filtering
     const filteredProducts = useMemo(() => {
         let results: MenuItem[] = [];
-        
+
         // 1. Smart Search
         if (searchQuery.trim() && searchService) {
             try {
@@ -190,11 +191,11 @@ export default function MenuManagementPage() {
         } else if (!searchQuery.trim()) {
             results = [...products];
         } else {
-             // Fallback if service not ready
-             results = products.filter(p => 
-                p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            // Fallback if service not ready
+            results = products.filter(p =>
+                p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 p.description?.toLowerCase().includes(searchQuery.toLowerCase())
-             );
+            );
         }
 
         // 2. Category Filter
@@ -232,7 +233,7 @@ export default function MenuManagementPage() {
                     <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
                     <p className="text-gray-600 mt-1">Manage products, pricing, and deals</p>
                 </div>
-                <button 
+                <button
                     onClick={() => setIsAddModalOpen(true)}
                     className="bg-[#8B6F47] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#725a39] transition shadow-sm font-medium"
                 >
@@ -244,154 +245,151 @@ export default function MenuManagementPage() {
             {/* Smart Search and Filters Container */}
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 relative z-50">
                 <div className="flex gap-4 items-start">
-                    
+
                     {/* Replicated Smart Search Bar */}
                     <div className="flex-1 relative group z-50">
-                         <div
+                        <div
                             className={`flex items-center bg-white border-[0.5px] transition-all duration-300 ease-out rounded-lg
-                              ${
-                                showSuggestions || isListening
-                                  ? "border-[#8B6F47] ring-1 ring-[#8B6F47]/20"
-                                  : "border-gray-300 hover:border-[#8B6F47]"
-                              }
+                              ${showSuggestions || isListening
+                                    ? "border-[#8B6F47] ring-1 ring-[#8B6F47]/20"
+                                    : "border-gray-300 hover:border-[#8B6F47]"
+                                }
                               py-2 w-full`}
-                          >
+                        >
                             <div className="pl-3 text-gray-400">
-                              <Search
-                                size={20}
-                                className={`transition-transform duration-300 ${
-                                  showSuggestions ? "scale-110 text-[#8B6F47]" : "text-gray-400"
-                                }`}
-                              />
+                                <Search
+                                    size={20}
+                                    className={`transition-transform duration-300 ${showSuggestions ? "scale-110 text-[#8B6F47]" : "text-gray-400"
+                                        }`}
+                                />
                             </div>
                             <input
-                              type="text"
-                              placeholder={isListening ? "Listening..." : "Search products (fuzzy)..."}
-                              value={searchQuery}
-                              onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                setShowHistory(false);
-                              }}
-                              onFocus={() => {
-                                if (!searchQuery) setShowHistory(true);
-                              }}
-                              onBlur={() => {
-                                setTimeout(() => {
-                                  setShowSuggestions(false);
-                                  setShowHistory(false);
-                                }, 200);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleSearchSubmit();
-                              }}
-                              className="flex-1 bg-transparent border-none outline-none px-3 text-gray-900 placeholder:text-gray-400 text-sm h-full font-medium"
+                                type="text"
+                                placeholder={isListening ? "Listening..." : "Search products (fuzzy)..."}
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setShowHistory(false);
+                                }}
+                                onFocus={() => {
+                                    if (!searchQuery) setShowHistory(true);
+                                }}
+                                onBlur={() => {
+                                    setTimeout(() => {
+                                        setShowSuggestions(false);
+                                        setShowHistory(false);
+                                    }, 200);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSearchSubmit();
+                                }}
+                                className="flex-1 bg-transparent border-none outline-none px-3 text-gray-900 placeholder:text-gray-400 text-sm h-full font-medium"
                             />
-                            
+
                             {/* Voice Search & Clear */}
                             <div className="flex items-center pr-2 gap-1">
-                              {searchQuery && (
-                                <button
-                                  onClick={() => {
-                                    setSearchQuery("");
-                                    setSuggestions([]);
-                                    setShowHistory(true);
-                                  }}
-                                  className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#8B6F47] transition-colors"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                                  </svg>
-                                </button>
-                              )}
-                              
-                              <VoiceSearch 
-                                onTranscript={handleVoiceTranscript}
-                                isListening={isListening}
-                                setIsListening={setIsListening}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Suggestions Dropdown */}
-                          {showSuggestions && suggestions.length > 0 && searchQuery && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-[60]">
-                              {suggestions.map((suggestion, index) => (
-                                <button
-                                  key={index}
-                                  className="w-full text-left px-4 py-3 hover:bg-[#8B6F47]/5 text-[#4A3B28] text-sm flex items-center gap-2 group transition-colors"
-                                  onClick={() => {
-                                    setSearchQuery(suggestion);
-                                    setShowSuggestions(false);
-                                    analyticsService.trackSearch(suggestion, 0);
-                                  }}
-                                >
-                                  <Search className="w-4 h-4 text-[#8B6F47]/30 group-hover:text-[#8B6F47] transition-colors" />
-                                  {suggestion}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* History Dropdown */}
-                          {showHistory && !searchQuery && searchHistory.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-[60]">
-                              <div className="px-4 py-2 bg-[#8B6F47]/5 text-[10px] font-bold text-[#8B6F47] uppercase tracking-wider flex justify-between items-center">
-                                <span>Recent Searches</span>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    analyticsService.clearHistory();
-                                    setSearchHistory([]);
-                                  }}
-                                  className="hover:underline cursor-pointer"
-                                >
-                                  Clear
-                                </button>
-                              </div>
-                              {searchHistory.map((term, index) => (
-                                <div
-                                  key={index}
-                                  className="w-full text-left px-4 py-3 hover:bg-[#8B6F47]/5 text-[#4A3B28] text-sm flex items-center justify-between group transition-colors cursor-pointer"
-                                >
-                                  <div 
-                                    className="flex items-center gap-2 flex-1 h-full"
-                                    onMouseDown={(e) => {
-                                       e.preventDefault();
-                                       setSearchQuery(term);
-                                       setShowHistory(false);
-                                       analyticsService.trackSearch(term, 0);
-                                    }}
-                                  >
-                                    <Search className="w-4 h-4 text-[#8B6F47]/40 group-hover:text-[#8B6F47]" />
-                                    {term}
-                                  </div>
-                                  <button
-                                        onMouseDown={(e) => {
-                                            e.stopPropagation(); 
-                                            e.preventDefault();
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => {
+                                            setSearchQuery("");
+                                            setSuggestions([]);
+                                            setShowHistory(true);
                                         }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            analyticsService.removeFromHistory(term);
-                                            setSearchHistory(analyticsService.getHistory());
-                                        }}
-                                        className="p-1 hover:bg-[#8B6F47]/10 rounded-full text-[#8B6F47]/40 hover:text-red-500 transition-colors"
+                                        className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#8B6F47] transition-colors"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                                             <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                                         </svg>
                                     </button>
-                                </div>
-                              ))}
+                                )}
+
+                                <VoiceSearch
+                                    onTranscript={handleVoiceTranscript}
+                                    isListening={isListening}
+                                    setIsListening={setIsListening}
+                                />
                             </div>
-                          )}
+                        </div>
+
+                        {/* Suggestions Dropdown */}
+                        {showSuggestions && suggestions.length > 0 && searchQuery && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-[60]">
+                                {suggestions.map((suggestion, index) => (
+                                    <button
+                                        key={index}
+                                        className="w-full text-left px-4 py-3 hover:bg-[#8B6F47]/5 text-[#4A3B28] text-sm flex items-center gap-2 group transition-colors"
+                                        onClick={() => {
+                                            setSearchQuery(suggestion);
+                                            setShowSuggestions(false);
+                                            analyticsService.trackSearch(suggestion, 0);
+                                        }}
+                                    >
+                                        <Search className="w-4 h-4 text-[#8B6F47]/30 group-hover:text-[#8B6F47] transition-colors" />
+                                        {suggestion}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* History Dropdown */}
+                        {showHistory && !searchQuery && searchHistory.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-[#8B6F47]/10 overflow-hidden z-[60]">
+                                <div className="px-4 py-2 bg-[#8B6F47]/5 text-[10px] font-bold text-[#8B6F47] uppercase tracking-wider flex justify-between items-center">
+                                    <span>Recent Searches</span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            analyticsService.clearHistory();
+                                            setSearchHistory([]);
+                                        }}
+                                        className="hover:underline cursor-pointer"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                                {searchHistory.map((term, index) => (
+                                    <div
+                                        key={index}
+                                        className="w-full text-left px-4 py-3 hover:bg-[#8B6F47]/5 text-[#4A3B28] text-sm flex items-center justify-between group transition-colors cursor-pointer"
+                                    >
+                                        <div
+                                            className="flex items-center gap-2 flex-1 h-full"
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                setSearchQuery(term);
+                                                setShowHistory(false);
+                                                analyticsService.trackSearch(term, 0);
+                                            }}
+                                        >
+                                            <Search className="w-4 h-4 text-[#8B6F47]/40 group-hover:text-[#8B6F47]" />
+                                            {term}
+                                        </div>
+                                        <button
+                                            onMouseDown={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                analyticsService.removeFromHistory(term);
+                                                setSearchHistory(analyticsService.getHistory());
+                                            }}
+                                            className="p-1 hover:bg-[#8B6F47]/10 rounded-full text-[#8B6F47]/40 hover:text-red-500 transition-colors"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`px-4 py-2 rounded-lg border transition flex items-center gap-2 h-[42px] ${
-                            showFilters ? 'bg-[#8B6F47] text-white border-[#8B6F47]' : 'border-gray-300 hover:bg-gray-50'
-                        }`}
+                        className={`px-4 py-2 rounded-lg border transition flex items-center gap-2 h-[42px] ${showFilters ? 'bg-[#8B6F47] text-white border-[#8B6F47]' : 'border-gray-300 hover:bg-gray-50'
+                            }`}
                     >
                         <SlidersHorizontal size={20} />
                         Filters
@@ -404,11 +402,10 @@ export default function MenuManagementPage() {
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                                selectedCategory === cat.id
-                                    ? 'bg-[#8B6F47] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition ${selectedCategory === cat.id
+                                ? 'bg-[#8B6F47] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
                         >
                             {cat.label}
                         </button>
@@ -504,13 +501,13 @@ export default function MenuManagementPage() {
                     ))}
                 </div>
             )}
-            
-            <AddProductModal 
-                isOpen={isAddModalOpen} 
-                onClose={() => setIsAddModalOpen(false)} 
+
+            <AddProductModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
                 onSuccess={() => {
                     fetchProducts();
-                }} 
+                }}
             />
         </div>
     );

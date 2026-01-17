@@ -551,7 +551,7 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false, onReorder 
                             image: item.image,
                             quantity: item.quantity,
                             price: item.price
-                        }))}
+                        })) as any}
                         onSubmitSuccess={handleRatingSuccess}
                     />
                 )}
