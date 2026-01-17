@@ -28,14 +28,9 @@
         "framer-motion": "^12.23.26",
         "gsap": "^3.14.2",
         "hover-effect": "^1.2.1",
-<<<<<<< HEAD
         "jspdf": "^4.0.0",
         "jspdf-autotable": "^5.0.7",
-=======
-        "jspdf": "^2.5.2",
-        "jspdf-autotable": "^3.8.4",
         "lottie-react": "^2.4.1",
->>>>>>> origin/abhim
         "lucide-react": "^0.562.0",
         "next": "16.1.0",
         "razorpay": "^2.9.6",
