@@ -831,7 +831,7 @@ export function MenuSection({
                         transition={{ duration: 0.5 }}
                         className={`sticky z-30 py-4 mb-8 lg:mb-10 shadow-md transition-all duration-300 ${scrollDirection === "down" ? "top-0" : "top-[64px] lg:top-[80px]"
                             }`}
-                        style={{ backgroundColor: "#D8CBB8" }}
+                        style={{ backgroundColor: "#faeade" }}
                     >
                         <div className="flex flex-wrap justify-center gap-1.5 lg:gap-3">
                             {categoryFilters.map((filter) => {
@@ -848,7 +848,7 @@ export function MenuSection({
                                                 ? "bg-[#8B6F47] text-white border-[#8B6F47] shadow-md"
                                                 : isHighlighted
                                                     ? "bg-[#daa520] text-white border-[#daa520] shadow-sm"
-                                                    : "bg-[#D8CBB8] text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
+                                                    : "bg-[#faeade] text-[#262626] border-[#8B6F47] hover:bg-[#ebdcc8]"
                                             }`}
                                     >
                                         {filter.label}
@@ -892,7 +892,7 @@ export function MenuSection({
                                                 </div>
                                             </div>
                                         </motion.div>
-                                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-6">
+                                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8">
                                             {categoryItems.map((item, index) => (
                                                 <motion.div
                                                     key={item.id}
@@ -917,7 +917,7 @@ export function MenuSection({
                     </div>
                 ) : (
                     /* Show all filtered items without sections */
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8">
                         {filteredItems.map((item, index) => (
                             <motion.div
                                 key={item.id}

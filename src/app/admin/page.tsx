@@ -11,6 +11,7 @@ import AOVChart from '@/components/admin/AOVChart';
 import HourlyRevenueChart from '@/components/admin/HourlyRevenueChart';
 import { DollarSign, ShoppingBag, Users, TrendingUp, Package, GraduationCap, Palette } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function AdminDashboardPage() {
     const [revenue, setRevenue] = useState<any>(null);
@@ -281,8 +282,8 @@ export default function AdminDashboardPage() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-                <p className="text-gray-600 mt-1">Welcome! Here's what's happening with your business.</p>
+                <h1 className="text-3xl font-display font-bold text-[#7f3b2d]">Dashboard Overview</h1>
+                <p className="text-[#8B6F47] mt-1">Welcome! Here's what's happening with your business.</p>
             </div>
 
             {/* Total Revenue Hero Card */}
@@ -396,22 +397,34 @@ export default function AdminDashboardPage() {
             )}
 
             {/* Quick Stats Summary */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+            <div className="bg-[#FFF9EB] rounded-xl p-6 shadow-sm border border-[#8B6F47]/10">
+                <h3 className="text-lg font-semibold mb-4 text-[#7f3b2d]">Quick Stats</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
                     <div>
-                        <p className="text-2xl font-bold text-gray-900">{stats?.totalArtSales || 0}</p>
-                        <p className="text-sm text-gray-600">Art Pieces Sold</p>
+                        {loading ? (
+                             <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                        ) : (
+                             <p className="text-2xl font-bold text-[#7f3b2d]">{stats?.totalArtSales || 0}</p>
+                        )}
+                        <p className="text-sm text-[#8B6F47]/80">Art Pieces Sold</p>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-gray-900">
-                            ₹{stats && revenue && stats.totalOrders > 0 ? (revenue.total / stats.totalOrders).toFixed(0) : 0}
-                        </p>
-                        <p className="text-sm text-gray-600">Avg Order Value</p>
+                        {loading ? (
+                             <Skeleton className="h-8 w-24 mx-auto mb-1" />
+                        ) : (
+                            <p className="text-2xl font-bold text-[#7f3b2d]">
+                                ₹{stats && revenue && stats.totalOrders > 0 ? (revenue.total / stats.totalOrders).toFixed(0) : 0}
+                            </p>
+                        )}
+                        <p className="text-sm text-[#8B6F47]/80">Avg Order Value</p>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-gray-900">{stats?.totalWorkshops || 0}</p>
-                        <p className="text-sm text-gray-600">Workshop Registrations</p>
+                        {loading ? (
+                             <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                        ) : (
+                             <p className="text-2xl font-bold text-[#7f3b2d]">{stats?.totalWorkshops || 0}</p>
+                        )}
+                        <p className="text-sm text-[#8B6F47]/80">Workshop Registrations</p>
                     </div>
                 </div>
             </div>
