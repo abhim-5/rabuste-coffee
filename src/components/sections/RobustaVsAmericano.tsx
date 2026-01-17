@@ -6,6 +6,13 @@ import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import BlurImage from "@/components/ui/BlurImage";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Splitting from "splitting";
+import "splitting/dist/splitting.css";
+import "splitting/dist/splitting-cells.css";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const carouselImages = [
   "/robusta-pack.png",
@@ -19,38 +26,39 @@ const carouselImages = [
 const reasons = [
   {
     icon: "/icon1.png",
-    title: "THE PERFECT CUP",
-    description: "Robusta delivers double the caffeine with a powerful, unapologetic flavor profile that true coffee lovers crave.",
+    title: "HIGHER CAFFEINE",
+    description: "Robusta naturally packs 2x the caffeine of Arabica, delivering a clean, sustained energy boost without the jitters.",
   },
   {
     icon: "/icon2.png",
-    title: "THE MOKA POT",
-    description: "We believe in serving bold coffee in a cozy space, perfect for your grab-and-go lifestyle with quality intact.",
+    title: "BOLD FLAVOR",
+    description: "Experience a deep, earthy, and nutty profile with zero acidity—coffee that actually tastes like coffee.",
   },
   {
     icon: "/icon3.png",
-    title: "SUPREME BEANS",
-    description: "Hand-selected Robusta beans, expertly dark roasted to bring out chocolatey notes with smooth finish.",
+    title: "RICH CREMA",
+    description: "Our beans produce a thick, golden crema that only high-quality Robusta can achieve, enhancing texture and aroma.",
   },
   {
     icon: "/icon4.png",
-    title: "THE COFFEE MACHINE",
-    description: "More than a café - we're a creative space where Surat's coffee culture meets artistic inspiration.",
+    title: "LESS SUGAR",
+    description: "With 60% less sugar and lipids than Arabica, Robusta is the cleaner, healthier choice for your daily brew.",
   },
   {
     icon: "/icon5.png",
-    title: "FRENCH PRESS",
-    description: "Named to celebrate Robusta coffee, we're Surat's first café exclusively dedicated to this bold bean variety.",
+    title: "PURE STRENGTH",
+    description: "No mild Arabica here. Just pure, unadulterated strength that respects your palate and your wake-up call.",
   },
   {
     icon: "/icon6.png",
-    title: "COFFEE TO GO",
-    description: "Every cup is a testament to our commitment to dark roast excellence and authentic coffee craftsmanship.",
+    title: "ANTIOXIDANT RICH",
+    description: "Loaded with more antioxidants than other varieties, supporting your wellness while fueling your ambition.",
   },
 ];
 
-export function WhyRobusta() {
+export function RobustaVsAmericano() {
   const ref = useRef(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const carouselRef = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const carouselInView = useInView(carouselRef, { amount: 0.3 });
@@ -58,6 +66,83 @@ export function WhyRobusta() {
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const autoPlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Theme configuration
+  const SECTION_BG = "#faeade";
+  const THEME_COLOR = "#7f3b2d";
+
+  useEffect(() => {
+    if (!titleRef.current) return;
+
+    // Initialize Splitting for Title
+    if (titleRef.current.querySelectorAll('.char').length === 0) {
+      Splitting({ target: titleRef.current, by: "chars" });
+    }
+
+    // Initialize Splitting for Reason Descriptions
+    const reasonDescriptions = ref.current?.querySelectorAll('.reason-description');
+    reasonDescriptions?.forEach((desc: HTMLElement) => {
+        if (desc.querySelectorAll('.word').length === 0) {
+          Splitting({ target: desc, by: "words" });
+        }
+    });
+
+    const ctx = gsap.context(() => {
+      // --- Title Animation ---
+      const chars = titleRef.current?.querySelectorAll('.char');
+      if (chars?.length) {
+        gsap.set(chars, { 
+          opacity: 0, 
+          yPercent: 120, 
+          scaleY: 2.3, 
+          scaleX: 0.7, 
+          transformOrigin: '50% 0%',
+          willChange: 'opacity, transform',
+          display: 'inline-block' 
+        });
+
+        gsap.to(chars, {
+          duration: 1,
+          ease: 'back.inOut(2)',
+          opacity: 1,
+          yPercent: 0,
+          scaleY: 1,
+          scaleX: 1,
+          stagger: 0.03,
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: 'top bottom-=10%', 
+            end: 'center center',
+            scrub: true
+          }
+        });
+      }
+
+      // --- Descriptions Animation (Word Opacity Fade) ---
+      reasonDescriptions?.forEach((desc: HTMLElement) => {
+          const words = desc.querySelectorAll('.word');
+          if (words.length) {
+              gsap.fromTo(words, {
+                  opacity: 0.1
+              }, 
+              {
+                  ease: 'none',
+                  opacity: 1,
+                  stagger: 0.02,
+                  scrollTrigger: {
+                      trigger: desc,
+                      start: 'top bottom-=10%',
+                      end: 'bottom center+=10%',
+                      scrub: true,
+                  }
+              });
+          }
+      });
+
+    }, ref);
+
+    return () => ctx.revert();
+  }, []);
 
   // Reset to first image when carousel comes into view
   useEffect(() => {
@@ -146,39 +231,32 @@ export function WhyRobusta() {
   };
 
   return (
-    <section
-      ref={ref}
-      className="relative w-full overflow-hidden -mt-20 pt-16 pb-2 lg:mt-0 lg:py-16"
-      style={{ backgroundColor: "#D8CBB8" }}
-    >
-      <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8">
-        {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center mb-6 lg:mb-16"
-        >
-          <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-center" style={{ color: "#262626" }}>
-            Why Robusta?
-          </h2>
-
-          {/* Title Separator */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-32 h-8 lg:w-40 lg:h-10"
-          >
-            <Image
-              src="/title-separator.png"
-              fill
-              alt="Decorative separator"
-              className="object-contain"
-              sizes="(max-width: 768px) 128px, 160px"
-            />
-          </motion.div>
-        </motion.div>
+    <>
+      <style jsx global>{`
+        .word {
+          display: inline-block;
+          white-space: nowrap;
+        }
+        .char {
+          display: inline-block;
+        }
+      `}</style>
+      <section
+        ref={ref}
+        className="relative w-full overflow-hidden -mt-20 pt-16 pb-2 lg:mt-0 lg:py-16"
+        style={{ backgroundColor: SECTION_BG }}
+      >
+        <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8">
+          {/* Heading */}
+          <div className="flex flex-col items-center mb-6 lg:mb-16">
+            <h2 
+              ref={titleRef}
+              className="font-['TanPearl'] text-[10vw] lg:text-[5rem] xl:text-[6rem] leading-[0.9] mb-6 text-center lg:whitespace-nowrap relative -top-12 lg:-top-24" 
+              style={{ color: THEME_COLOR }}
+            >
+              robusta vs arabica
+            </h2>
+          </div>
 
         {/* Desktop Layout: 3 items - Image - 3 items */}
         <div className="hidden lg:grid lg:grid-cols-[1fr_auto_1fr] gap-6 xl:gap-8 items-start">
@@ -187,16 +265,16 @@ export function WhyRobusta() {
             {reasons.slice(0, 3).map((reason, index) => (
               <motion.div
                 key={reason.title}
-                initial={{ opacity: 0, x: -100, filter: "blur(10px)" }}
-                animate={isInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
-                transition={{ duration: 0.8, delay: 0.4 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, x: -30 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.1 * index, ease: [0.22, 1, 0.36, 1] }}
                 className="flex items-start gap-4 text-right"
               >
                 <div className="flex-1">
-                  <h3 className="font-display text-xl xl:text-2xl font-semibold mb-2" style={{ color: "#262626" }}>
+                  <h3 className="font-display text-xl xl:text-2xl font-semibold mb-2" style={{ color: THEME_COLOR }}>
                     {reason.title}
                   </h3>
-                  <p className="font-serif text-base xl:text-lg text-[#2C2C2C] leading-relaxed">
+                  <p className="reason-description font-serif text-base xl:text-lg leading-relaxed text-black">
                     {reason.description}
                   </p>
                 </div>
@@ -213,12 +291,12 @@ export function WhyRobusta() {
           </div>
 
           {/* Center Image with Carousel */}
-          <div ref={carouselRef} className="relative flex flex-col items-center gap-1 -mt-12">
+          <div ref={carouselRef} className="relative flex flex-col items-center gap-1 mt-8">
             <motion.div
               initial={{ opacity: 0, scale: 0.85, filter: "blur(15px)" }}
               animate={isInView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
               transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-[380px] xl:w-[450px] h-[480px] xl:h-[560px] flex items-center justify-center overflow-hidden"
+              className="relative w-[380px] xl:w-[450px] aspect-square flex items-center justify-center overflow-hidden rounded-2xl"
               style={{ perspective: "1200px" }}
             >
               <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -233,13 +311,13 @@ export function WhyRobusta() {
                     x: { type: "spring", stiffness: 300, damping: 40 },
                     duration: 0.5,
                   }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 rounded-2xl"
                 >
                   <BlurImage
                     src={carouselImages[currentImageIndex]}
                     fill
                     alt="Robusta Coffee"
-                    className="object-contain"
+                    className="object-cover rounded-2xl"
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 380px, 450px"
                   />
@@ -253,7 +331,12 @@ export function WhyRobusta() {
                 onClick={handlePrevious}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-3 rounded-full bg-[#8B7355]/80 hover:bg-[#8B7355] backdrop-blur-sm transition-all duration-500 text-white shadow-lg border border-[#8B7355]/30"
+                className="p-3 rounded-full backdrop-blur-sm transition-all duration-500"
+                style={{ 
+                  backgroundColor: `${THEME_COLOR}0D`, 
+                  color: THEME_COLOR,
+                  border: `1px solid ${THEME_COLOR}1A`
+                }}
                 aria-label="Previous image"
                 suppressHydrationWarning
               >
@@ -265,10 +348,11 @@ export function WhyRobusta() {
                   <button
                     key={index}
                     onClick={() => handleDotClick(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-500 ${index === currentImageIndex
-                      ? "bg-[#8B7355] w-8"
-                      : "bg-[#8B7355]/30 hover:bg-[#8B7355]/60"
-                      }`}
+                    className="w-2 h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                      backgroundColor: index === currentImageIndex ? THEME_COLOR : `${THEME_COLOR}33`,
+                      width: index === currentImageIndex ? '2rem' : '0.5rem'
+                    }}
                     aria-label={`Go to image ${index + 1}`}
                     suppressHydrationWarning
                   />
@@ -279,7 +363,12 @@ export function WhyRobusta() {
                 onClick={handleNext}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-3 rounded-full bg-[#8B7355]/80 hover:bg-[#8B7355] backdrop-blur-sm transition-all duration-500 text-white shadow-lg border border-[#8B7355]/30"
+                className="p-3 rounded-full backdrop-blur-sm transition-all duration-500"
+                style={{ 
+                  backgroundColor: `${THEME_COLOR}0D`, 
+                  color: THEME_COLOR,
+                  border: `1px solid ${THEME_COLOR}1A`
+                }}
                 aria-label="Next image"
                 suppressHydrationWarning
               >
@@ -293,9 +382,9 @@ export function WhyRobusta() {
             {reasons.slice(3, 6).map((reason, index) => (
               <motion.div
                 key={reason.title}
-                initial={{ opacity: 0, x: 100, filter: "blur(10px)" }}
-                animate={isInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
-                transition={{ duration: 0.8, delay: 0.4 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, x: 30 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.1 * index, ease: [0.22, 1, 0.36, 1] }}
                 className="flex items-start gap-4 text-left"
               >
                 <div className="flex-shrink-0 w-14 h-14 xl:w-16 xl:h-16 relative">
@@ -306,19 +395,14 @@ export function WhyRobusta() {
                     className="object-contain"
                   />
                 </div>
-                <motion.div
-                  className="flex-1"
-                  initial={{ opacity: 0, filter: "blur(8px)" }}
-                  animate={isInView ? { opacity: 1, filter: "blur(0px)" } : {}}
-                  transition={{ duration: 0.6, delay: 0.5 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <h3 className="font-display text-xl xl:text-2xl font-semibold mb-2" style={{ color: "#262626" }}>
+                <div className="flex-1">
+                  <h3 className="font-display text-xl xl:text-2xl font-semibold mb-2" style={{ color: THEME_COLOR }}>
                     {reason.title}
                   </h3>
-                  <p className="font-serif text-base xl:text-lg text-[#2C2C2C] leading-relaxed">
+                  <p className="reason-description font-serif text-base xl:text-lg leading-relaxed text-black">
                     {reason.description}
                   </p>
-                </motion.div>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -333,7 +417,12 @@ export function WhyRobusta() {
               onClick={handlePrevious}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full bg-[#8B7355]/80 hover:bg-[#8B7355] backdrop-blur-sm transition-all duration-500 text-white shadow-lg border border-[#8B7355]/30 z-10"
+              className="p-2 rounded-full backdrop-blur-sm transition-all duration-500 z-10"
+              style={{ 
+                backgroundColor: `${THEME_COLOR}0D`, 
+                color: THEME_COLOR,
+                border: `1px solid ${THEME_COLOR}1A`
+              }}
               aria-label="Previous image"
               suppressHydrationWarning
             >
@@ -345,7 +434,7 @@ export function WhyRobusta() {
               initial={{ opacity: 0, scale: 0.85, filter: "blur(15px)" }}
               animate={isInView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
               transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-full max-w-[340px] h-[320px] overflow-hidden"
+              className="relative w-full max-w-[340px] aspect-square overflow-hidden rounded-2xl"
               style={{ perspective: "1200px" }}
             >
               <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -360,13 +449,13 @@ export function WhyRobusta() {
                     x: { type: "spring", stiffness: 300, damping: 40 },
                     duration: 0.5,
                   }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 rounded-2xl"
                 >
                   <BlurImage
                     src={carouselImages[currentImageIndex]}
                     fill
                     alt="Robusta Coffee"
-                    className="object-contain"
+                    className="object-cover rounded-2xl"
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, 340px"
                   />
@@ -379,7 +468,12 @@ export function WhyRobusta() {
               onClick={handleNext}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full bg-[#8B7355]/80 hover:bg-[#8B7355] backdrop-blur-sm transition-all duration-500 text-white shadow-lg border border-[#8B7355]/30 z-10"
+              className="p-2 rounded-full backdrop-blur-sm transition-all duration-500 z-10"
+              style={{ 
+                backgroundColor: `${THEME_COLOR}0D`, 
+                color: THEME_COLOR,
+                border: `1px solid ${THEME_COLOR}1A`
+              }}
               aria-label="Next image"
               suppressHydrationWarning
             >
@@ -393,10 +487,11 @@ export function WhyRobusta() {
               <button
                 key={index}
                 onClick={() => handleDotClick(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-500 ${index === currentImageIndex
-                  ? "bg-[#8B7355] w-6"
-                  : "bg-[#8B7355]/30"
-                  }`}
+                className="w-2 h-2 rounded-full transition-all duration-500"
+                style={{ 
+                  backgroundColor: index === currentImageIndex ? THEME_COLOR : `${THEME_COLOR}33`,
+                  width: index === currentImageIndex ? '1.5rem' : '0.5rem'
+                }}
                 aria-label={`Go to image ${index + 1}`}
                 suppressHydrationWarning
               />
@@ -408,9 +503,9 @@ export function WhyRobusta() {
             {reasons.map((reason, index) => (
               <motion.div
                 key={reason.title}
-                initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-                animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-                transition={{ duration: 0.6, delay: 0.6 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.1 * index, ease: [0.22, 1, 0.36, 1] }}
                 className="flex items-start gap-3"
               >
                 <div className="flex-shrink-0 w-12 h-12 relative">
@@ -422,10 +517,10 @@ export function WhyRobusta() {
                   />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-display text-base font-semibold mb-1.5" style={{ color: "#262626" }}>
+                  <h3 className="font-display text-base font-semibold mb-1.5" style={{ color: THEME_COLOR }}>
                     {reason.title}
                   </h3>
-                  <p className="font-serif text-sm text-[#2C2C2C] leading-relaxed">
+                  <p className="reason-description font-serif text-sm leading-relaxed text-black">
                     {reason.description}
                   </p>
                 </div>
@@ -435,7 +530,9 @@ export function WhyRobusta() {
         </div>
       </div>
     </section>
+    </>
+
   );
 }
 
-export default WhyRobusta;
+export default RobustaVsAmericano;

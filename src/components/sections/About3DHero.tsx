@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Coffee } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Preloader from '@/components/ui/Preloader';
 
 // Dynamically import the 3D model to prevent SSR issues
 const CoffeeModel3D = dynamic(() => import('@/components/3d/CoffeeModel3D'), {
@@ -42,9 +41,6 @@ const About3DHero = () => {
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {!isModelLoaded && <Preloader />}
-      </AnimatePresence>
       
       <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#1a1410] via-[#2a1f1a] to-[#1a1410]">
         {/* Grain texture overlay */}
@@ -85,7 +81,7 @@ const About3DHero = () => {
 
                   {/* Title */}
                   <motion.h1
-                    className="font-display text-5xl lg:text-8xl font-bold text-[#E8DCC4] mb-8 leading-tight"
+                    className="font-tan-pearl text-5xl lg:text-8xl font-bold text-[#E8DCC4] mb-8 leading-tight"
                   >
                     {heroContent.title}
                   </motion.h1>

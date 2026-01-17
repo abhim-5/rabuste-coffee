@@ -347,12 +347,12 @@ export default function GalleryPage() {
   return (
     <>
       {showNavbar && <Navbar />}
-      <main className={`gallery-main ${!showNavbar ? 'no-navbar-padding' : ''}`}>
+      <main className={`gallery-main bg-[#f7e7db] ${!showNavbar ? 'no-navbar-padding' : ''}`}>
         {/* Hero Section */}
         <GalleryHero />
 
         {/* Owner's POV About Art Section */}
-        <section className="relative py-8 lg:py-12 overflow-hidden bg-gradient-to-br from-[#F5EFE6] via-[#E8DBC8] to-[#D8CBB8] z-30">
+        <section className="relative py-8 lg:py-12 overflow-hidden bg-[#faeade] z-30">
           {/* Decorative Elements */}
           <div className="absolute inset-0 opacity-[0.03]">
             <div className="absolute top-10 left-10 w-72 h-72 bg-[#8B6F47] rounded-full blur-3xl" />
@@ -368,19 +368,19 @@ export default function GalleryPage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-sm rounded-3xl p-6 lg:p-8 shadow-2xl border-2 border-[#8B6F47]/20">
+              <div className="relative bg-[#faeade] rounded-3xl p-6 lg:p-8 shadow-xl border border-[#7f3b2d]/20">
                 {/* Quote Icon */}
-                <svg className="absolute top-4 left-4 w-10 h-10 text-[#8B6F47]/20" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="absolute top-4 left-4 w-10 h-10 text-[#7f3b2d]/20" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z" />
                 </svg>
 
                 <div className="relative z-10">
-                  <p className="text-lg lg:text-xl font-serif text-[#2A2A2A] italic leading-relaxed text-center mb-4">
+                  <p className="text-lg lg:text-xl font-serif text-[#7f3b2d] italic leading-relaxed text-center mb-4">
                     "Art is not just meant to be seen—it's meant to be felt, experienced, and lived with. Each piece in our gallery brings the serenity of nature into our space, creating moments of tranquility amidst the hustle. When you enjoy your coffee surrounded by beautiful art, you're not just taking a break—you're nourishing your soul."
                   </p>
 
-                  <div className="flex items-center justify-center gap-3 pt-3 border-t-2 border-[#8B6F47]/20">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#8B6F47]">
+                  <div className="flex items-center justify-center gap-3 pt-3 border-t border-[#7f3b2d]/20">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#7f3b2d]">
                       <Image
                         src="/about us/owner_pic.png"
                         alt="Rabuste Coffee"
@@ -390,13 +390,13 @@ export default function GalleryPage() {
                       />
                     </div>
                     <div className="text-left">
-                      <p className="font-display text-base text-[#2A2A2A] font-bold">Rabuste Coffee</p>
-                      <p className="text-sm text-[#404040]/70">Founder & Curator</p>
+                      <p className="font-display text-base text-[#7f3b2d] font-bold">Rabuste Coffee</p>
+                      <p className="text-sm text-[#7f3b2d]/70">Founder & Curator</p>
                     </div>
 
                     {/* Decorative Coffee Icon */}
                     <div className="ml-auto hidden lg:block">
-                      <Coffee className="w-12 h-12 text-[#8B6F47]/10" />
+                      <Coffee className="w-12 h-12 text-[#7f3b2d]/10" />
                     </div>
                   </div>
                 </div>
@@ -406,10 +406,10 @@ export default function GalleryPage() {
         </section>
 
         {/* Gallery Content Wrapper - Contains Intro, Kinetic Typography and Gallery Grid */}
-        <div className="gallery-content-wrapper">
+        <div className="gallery-content-wrapper bg-[#f7e7db]">
 
           {/* Rabuste Art Gallery Introduction - Styled like WhatIsRobusta */}
-          <section className="relative w-full overflow-hidden py-6 lg:py-6 mt-20 lg:mt-32">
+          <section className="relative w-full overflow-hidden py-6 lg:py-6 mt-20 lg:mt-32 bg-[#f7e7db]">
             {/* Coffee bean decorative elements */}
             <div className="absolute top-20 left-10 opacity-10">
               <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
@@ -439,8 +439,8 @@ export default function GalleryPage() {
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 className="flex flex-col items-center mb-6 lg:mb-8 px-4"
               >
-                <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#404040] mb-6 text-center">
-                  Rabuste Art Gallery
+                <h2 className="font-tan-pearl text-4xl lg:text-7xl font-bold text-[#7f3b2d] mb-6 text-center lowercase">
+                  rabuste art gallery
                 </h2>
 
                 {/* Title Separator */}

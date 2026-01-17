@@ -59,7 +59,7 @@ export default function Footer() {
     };
 
     return (
-        <footer className="w-full bg-black text-white pt-12 pb-0 lg:py-12 border-t border-neutral-900">
+        <footer className="w-full bg-[#120d0a] text-white pt-12 pb-0 lg:py-12 border-t border-neutral-800">
             <div className="mx-auto w-full max-w-7xl px-4 lg:px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     {/* Brand Column */}
@@ -73,8 +73,8 @@ export default function Footer() {
                                     className="object-contain w-full h-full brightness-0 invert"
                                 />
                             </div>
-                            <span className="font-display text-2xl font-bold text-white tracking-wide">
-                                Rabuste
+                            <span className="font-tan-pearl text-3xl text-white tracking-wide mt-1">
+                                rabuste
                             </span>
                         </div>
                         <p className="text-neutral-400 text-sm leading-relaxed max-w-xs">

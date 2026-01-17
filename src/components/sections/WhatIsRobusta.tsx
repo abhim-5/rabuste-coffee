@@ -1,113 +1,25 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Splitting from "splitting";
+import "splitting/dist/splitting.css";
+import "splitting/dist/splitting-cells.css";
 import Image from "next/image";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useInView } from "framer-motion";
-import { useRef } from "react";
-import { HoverDistortion } from "@/components/effects/HoverDistortion";
 
-export function WhatIsRobusta() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+gsap.registerPlugin(ScrollTrigger);
 
-  return (
-    <section
-      ref={ref}
-      className="relative w-full overflow-hidden bg-cover bg-center py-16 lg:py-28 bg-[#D8CBB8]"
-      style={{ backgroundImage: "url('/bg-texture.jpg')" }}
-    >
-      {/* Coffee bean decorative elements */}
-      <div className="absolute top-20 left-10 opacity-10">
-        <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
-          <ellipse cx="50" cy="50" rx="35" ry="48" fill="#404040" transform="rotate(-15 50 50)" />
-          <path d="M50 20 Q30 50 50 80" stroke="#8B4513" strokeWidth="3" fill="none" />
-        </svg>
-      </div>
-      <div className="absolute bottom-32 right-16 opacity-10">
-        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-          <ellipse cx="50" cy="50" rx="40" ry="52" fill="#404040" transform="rotate(20 50 50)" />
-          <path d="M50 15 Q25 50 50 85" stroke="#8B4513" strokeWidth="3" fill="none" />
-        </svg>
-      </div>
-      <div className="absolute top-1/3 right-1/4 opacity-8 hidden lg:block">
-        <svg width="60" height="60" viewBox="0 0 100 100" fill="none">
-          <ellipse cx="50" cy="50" rx="30" ry="42" fill="#404040" transform="rotate(-30 50 50)" />
-          <path d="M50 18 Q32 50 50 82" stroke="#8B4513" strokeWidth="2.5" fill="none" />
-        </svg>
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl lg:px-8">
-        {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center mb-12 lg:mb-16 px-4"
-        >
-          <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#404040] mb-6 text-center">
-            What is Robusta?
-          </h2>
-
-          {/* Title Separator */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-32 h-8 lg:w-40 lg:h-10"
-          >
-            <Image
-              src="/title-separator.png"
-              fill
-              alt="Decorative separator"
-              className="object-contain"
-            />
-          </motion.div>
-        </motion.div>
-
-        {/* Content Grid - Mobile: Stacked, Desktop: Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Desktop: Image on left */}
-          <ImageWithParallax isInView={isInView} />
-
-          {/* Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="order-1 lg:order-2 space-y-6 px-4 lg:px-0"
-          >
-            <p className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-black">
-              Robusta coffee is one of the two main species of coffee beans, known for its bold,
-              intense flavor and higher caffeine content. Unlike the milder Arabica, Robusta beans
-              deliver a powerful, earthy taste with a distinctive bitter edge that coffee purists
-              have come to love.
-            </p>
-
-            <p className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-black">
-              At Rabuste, we've mastered the art of dark roasting premium Robusta beans,
-              bringing out rich, chocolatey notes with a smooth finish. Our unique roasting
-              process ensures maximum flavor extraction while maintaining the bean's
-              strength.
-            </p>
-
-            {/* Decorative tagline */}
-            <div className="pt-4">
-              <p className="font-display text-xl lg:text-2xl xl:text-3xl font-semibold text-[#404040] italic">
-                Bold. Intense. Uncompromising.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section >
-  );
-}
-
-// Image with Parallax Component
-function ImageWithParallax({ isInView }: { isInView: boolean }) {
-  const ref = useRef(null);
+export default function WhatIsRobusta() {
+  const sectionRef = useRef<HTMLSectionElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null); // Ref for paragraphs
+  
+  // Parallax Logic
+  const imageContainerRef = useRef(null);
   const { scrollYProgress } = useScroll({
-    target: ref,
+    target: imageContainerRef,
     offset: ["start end", "end start"]
   });
 
@@ -118,29 +30,149 @@ function ImageWithParallax({ isInView }: { isInView: boolean }) {
 
   const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
 
+  useEffect(() => {
+    if (!titleRef.current || !textContainerRef.current) return;
+
+    // Helper to init splitting
+    const initSplitting = (el: HTMLElement, by: string) => {
+        // Check for specific children class based on 'by' type to avoid double init
+        const checkClass = by.includes('chars') ? '.char' : '.word';
+        if (el.querySelectorAll(checkClass).length === 0) {
+            Splitting({ target: el, by: by });
+        }
+    };
+
+    initSplitting(titleRef.current, "chars");
+    initSplitting(textContainerRef.current, "words");
+
+    const ctx = gsap.context(() => {
+      
+      // --- Title Animation (Set 1, Effect 2: Stretchy Reveal) ---
+      const titleChars = titleRef.current?.querySelectorAll('.char');
+      if (titleChars?.length) {
+          gsap.set(titleChars, { 
+            opacity: 0, 
+            yPercent: 120, 
+            scaleY: 2.3, 
+            scaleX: 0.7, 
+            transformOrigin: '50% 0%',
+            willChange: 'opacity, transform',
+            display: 'inline-block' 
+          });
+
+          gsap.to(titleChars, {
+            duration: 1,
+            ease: 'back.inOut(2)',
+            opacity: 1,
+            yPercent: 0,
+            scaleY: 1,
+            scaleX: 1,
+            stagger: 0.03,
+            scrollTrigger: {
+                trigger: titleRef.current,
+                start: 'top bottom-=10%', 
+                end: 'center center',
+                scrub: true
+            }
+          });
+      }
+
+      // --- Paragraph Animation (Set 2, Effect 1: Word Opacity Fade) ---
+      const paragraphWords = textContainerRef.current?.querySelectorAll(".word");
+      if (paragraphWords?.length) {
+        gsap.set(paragraphWords, { opacity: 0.1, willChange: 'opacity' });
+        
+        gsap.fromTo(paragraphWords, {
+            opacity: 0.1
+        }, 
+        {
+            ease: 'none',
+            opacity: 1,
+            stagger: 0.02,
+            scrollTrigger: {
+                trigger: textContainerRef.current,
+                start: 'top bottom-=10%',
+                end: 'bottom center+=10%',
+                scrub: true,
+            }
+        });
+      }
+
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: -50 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="order-2 lg:order-1 lg:px-0"
-    >
-      <div className="relative w-full aspect-[3/2] lg:aspect-[4/3] overflow-hidden lg:rounded-lg pointer-events-none lg:pointer-events-auto">
-        <motion.div style={{ y, scale: 1.15 }} className="relative w-full h-full">
-          <HoverDistortion
-            image1="/liquid distortion assets/img_one.jpg"
-            image2="/liquid distortion assets/img_two.jpg"
-            displacementImage="/liquid distortion assets/4.png"
-            intensity={0.5}
-            speedIn={1.6}
-            speedOut={1.2}
-            className="w-full h-full"
-          />
-        </motion.div>
+    <>
+      <style jsx>{`
+        .word {
+          display: inline-block;
+          white-space: nowrap;
+        }
+        .char {
+          display: inline-block;
+        }
+      `}</style>
+      <section 
+        ref={sectionRef} 
+        className="w-full bg-[#faeade] text-[#7f3b2d] overflow-hidden"
+      >
+      <div className="w-full h-full flex flex-col md:flex-row min-h-[80vh] relative">
+        
+        {/* Text and Heading Wrapper - uses contents on mobile to reorder children individually */}
+        <div className="contents md:flex md:w-1/2 md:flex-col md:justify-center md:p-20 md:gap-12 md:order-1 relative z-10">
+          <div className="order-1 p-8 pb-0 md:p-0">
+            <h2 
+              ref={titleRef}
+              className="text-[12vw] md:text-[6rem] lg:text-[7.5rem] leading-[0.9] text-[#7f3b2d] font-['TanPearl'] relative -top-12 md:-top-35"
+            >
+              What is Robusta
+            </h2>
+          </div>
+          
+          <div className="order-3 p-8 pt-4 md:p-0">
+            <div 
+              ref={textContainerRef}
+              className="flex flex-col gap-6 text-[#7f3b2d]/80 font-sans text-base md:text-lg leading-relaxed max-w-xl"
+            >
+              <p>
+                Robusta coffee, originating from the Coffea canephora plant, creates a bold statement in every cup. 
+                Unlike its delicate cousin Arabica, Robusta thrives in lower altitudes and hotter climates, 
+                developing a strong, full-bodied profile with distinctive earthy and nutty notes.
+              </p>
+              <p>
+                Packed with nearly double the caffeine and rich in antioxidants, it produces a thick, 
+                golden crema that is essential for the perfect espresso. It is coffee solely defined by strength, 
+                resilience, and an unapologetically intense flavor.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Content (Image) with Parallax */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-8 order-2 md:order-2">
+          <div 
+            ref={imageContainerRef}
+            className="relative w-[85%] md:w-[80%] aspect-square overflow-hidden rounded-2xl shadow-xl"
+          >
+          <motion.div 
+            style={{ y, scale: 1.2 }} 
+            className="absolute inset-0 w-full h-full rounded-2xl"
+          >
+             <Image
+              src="/what is robusta- image.jpg"
+              alt="Raw Robusta Coffee Beans"
+              fill
+              className="object-cover rounded-2xl"
+              priority
+            />
+          </motion.div>
+        </div>
+        </div>
+
       </div>
-    </motion.div>
+    </section>
+    </>
   );
 }
-
-export default WhatIsRobusta;

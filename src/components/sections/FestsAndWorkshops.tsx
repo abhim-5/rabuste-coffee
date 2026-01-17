@@ -1,246 +1,145 @@
 "use client";
 
+import { useRef, useState } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useState, useRef } from "react";
 import Link from "next/link";
 
-const workshopItems = [
-    { src: "/workshops/1.jpg", title: "Pottery Workshop" },
-    { src: "/workshops/2.jpg", title: "Coffee Brewing" },
-    { src: "/workshops/3.jpg", title: "Latte Art Class" },
-    { src: "/workshops/4.jpg", title: "Pastry Baking" },
-    { src: "/workshops/5.jpg", title: "Coffee Tasting" },
-    { src: "/workshops/6.jpg", title: "Live Music" },
+gsap.registerPlugin(ScrollTrigger);
+
+const workshopCards = [
+    { src: "/workshops/1.jpg", rotation: "rotate-z-[-10deg]", title: "Pottery", translation: "translate-y-[-5%]" },
+    { src: "/workshops/2.jpg", rotation: "rotate-z-[4deg]", title: "Coffee Brewing", translation: "translate-y-0" },
+    { src: "/workshops/3.jpg", rotation: "rotate-z-[-4deg]", title: "Latte Art", translation: "translate-y-[-5%]" },
+    { src: "/workshops/4.jpg", rotation: "rotate-z-[4deg]", title: "Pastry Baking", translation: "translate-y-[5%]" },
+    { src: "/workshops/5.jpg", rotation: "rotate-z-[-10deg]", title: "Coffee Tasting", translation: "translate-y-0" },
+    { src: "/workshops/6.jpg", rotation: "rotate-z-[4deg]", title: "Live Music", translation: "translate-y-[5%]" },
 ];
 
 export default function FestsAndWorkshops() {
-    // Split images for the split layout
-    const topItems = workshopItems.slice(0, 3);
-    const bottomItems = workshopItems.slice(3, 6);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [enableInteraction, setEnableInteraction] = useState(false);
+
+    useGSAP(() => {
+        if (!containerRef.current) return;
+
+        // 1. Heading Horizontal Motion (Exact Prototype Offsets)
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top bottom",
+                end: "200% top",
+                scrub: true,
+            },
+        });
+
+        tl.to(".first-title", { xPercent: 70 })
+          .to(".sec-title", { xPercent: 25 }, "<")
+          .to(".third-title", { xPercent: -50 }, "<");
+
+        // 2. Pinning & Card Stagger (Exact Prototype Logic)
+        const pinTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: containerRef.current,
+                start: "10% top",
+                end: "200% top",
+                scrub: 1.5,
+                pin: true,
+                onLeave: () => setEnableInteraction(true),
+                onEnterBack: () => setEnableInteraction(true),
+                onEnter: () => setEnableInteraction(false),
+                onLeaveBack: () => setEnableInteraction(false),
+            },
+        });
+
+        pinTl.from(".workshop-card", {
+            yPercent: 150,
+            stagger: 0.2,
+            ease: "power1.inOut",
+        });
+
+        // 3. Button Fade-in
+        pinTl.from(".action-buttons", {
+            opacity: 0,
+            y: 50,
+            duration: 0.5
+        }, "-=0.2");
+
+    }, { scope: containerRef });
 
     return (
         <section
-            className="relative w-full overflow-hidden pt-2 pb-4 lg:py-20"
-            style={{ backgroundColor: "#D8CBB8" }}
+            ref={containerRef}
+            className="testimonials-section relative w-full h-[120dvh] bg-[#e3a458] overflow-hidden"
         >
-            <div className="relative z-10 mx-auto w-full max-w-7xl px-4 lg:px-6 flex flex-col items-center">
-                {/* Heading & Separator */}
-                <div className="relative z-10 mx-auto w-full px-4 lg:px-6 flex flex-col items-center mb-4 lg:mb-12">
-                    <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-[#262626] mb-4 text-center">
-                        Fests & Workshops
-                    </h2>
-                    <div className="relative w-32 h-8 lg:w-40 lg:h-10">
-                        <Image
-                            src="/title-separator.png"
-                            fill
-                            alt="Decorative separator"
-                            className="object-contain"
-                        />
-                    </div>
-
-                    {/* Mobile Description: Placed before subheading as requested */}
-                    <p className="max-w-2xl text-center text-lg text-[#575757] font-serif mt-6 mb-2 px-2 lg:hidden">
-                        Rabuste Cafe organizes inclusive workshops to promote artisanship and celebrate creativity. Join us to learn directly from master craftsmen and experience the joy of making.
-                    </p>
-
-                    {/* Register Now Button (Mobile only) - At the top */}
-                    <div className="lg:hidden mt-4 mb-2">
-                        <JoinNowButton />
-                    </div>
-
-                    {/* Subheading */}
-                    <h3 className="font-serif text-xl lg:text-2xl text-[#3d3d3d] mt-6 font-medium italic">Our Past Workshops</h3>
-
-                    {/* Marquee Text - Both Mobile and Desktop */}
-                    <div className="w-full overflow-hidden mt-6 mb-4">
-                        <motion.div
-                            className="flex whitespace-nowrap"
-                            animate={{
-                                x: ["0%", "-50%"],
-                            }}
-                            transition={{
-                                duration: 20,
-                                repeat: Infinity,
-                                ease: "linear",
-                            }}
-                        >
-                            <span className="font-display text-2xl lg:text-3xl text-[#8B6F47]/40 mx-4">
-                                ✦ Pottery ✦ Coffee Brewing ✦ Latte Art ✦ Pastry Baking ✦ Coffee Tasting ✦ Live Music ✦
-                            </span>
-                            <span className="font-display text-2xl lg:text-3xl text-[#8B6F47]/40 mx-4">
-                                ✦ Pottery ✦ Coffee Brewing ✦ Latte Art ✦ Pastry Baking ✦ Coffee Tasting ✦ Live Music ✦
-                            </span>
-                        </motion.div>
-                    </div>
-                </div>
-
-
-                {/* Desktop Split Layout Container */}
-                <div className="hidden lg:flex flex-col items-center w-full gap-8">
-                    {/* Top 3 Images */}
-                    <div className="grid grid-cols-3 gap-6 w-full">
-                        {topItems.map((item, index) => (
-                            <WorkshopImage key={`top-${index}`} src={item.src} title={item.title} index={index} />
-                        ))}
-                    </div>
-
-                    {/* Description Text (Centered) */}
-                    <p className="max-w-3xl text-center text-lg text-[#575757] font-serif my-2 leading-relaxed px-4">
-                        Rabuste Cafe organizes inclusive workshops to promote artisanship and celebrate
-                        creativity. Join us to learn directly from master craftsmen and experience
-                        the joy of making.
-                    </p>
-
-                    {/* Bottom 3 Images */}
-                    <div className="grid grid-cols-3 gap-6 w-full">
-                        {bottomItems.map((item, index) => (
-                            <WorkshopImage key={`bottom-${index}`} src={item.src} title={item.title} index={index + 3} />
-                        ))}
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="mt-4 flex gap-6">
-                        <JoinNowButton />
-                        <OrganizeNowButton />
-                    </div>
-                </div>
-
-                {/* Mobile Layout (Original Stack) - Preserving 2x3 Grid */}
-                <div className="lg:hidden flex flex-col items-center w-full">
-                    <div className="grid grid-cols-2 gap-4 w-full mb-4">
-                        {workshopItems.map((item, index) => (
-                            <WorkshopImage key={`mobile-${index}`} src={item.src} title={item.title} index={index} />
-                        ))}
-                    </div>
-                    
-                    {/* Organize Now Button (Mobile only) - At the bottom */}
-                    <div className="mt-4">
-                        <OrganizeNowButton />
-                    </div>
-                </div>
+            {/* Exactly as per prototype: Absolute Title Stack */}
+            <div className="absolute size-full flex flex-col items-center pt-[5vw] pointer-events-none select-none z-0">
+                <h1 className="first-title uppercase text-[20.5vw] leading-[125%] tracking-[-.4vw] ml-[2vw] font-bold text-black no-dark-mode">
+                    Our
+                </h1>
+                <h1 className="sec-title uppercase text-[20.5vw] leading-[125%] tracking-[-.4vw] ml-[2vw] font-bold text-[#faeade] no-dark-mode">
+                    Workshop
+                </h1>
+                <h1 className="third-title uppercase text-[20.5vw] leading-[125%] tracking-[-.4vw] ml-[2vw] font-bold text-black no-dark-mode">
+                    Diaries
+                </h1>
             </div>
+
+            {/* Exactly as per prototype: Pinned Box with -ms-44 overlap */}
+            <div className={`pin-box flex items-center justify-center w-full ps-52 absolute 2xl:bottom-32 bottom-[50vh] z-10 no-dark-mode ${enableInteraction ? 'interaction-enabled' : ''}`}>
+                {workshopCards.map((card, index) => (
+                    <div
+                        key={index}
+                        className={`workshop-card md:w-96 w-80 flex-none md:rounded-[2vw] rounded-3xl -ms-44 overflow-hidden 2xl:relative absolute border-[.5vw] border-[#faeade] bg-[#faeade] shadow-2xl transition-transform duration-300 ${card.rotation} ${card.translation}`}
+                    >
+                        <div className="relative aspect-square md:aspect-[3/4] w-full">
+                            <Image
+                                src={card.src}
+                                fill
+                                alt={card.title}
+                                className="object-cover"
+                            />
+                            {/* Label box embedded in card */}
+                            <div className="absolute bottom-4 left-4 right-4 bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10">
+                                <p className="text-[#faeade] font-antonio text-center text-sm md:text-xl uppercase tracking-tighter font-bold">
+                                    {card.title}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Action Buttons: Unified Bottom Center */}
+            <div className="action-buttons absolute bottom-0 pb-4 left-0 right-0 z-50 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 px-4 no-dark-mode">
+                <Link href="/workshops?target=upcoming">
+                    <button className="group relative">
+                        <div className="absolute inset-0 bg-black/20 rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
+                        <div className="relative font-tan-pearl text-xl md:text-3xl text-[#faeade] bg-[#7f3b2d] px-8 md:px-12 py-3 md:py-5 rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl leading-none">
+                            Register for Workshop
+                        </div>
+                    </button>
+                </Link>
+                <Link href="/workshops?target=request-custom-workshop">
+                    <button className="group relative">
+                        <div className="absolute inset-0 bg-black/20 rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
+                        <div className="relative font-tan-pearl text-xl md:text-3xl text-[#7f3b2d] bg-[#faeade] px-8 md:px-12 py-3 md:py-5 rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl leading-none">
+                            Request for Workshop
+                        </div>
+                    </button>
+                </Link>
+            </div>
+            <style jsx>{`
+                .workshop-card {
+                    transition: transform 0.3s ease-out;
+                }
+                :global(.interaction-enabled) .workshop-card:hover {
+                    transform: scale(1.05) translateY(-10px) rotate(0deg) !important;
+                    z-index: 100 !important;
+                }
+            `}</style>
         </section>
-    );
-}
-
-// Reusable Image Component
-function WorkshopImage({ src, title, index }: { src: string; title: string; index: number }) {
-    const ref = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: ref,
-        offset: ["start end", "end start"]
-    });
-
-    const smoothProgress = useSpring(scrollYProgress, {
-        stiffness: 400,
-        damping: 90
-    });
-
-    const y = useTransform(smoothProgress, [0, 1], ["20%", "-20%"]);
-
-    return (
-        <motion.div
-            ref={ref}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="relative aspect-square w-full overflow-hidden rounded-lg cursor-pointer group"
-        >
-            <motion.div style={{ y, scale: 1.5 }} className="relative w-full h-full">
-                <Image
-                    src={src}
-                    fill
-                    alt={title}
-                    className="object-cover transition-all duration-500 ease-in-out lg:group-hover:blur-[2px] lg:group-hover:scale-110"
-                />
-            </motion.div>
-
-            {/* Overlay with Text - Hidden on desktop, visible on hover. Always visible on mobile */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-90 transition-opacity duration-500">
-                <span className="text-[#f0f0f0] font-display text-2xl lg:text-3xl font-bold tracking-wide drop-shadow-md text-center px-4">
-                    {title}
-                </span>
-            </div>
-        </motion.div>
-    );
-}
-
-function JoinNowButton() {
-    const [isHovered, setIsHovered] = useState(false);
-    const text = "Register Now";
-
-    return (
-        <Link href="/workshops#upcoming">
-          <button
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            suppressHydrationWarning
-        >
-            <span className="flex space-x-[2px]">
-                {text.split("").map((char, index) => (
-                    <motion.span
-                        key={index}
-                        animate={
-                            isHovered
-                                ? {
-                                    y: [0, -4, 0],
-                                    transition: {
-                                        duration: 0.4,
-                                        delay: index * 0.05,
-                                        ease: "easeInOut",
-                                    },
-                                }
-                                : { y: 0 }
-                        }
-                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#4a4a4a]"
-                    >
-                        {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                ))}
-            </span>
-        </button>
-        </Link>
-    );
-}
-
-function OrganizeNowButton() {
-    const [isHovered, setIsHovered] = useState(false);
-    const text = "Organize Now";
-
-    return (
-        <Link href="/workshops#request-custom-workshop">
-          <button
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              className="relative px-8 py-3 lg:px-10 lg:py-4 bg-[#8B6F47]/20 hover:bg-[#8B6F47]/30 border-2 border-[#8B6F47]/40 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            suppressHydrationWarning
-        >
-            <span className="flex space-x-[2px]">
-                {text.split("").map((char, index) => (
-                    <motion.span
-                        key={index}
-                        animate={
-                            isHovered
-                                ? {
-                                    y: [0, -4, 0],
-                                    transition: {
-                                        duration: 0.4,
-                                        delay: index * 0.05,
-                                        ease: "easeInOut",
-                                    },
-                                }
-                                : { y: 0 }
-                        }
-                        className="inline-block font-serif text-lg lg:text-xl font-semibold text-[#4a4a4a]"
-                    >
-                        {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                ))}
-            </span>
-        </button>
-        </Link>
     );
 }

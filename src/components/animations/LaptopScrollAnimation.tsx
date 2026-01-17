@@ -89,7 +89,7 @@ export default function LaptopScrollAnimation() {
     // Main Container Area (height determines scroll length, e.g. 400vh = 4 screens long)
     <div
       ref={containerRef}
-      className="relative hidden h-[400vh] w-full bg-[#D8CBB8] lg:block"
+      className="relative hidden h-[400vh] w-full bg-[#faeade] lg:block"
     >
       <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden perspective-[2000px]">
 
@@ -240,18 +240,19 @@ export default function LaptopScrollAnimation() {
         <div className="absolute z-0 w-full flex justify-center items-start top-[68%]">
           <div className="grid grid-cols-3 gap-56 text-center w-[1200px]">
             {[
-              { value: 250, title: "VARIETIES OF COFFEE", description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit aenean" },
-              { value: 123, title: "HOURS OF TESTING", description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit aenean" },
-              { value: 321, title: "COFFEE MARKETS", description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit aenean" }
+              { value: 40, title: "VARIETIES OF COFFEE", suffix: "+", description: "From bold Robusta to smooth Arabica blends, curated for the perfect cup." },
+              { value: 3500, title: "COMMUNITY REVIEWS", suffix: "+", description: "A rapidly growing community of coffee enthusiasts sharing their love for our roasts." },
+              { value: 3, title: "SOURCING REGIONS", description: "Premium beans globally sourced from the finest plantations in Vietnam, Brazil, and India." }
             ].map((stat, index) => (
               <div key={index} className="flex flex-col items-center">
-                <div className="font-display text-8xl text-[#A67C52] mb-4">
+                <div className="font-display text-8xl text-[#7f3b2d] mb-4">
                   <Counter value={stat.value} />
+                  {stat.suffix && <span className="text-4xl ml-1">{stat.suffix}</span>}
                 </div>
                 <h3 className="font-display text-2xl tracking-wider text-[#262626] uppercase mb-3 font-semibold whitespace-nowrap">
                   {stat.title}
                 </h3>
-                <p className="font-serif text-[#444] max-w-sm mx-auto leading-relaxed text-lg">
+                <p className="font-serif text-black max-w-sm mx-auto leading-relaxed text-lg">
                   {stat.description}
                 </p>
               </div>

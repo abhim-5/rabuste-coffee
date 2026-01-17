@@ -1,130 +1,171 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
-import Image from "next/image";
-import BlurImage from "@/components/ui/BlurImage";
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Flip } from "gsap/Flip";
-import styles from "./ArtGallery.module.css";
-import clsx from "clsx";
+import React, { useRef, useEffect } from "react";
+import Link from "next/link";
+import Splitting from "splitting";
+import "splitting/dist/splitting.css";
+import "splitting/dist/splitting-cells.css";
 
-gsap.registerPlugin(ScrollTrigger, Flip);
+gsap.registerPlugin(ScrollTrigger);
 
-const images = [
-  "/home-art/51.jpg", "/home-art/52.jpg", "/home-art/53.jpg", "/home-art/54.jpg",
-  "/home-art/55.jpg", "/home-art/56.jpg", "/home-art/57.jpg", "/home-art/58.jpg",
-  "/home-art/59.jpg", "/home-art/60.jpg", "/home-art/61.jpg"
-];
+const ArtGallery = () => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const heading1Ref = useRef<HTMLSpanElement>(null);
+    const heading2Ref = useRef<HTMLSpanElement>(null);
+    const heading3Ref = useRef<HTMLSpanElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
 
-// Generate diagonal pattern
-// Grid is 10 columns. 
-// We want ~50 items to fill the grid nicely (5 rows).
-const COLS = 10;
-const ROWS = 5;
-const galleryImages: string[] = [];
+    useGSAP(() => {
+        // --- Effect 22 Logic for Headings (Dance) ---
+        const headingEls = [heading1Ref.current, heading2Ref.current, heading3Ref.current].filter(Boolean);
+        
+        headingEls.forEach((el) => {
+            if (!el) return;
+            Splitting({ target: el, by: "chars" });
+            const words = el.querySelectorAll('.word');
+            
+            words.forEach(word => {
+                const chars = word.querySelectorAll('.char');
+                const charsTotal = chars.length;
+                chars.forEach(char => {
+                    const parent = char.parentNode as HTMLElement;
+                    if (parent) gsap.set(parent, { perspective: 1000 });
+                });
 
-for (let i = 0; i < COLS * ROWS; i++) {
-  const row = Math.floor(i / COLS);
-  const col = i % COLS;
-  // Diagonal index logic: (col - row) ensures shift. 
-  // Add large number to avoid negative modulo.
-  const imgIndex = (col - row + images.length * 10) % images.length;
-  galleryImages.push(images[imgIndex]);
-}
-
-export default function ArtGallery() {
-  const galleryRef = useRef<HTMLDivElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    if (!galleryRef.current || !wrapRef.current) return;
-
-    const ctx = gsap.context(() => {
-      // Use matchMedia to run animation only on desktop
-      const mm = gsap.matchMedia();
-
-      mm.add({
-        isDesktop: "(min-width: 1025px)",
-        isMobile: "(max-width: 1024px)",
-        reduceMotion: "(prefers-reduced-motion: reduce)"
-      }, (context) => {
-        const { isMobile } = context.conditions as any;
-        const galleryEl = galleryRef.current!;
-        const galleryCaption = galleryEl.querySelector(`.${styles.caption}`);
-        const galleryItems = galleryEl.querySelectorAll(`.${styles.galleryItem}`);
-
-        // Initial state is "zoomed in" (width: 300% or 200% on mobile)
-
-        // Capture "Final" state (Grid/Zoomed Out, width: 100%)
-        galleryEl.classList.add(styles.gallerySwitch);
-        const flipState = Flip.getState([...Array.from(galleryItems), galleryCaption], { props: "filter, opacity" });
-        galleryEl.classList.remove(styles.gallerySwitch);
-
-        Flip.to(flipState, {
-          ease: "none",
-          absoluteOnLeave: false,
-          absolute: false,
-          scale: true,
-          simple: true,
-          scrollTrigger: {
-            trigger: galleryEl,
-            start: isMobile ? "top 15%" : "center center",
-            end: isMobile ? "+=75%" : "+=500%", // Shorter duration for mobile, long for desktop
-            pin: wrapRef.current,
-            scrub: isMobile ? 1 : 2,
-          },
-          stagger: 0,
+                gsap.fromTo(chars, {
+                    'will-change': 'transform', 
+                    x: (i) => {
+                        const factor = i < Math.ceil(charsTotal/2) ? i : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - i) - 1;
+                        return (charsTotal%2 ? Math.abs(Math.ceil(charsTotal/2)-1-factor) : Math.abs(Math.ceil(charsTotal/2)-factor) )*200*(i < charsTotal/2 ? -1 : 1);
+                    },
+                    y: (i) => {
+                        const factor = i < Math.ceil(charsTotal/2) ? i : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - i) - 1;
+                        return factor*60;
+                    },
+                    rotationY: -270,
+                    rotationZ: (i) => {
+                        const factor = i < Math.ceil(charsTotal/2) ? i : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - i) - 1;
+                        return i < charsTotal/2 ? Math.abs(factor-charsTotal/2)*8 : -1*Math.abs(factor-charsTotal/2)*8;
+                    }
+                }, {
+                    ease: 'power2.inOut',
+                    x: 0,
+                    y: 0,
+                    rotationZ: 0,
+                    rotationY: 0,
+                    scale: 1,
+                    scrollTrigger: {
+                        trigger: ".heading-wrap", // Shared trigger for sync
+                        start: 'top bottom+=40%',
+                        end: 'top top+=15%',
+                        scrub: true,
+                    }
+                });
+            });
         });
-      });
 
-    }, wrapRef);
+        // --- Effect 25 Logic for Text (Stretchy Reveal) ---
+        if (textRef.current) {
+            Splitting({ target: textRef.current, by: "chars" });
+            const chars = textRef.current.querySelectorAll('.char');
+            
+            gsap.fromTo(chars, {
+                'will-change': 'transform',
+                transformOrigin: '50% 100%',
+                scaleY: 0,
+                opacity: 0
+            }, {
+                ease: 'power3.in',
+                opacity: 1,
+                scaleY: 1,
+                stagger: 0.05,
+                scrollTrigger: {
+                    trigger: textRef.current,
+                    start: 'top center-=10%', // Trigger later to allow heading to finish
+                    end: '+=70%', 
+                    scrub: true,
+                    pin: containerRef.current,
+                }
+            });
+        }
+    }, { scope: containerRef });
 
-    return () => ctx.revert();
-  }, []);
+    return (
+        <section 
+            id="art-gallery-section"
+            ref={containerRef}
+            className="w-full py-24 lg:py-40 bg-[#faeade] text-[#7f3b2d] overflow-hidden flex flex-col items-center"
+        >
+            <div className="container mx-auto px-4 flex flex-col items-center gap-12 lg:gap-20">
+                
+                {/* Heading: Rabuste | Presents | Art Gallery */}
+                <div className="heading-wrap flex flex-col items-center text-center gap-4 lg:gap-8">
+                    <span 
+                        ref={heading1Ref}
+                        className="font-tan-pearl text-6xl md:text-8xl lg:text-[10rem] leading-[0.8] block"
+                        data-splitting
+                    >
+                        rabuste
+                    </span>
+                    <span 
+                        ref={heading2Ref}
+                        className="font-tan-pearl text-2xl md:text-3xl lg:text-[3.5rem] leading-[0.8] block opacity-60"
+                        data-splitting
+                    >
+                        presents
+                    </span>
+                    <span 
+                        ref={heading3Ref}
+                        className="font-tan-pearl text-6xl md:text-8xl lg:text-[10rem] leading-[0.8] block"
+                        data-splitting
+                    >
+                        art gallery
+                    </span>
+                </div>
 
-  return (
-    <section className="relative w-full overflow-hidden pt-0 pb-0 lg:pb-24" style={{ backgroundColor: "#D8CBB8" }}>
-      {/* Header Content */}
-      <div className="flex flex-col items-center mb-0 relative z-10 mx-auto w-full px-4 lg:px-6 pt-0 lg:pt-12">
-        <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-center text-[#262626]">
-          Art Gallery
-        </h2>
-        <div className="relative w-32 h-8 lg:w-40 lg:h-10 mb-8">
-          <Image
-            src="/title-separator.png"
-            fill
-            alt="Decorative separator"
-            className="object-contain"
-          />
-        </div>
-        <p className="max-w-2xl text-center text-lg text-[#575757] font-serif mb-12">
-          Art connects the soul to the divine, expressing emotions that words cannot capture.
-          Experience the vibrant heritage and rhythm of life through our curated collection.
-        </p>
-      </div>
+                {/* Text Content: Effect 25 */}
+                <div 
+                    ref={textRef}
+                    className="max-w-4xl text-center px-4"
+                >
+                    <p 
+                        className="font-display text-xl md:text-3xl lg:text-4xl leading-tight font-medium tracking-tight"
+                        data-splitting
+                    >
+                        Art connects the soul to the divine, expressing emotions that words cannot capture. Experience the vibrant heritage and rhythm of life through our curated collection. Every piece tells a story of tradition and the shared human spirit.
+                    </p>
+                </div>
 
-      <div ref={wrapRef} className={styles.galleryWrap}>
-        <div ref={galleryRef} className={clsx(styles.gallery, styles.galleryGridTiny)} id="gallery-7">
-          {galleryImages.map((src, index) => (
-            <div
-              key={index}
-              className={`${styles.galleryItem} relative overflow-hidden`}
-            >
-              <BlurImage
-                src={src}
-                fill
-                alt={`Gallery image ${index + 1}`}
-                className="object-cover"
-                sizes="(max-width: 768px) 33vw, 20vw"
-              />
+                {/* Explore Now Button */}
+                <div className="mt-2 lg:mt-4">
+                    <Link href="/gallery">
+                        <button className="group relative">
+                            <div className="absolute inset-0 bg-[#222123] rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
+                            <div className="relative font-tan-pearl text-2xl lg:text-4xl text-[#faeade] bg-[#222123] px-10 lg:px-16 py-4 lg:py-6 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl leading-none">
+                                Explore Now
+                            </div>
+                        </button>
+                    </Link>
+                </div>
             </div>
-          ))}
-          <div className={clsx(styles.caption, styles.danceTitle)}>
-            Experience the Fine Arts →
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+            
+            <style jsx global>{`
+                .splitting .word {
+                    display: inline-block;
+                    white-space: nowrap;
+                    margin-right: 0.25em; /* Normal word spacing */
+                }
+                .splitting .char {
+                    display: inline-block;
+                    will-change: transform, opacity;
+                    letter-spacing: -0.07em; /* Even tighter letter gap */
+                }
+            `}</style>
+        </section>
+    );
+};
+
+export default ArtGallery;

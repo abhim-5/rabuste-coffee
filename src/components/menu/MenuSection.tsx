@@ -309,7 +309,7 @@ export function MenuSection({
     }
 
     return (
-        <section className="relative w-full py-8 lg:py-12" style={{ backgroundColor: "#D8CBB8" }}>
+        <section className="relative w-full py-8 lg:py-12" style={{ backgroundColor: "#faeade" }}>
             <div className="mx-auto w-full px-4 lg:px-6 max-w-7xl">
                 {/* Section Header - Static */}
                 <motion.div
@@ -320,7 +320,7 @@ export function MenuSection({
                     className="flex flex-col items-center mb-4"
                     data-menu-title
                 >
-                    <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#262626] text-center mb-3">
+                    <h2 className="font-tan-pearl text-4xl lg:text-6xl font-bold text-[#7f3b2d] text-center mb-3 lowercase">
                         {title}
                     </h2>
                     {/* Title Separator */}
@@ -371,12 +371,12 @@ export function MenuSection({
 
             {/* Smart Search Bar */}
             <div className="flex-1 relative group z-40">
-              <div
-                className={`flex items-center bg-[#D8CBB8] border-[0.5px] transition-all duration-300 ease-out
+                <div
+                className={`flex items-center bg-[#faeade] border-[0.5px] transition-all duration-300 ease-out
                   ${
                     showSuggestions || isListening
                       ? "border-[#8B6F47] ring-1 ring-[#8B6F47]/20"
-                      : "border-[#8B6F47] hover:bg-[#c9baa7]"
+                      : "border-[#8B6F47] hover:bg-[#ebdec8]"
                   }
                   py-2 w-full`}
               >
@@ -538,7 +538,7 @@ export function MenuSection({
                                         setShowSortDropdown(!showSortDropdown);
                                         setShowFilterDropdown(false);
                                     }}
-                                    className="flex items-center gap-1 px-4 py-2 border-[0.5px] border-[#8B6F47] bg-[#D8CBB8] text-[#262626] font-sans text-sm font-semibold transition-all cursor-pointer whitespace-nowrap hover:bg-[#c9baa7]"
+                                    className="flex items-center gap-1 px-4 py-2 border-[0.5px] border-[#8B6F47] bg-[#faeade] text-[#262626] font-sans text-sm font-semibold transition-all cursor-pointer whitespace-nowrap hover:bg-[#ebdec8]"
                                 >
                                     Sort
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" className={`transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}>
@@ -581,7 +581,7 @@ export function MenuSection({
                                     className={`flex items-center gap-1 px-4 py-2 border-[0.5px] font-sans text-sm font-semibold transition-all whitespace-nowrap ${
                                         advancedFilters.dealsOnly || advancedFilters.temperature !== 'all' || advancedFilters.milk !== 'all' || advancedFilters.priceRange !== 'all'
                                             ? "bg-[#8B6F47] text-white border-[#8B6F47]"
-                                            : "bg-[#D8CBB8] text-[#262626] border-[#8B6F47] hover:bg-[#c9baa7]"
+                                            : "bg-[#faeade] text-[#262626] border-[#8B6F47] hover:bg-[#ebdec8]"
                                     }`}
                                 >
                                     Filter

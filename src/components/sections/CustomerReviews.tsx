@@ -1,372 +1,182 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
-import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import Link from "next/link";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const reviews = [
     {
         id: 1,
-        name: "Priya Sharma",
-        role: "Coffee Enthusiast",
-        image: "/reviews/customer1.jpg",
+        text: "The ambiance at Rabuste is simply unmatched. It's not just coffee; it's an experience that lingers long after the last sip.",
+        name: "Aditi S.",
         rating: 5,
-        review: "Rabuste has completely transformed my morning routine. The robust flavor of their dark roast is unmatched. Every cup feels like a premium experience.",
-        date: "December 2024",
-        location: "Surat, Gujarat"
     },
     {
         id: 2,
-        name: "Arjun Patel",
-        role: "Regular Customer",
-        image: "/reviews/customer2.jpg",
+        text: "I've travelled across Europe tasting coffees, but the Robusta here has a depth and richness that is truly world-class.",
+        name: "James Anderson",
         rating: 5,
-        review: "The ambiance is incredible, and the coffee? Simply perfect. The baristas are true artists, and you can taste the passion in every sip.",
-        date: "November 2024",
-        location: "Mumbai, Maharashtra"
     },
     {
         id: 3,
-        name: "Ananya Desai",
-        role: "Coffee Connoisseur",
-        image: "/reviews/customer3.jpg",
-        rating: 5,
-        review: "I've traveled the world for coffee, but Rabuste's unique Robusta blend stands out. The bold, chocolatey notes with that smooth finish - absolutely divine.",
-        date: "December 2024",
-        location: "Bangalore, Karnataka"
+        text: "The workshops opened my eyes to the art of brewing. The passion this team has for coffee is contagious and inspiring.",
+        name: "Priya M.",
+        rating: 4.5,
     },
     {
         id: 4,
-        name: "Rahul Mehta",
-        role: "Daily Visitor",
-        image: "/reviews/customer4.jpg",
+        text: "Finally, a place that takes coffee seriously without being pretentious. The perfect spot for both work and deep conversations.",
+        name: "Rahul K.",
         rating: 5,
-        review: "Not just a café, but an experience. The attention to detail, from the brewing process to the presentation, shows true dedication to craft.",
-        date: "November 2024",
-        location: "Delhi NCR"
     },
-    {
-        id: 5,
-        name: "Sneha Iyer",
-        role: "Food Blogger",
-        image: "/reviews/customer5.jpg",
-        rating: 5,
-        review: "Rabuste redefined what I thought coffee could be. The intensity, the aroma, the craftsmanship - it's an art form. My followers can't stop asking about it!",
-        date: "December 2024",
-        location: "Chennai, Tamil Nadu"
-    }
 ];
 
-export function CustomerReviews() {
+export default function CustomerReviews() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const titleRef = useRef<HTMLHeadingElement>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [direction, setDirection] = useState(0); // 1 for next, -1 for previous
-    const [autoPlay, setAutoPlay] = useState(true);
-    const [isPaused, setIsPaused] = useState(false);
-    const sectionRef = useRef(null);
 
-    const { scrollYProgress } = useScroll({
-        target: sectionRef,
-        offset: ["start end", "end start"]
-    });
+    useGSAP(() => {
+        if (!titleRef.current || !containerRef.current) return;
 
-    const smoothProgress = useSpring(scrollYProgress, {
-        stiffness: 400,
-        damping: 90
-    });
+        const words = titleRef.current.querySelectorAll('.word');
 
-    const y = useTransform(smoothProgress, [0, 1], ["10%", "-10%"]);
-    const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+        // Effect 29: Alternating Scale (Discipline above Motivation Always)
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top bottom-=20%", // Animate as it enters view
+                end: "bottom center", 
+                scrub: 1,
+            }
+        });
 
-    // Auto-play carousel
-    useEffect(() => {
-        if (!autoPlay || isPaused) return;
+        // Loop through words to apply specific Effect 29 logic
+        words.forEach((word, pos) => {
+            const chars = word.querySelectorAll('.char');
+            
+            tl.fromTo(chars, {
+                willChange: 'transform', 
+                // Alternating origin: even words (0, 2) from Top-Right (100% 0%), odd (1) from Bottom-Left (0% 100%)
+                // Matches index2.js logic: pos%2 ? 0 : 100, pos%2 ? 100 : 0
+                transformOrigin: `${pos % 2 ? 0 : 100}% ${pos % 2 ? 100 : 0}%`,
+                scale: 0
+            }, 
+            {
+                ease: 'power4',
+                scale: 1,
+                stagger:  {
+                    each: 0.05,
+                    from: pos % 2 ? 'end' : 'start'
+                },
+            }, 0); 
+        });
 
-        const interval = setInterval(() => {
-            setDirection(1);
-            setCurrentIndex((prev) => (prev + 1) % reviews.length);
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [autoPlay, isPaused, currentIndex]);
+    }, { scope: containerRef });
 
     const nextReview = () => {
-        setDirection(1);
         setCurrentIndex((prev) => (prev + 1) % reviews.length);
     };
 
     const prevReview = () => {
-        setDirection(-1);
         setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
     };
 
-    const currentReview = reviews[currentIndex];
-
     return (
-        <>
-            {/* Separator HR */}
-            <div style={{ backgroundColor: "#D8CBB8" }} className="w-full px-4 lg:px-6 py-0">
-                <hr className="border-t border-black/10" />
+        <section
+            ref={containerRef}
+            className="relative w-full pt-24 pb-12 overflow-hidden flex flex-col items-center justify-center text-[#404040]"
+            style={{ 
+                backgroundColor: "#e3a458",
+            }}
+        >
+            {/* Cinematic Overlay - Reduced to avoid darkening the solid color too much */}
+             <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/5 to-black/10 pointer-events-none" />
+
+            {/* Animated Heading (Effect 29: Verified "Discipline above...") */}
+            <div className="relative z-10 w-full overflow-hidden py-4 mb-4 flex justify-center">
+                <h2 
+                    ref={titleRef} 
+                    className="font-['TanPearl'] text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-[#7f3b2d] flex gap-4 md:gap-6 flex-wrap justify-center leading-none"
+                >
+                    {["Reviews", "of", "Customer"].map((word, wordIndex) => (
+                        <span key={wordIndex} className="word inline-block">
+                            {word.split("").map((char, charIndex) => (
+                                <span key={charIndex} className="char inline-block" style={{ minWidth: "0.05em" }}>
+                                    {char}
+                                </span>
+                            ))}
+                        </span>
+                    ))}
+                </h2>
             </div>
 
-            <section
-                ref={sectionRef}
-                className="relative w-full overflow-hidden bg-[#D8CBB8] py-6 lg:py-8"
-            >
-                {/* Cinematic Background Effects */}
-                <motion.div
-                    style={{ y, opacity }}
-                    className="absolute inset-0 pointer-events-none"
-                >
-                    {/* Radial gradient vignette */}
-                    <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/5 to-black/20" />
-                </motion.div>
+            {/* Review Content */}
+            <div className="relative z-10 w-full max-w-4xl px-6 flex flex-col items-center text-center">
+                <Quote className="w-12 h-12 text-[#7f3b2d]/20 mb-6" />
 
-                <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8">
-                    {/* Section Header */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
-                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                        className="text-center mb-4 lg:mb-6"
-                    >
+                <div className="relative w-full min-h-[200px] flex items-center justify-center">
+                    <AnimatePresence mode="wait">
                         <motion.div
-                            initial={{ scale: 0 }}
-                            whileInView={{ scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 200 }}
-                            className="inline-block mb-2 lg:mb-3"
+                            key={currentIndex}
+                            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="flex flex-col items-center"
                         >
-                            <Quote className="w-10 h-10 lg:w-14 lg:h-14 text-[#8B6F47]" />
-                        </motion.div>
-
-                        <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-[#404040] mb-3">
-                            Reviews of Customers
-                        </h2>
-
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                            className="relative w-32 h-8 lg:w-40 lg:h-10 mx-auto mb-3"
-                        >
-                            <Image
-                                src="/title-separator.png"
-                                fill
-                                alt="Decorative separator"
-                                className="object-contain"
-                            />
-                        </motion.div>
-
-                        <p className="font-serif text-lg lg:text-xl text-[#404040]/80 max-w-2xl mx-auto">
-                            Hear what our beloved customers have to say
-                        </p>
-                    </motion.div>
-
-                    {/* Cinematic Carousel Card */}
-                    <div
-                        className="relative max-w-6xl mx-auto"
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                    >
-                        {/* Main Review Card */}
-                        <div className="relative min-h-[220px] lg:min-h-[280px] flex items-center justify-center">
-                            <AnimatePresence mode="wait" custom={direction}>
-                                <motion.div
-                                    key={currentReview.id}
-                                    custom={direction}
-                                    initial={{ x: direction > 0 ? '100vw' : '-100vw' }}
-                                    animate={{ x: 0 }}
-                                    exit={{ x: direction > 0 ? '-100vw' : '100vw' }}
-                                    transition={{
-                                        duration: 0.4,
-                                        ease: [0.22, 1, 0.36, 1]
-                                    }}
-                                    className="w-full"
-                                >
-                                    <div className="flex flex-col lg:grid lg:grid-cols-5 gap-4 lg:gap-8 items-center">
-                                        {/* Image Side - Cinematic with glow */}
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -50 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ duration: 0.8, delay: 0.2 }}
-                                            className="lg:col-span-2 order-1"
-                                        >
-                                            <div className="relative w-48 h-48 lg:w-auto lg:h-auto lg:aspect-square lg:max-w-md mx-auto">
-                                                {/* Glow effect */}
-                                                <div className="absolute -inset-2 lg:-inset-4 bg-gradient-to-br from-[#8B6F47]/30 via-[#8B6F47]/10 to-transparent blur-3xl rounded-full" />
-
-                                                {/* Image container */}
-                                                <div className="relative rounded-lg overflow-hidden shadow-2xl border-2 lg:border-4 border-white/20">
-                                                    <div className="relative w-full h-full aspect-square bg-gradient-to-br from-[#8B6F47]/20 to-[#404040]/20">
-                                                        {/* Placeholder for customer image - using coffee image as fallback */}
-                                                        <Image
-                                                            src="/workshops/1.jpg"
-                                                            alt={currentReview.name}
-                                                            fill
-                                                            sizes="(max-width: 768px) 192px, (max-width: 1200px) 300px, 400px"
-                                                            priority={currentIndex === 0}
-                                                            className="object-cover"
-                                                        />
-
-                                                        {/* Overlay gradient */}
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                                                    </div>
-                                                </div>
-
-                                                {/* Floating badge */}
-                                                <motion.div
-                                                    initial={{ scale: 0 }}
-                                                    animate={{ scale: 1 }}
-                                                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                                                    className="absolute -bottom-2 -right-2 lg:-bottom-4 lg:-right-4 bg-white rounded-full p-2 lg:p-4 shadow-2xl"
-                                                >
-                                                    <div className="flex gap-0.5 lg:gap-1">
-                                                        {[...Array(currentReview.rating)].map((_, i) => (
-                                                            <Star key={i} className="w-3 h-3 lg:w-5 lg:h-5 fill-amber-400 text-amber-400" />
-                                                        ))}
-                                                    </div>
-                                                </motion.div>
-                                            </div>
-                                        </motion.div>
-
-                                        {/* Content Side */}
-                                        <motion.div
-                                            className="lg:col-span-3 order-2 space-y-2 lg:space-y-3"
-                                        >
-                                            {/* Quote Icon */}
-                                            <Quote className="w-10 h-10 lg:w-12 lg:h-12 text-[#8B6F47]/30" />
-
-                                            {/* Review Text with Unjumbled Animation */}
-                                            <motion.p
-                                                initial={{ filter: "blur(4px)" }}
-                                                animate={{ filter: "blur(0px)" }}
-                                                transition={{ duration: 0.6, delay: 0.1 }}
-                                                className="font-serif text-lg lg:text-xl xl:text-2xl leading-relaxed text-black italic"
-                                            >
-                                                <motion.span
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    transition={{
-                                                        duration: 0.8,
-                                                        delay: 0.1,
-                                                        staggerChildren: 0.01
-                                                    }}
-                                                >
-                                                    {currentReview.review.split('').map((char, index) => (
-                                                        <motion.span
-                                                            key={index}
-                                                            initial={{ opacity: 0, y: 10 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{
-                                                                duration: 0.3,
-                                                                delay: index * 0.01
-                                                            }}
-                                                        >
-                                                            {char}
-                                                        </motion.span>
-                                                    ))}
-                                                </motion.span>
-                                            </motion.p>
-
-                                            {/* Author Info - Desktop Only */}
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.5, duration: 0.6 }}
-                                                className="hidden lg:block pt-6 border-t border-[#8B6F47]/20"
-                                            >
-                                                <p className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-2">
-                                                    {currentReview.name}
-                                                </p>
-                                                <p className="font-serif text-lg lg:text-xl text-[#8B6F47] mb-1">
-                                                    {currentReview.role}
-                                                </p>
-                                                <div className="flex flex-wrap items-center gap-4 text-sm font-inter text-[#404040]/60">
-                                                    <span>{currentReview.location}</span>
-                                                    <span>•</span>
-                                                    <span>{currentReview.date}</span>
-                                                </div>
-                                            </motion.div>
-                                        </motion.div>
-
-                                        {/* Mobile Author Info - Visible only on mobile */}
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.3 }}
-                                            className="mt-4 text-center lg:hidden"
-                                        >
-                                            <p className="font-display text-xl font-bold text-[#404040] mb-1">
-                                                {currentReview.name}
-                                            </p>
-                                            <p className="font-serif text-base text-[#8B6F47] mb-1">
-                                                {currentReview.role}
-                                            </p>
-                                            <div className="flex justify-center flex-wrap gap-2 text-xs font-inter text-[#404040]/60">
-                                                <span>{currentReview.location}</span>
-                                                <span>•</span>
-                                                <span>{currentReview.date}</span>
-                                            </div>
-                                        </motion.div>
-                                    </div>
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Navigation Controls */}
-                        <div className="flex items-center justify-center gap-4 lg:gap-6 mt-6 lg:mt-8">
-                            {/* Previous Button */}
-                            <motion.button
-                                onClick={prevReview}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                suppressHydrationWarning
-                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#C8BAA8]/60 backdrop-blur-sm shadow-lg hover:shadow-xl hover:bg-[#C8BAA8]/80 transition-all flex items-center justify-center group"
-                            >
-                                <ChevronLeft className="w-4 h-4 lg:w-5 lg:h-5 text-[#404040] group-hover:text-[#8B6F47] transition-colors" />
-                            </motion.button>
-
-                            {/* Indicator Dots */}
-                            <div className="flex gap-2">
-                                {reviews.map((review, index) => (
-                                    <motion.button
-                                        key={review.id}
-                                        onClick={() => {
-                                            setDirection(index > currentIndex ? 1 : -1);
-                                            setCurrentIndex(index);
-                                        }}
-                                        whileHover={{ scale: 1.2 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        suppressHydrationWarning
-                                        className={`rounded-full transition-all duration-300 ${index === currentIndex
-                                            ? "w-12 h-3 bg-[#8B6F47]"
-                                            : "w-3 h-3 bg-[#404040]/30 hover:bg-[#404040]/50"
-                                            }`}
+                            <p className="font-serif text-xl md:text-3xl leading-relaxed text-[#2a2a2a] mb-6">
+                                "{reviews[currentIndex].text}"
+                            </p>
+                            
+                            <div className="flex items-center gap-1 text-[#7f3b2d] mb-3">
+                                {[...Array(5)].map((_, i) => (
+                                    <Star 
+                                        key={i} 
+                                        className={`w-5 h-5 ${i < Math.floor(reviews[currentIndex].rating) ? "fill-current" : "opacity-30"}`} 
                                     />
                                 ))}
                             </div>
 
-                            {/* Next Button */}
-                            <motion.button
-                                onClick={nextReview}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                suppressHydrationWarning
-                                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#C8BAA8]/60 backdrop-blur-sm shadow-lg hover:shadow-xl hover:bg-[#C8BAA8]/80 transition-all flex items-center justify-center group"
-                            >
-                                <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5 text-[#404040] group-hover:text-[#8B6F47] transition-colors" />
-                            </motion.button>
-                        </div>
-                    </div>
+                            <h3 className="font-display text-lg md:text-2xl font-bold text-[#7f3b2d]">
+                                - {reviews[currentIndex].name}
+                            </h3>
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
 
+                {/* Navigation Buttons */}
+                <div className="flex items-center gap-8 mt-10">
+                    <button 
+                        onClick={prevReview}
+                        className="p-3 rounded-full border border-[#7f3b2d]/20 text-[#7f3b2d] hover:bg-[#7f3b2d] hover:text-[#faeade] transition-all duration-300 hover:scale-110"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button 
+                        onClick={nextReview}
+                        className="p-3 rounded-full border border-[#7f3b2d]/20 text-[#7f3b2d] hover:bg-[#7f3b2d] hover:text-[#faeade] transition-all duration-300 hover:scale-110"
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+                </div>
 
-            </section>
-        </>
+                {/* Franchise Inquiry Button */}
+                <div className="mt-12">
+                   <Link href="/about-us#franchise-inquiry">
+                        <button className="px-8 py-3 bg-[#7f3b2d] text-[#faeade] rounded-full font-display text-xl hover:bg-[#5e2b21] transition-all duration-300 hover:scale-105 shadow-lg">
+                            Own our Franchise
+                        </button>
+                   </Link>
+                </div>
+            </div>
+
+        </section>
     );
 }
-
-export default CustomerReviews;
