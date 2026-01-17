@@ -20,6 +20,8 @@ export default function WhatIsRobusta() {
     const initializeSplitting = async () => {
       const Splitting = (await import("splitting")).default;
       
+      if (!titleRef.current) return;
+      
       // Initialize Splitting
       Splitting({ target: titleRef.current, by: "chars" });
 

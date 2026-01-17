@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,9 +29,22 @@ import { MyCouponsSection } from "@/components/profile/MyCouponsSection";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useCart } from "@/hooks/useCart";
 
+// Component that uses useSearchParams - must be wrapped in Suspense
+function TabHandler({ setActiveSection }: { setActiveSection: (tab: string) => void }) {
+    const searchParams = useSearchParams();
+    
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['orders', 'workshops', 'art', 'coupons', 'reviews', 'franchise-requests', 'workshop-requests'].includes(tab)) {
+            setActiveSection(tab);
+        }
+    }, [searchParams, setActiveSection]);
+    
+    return null;
+}
+
 export default function ProfilePage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const { user, signOut } = useAuth();
     const { profile, loading: profileLoading, updateProfile } = useProfile();
     const { stats, loading: statsLoading } = useProfileStats();
@@ -106,14 +119,6 @@ export default function ProfilePage() {
             console.error('Error reordering:', error);
         }
     };
-
-    // Handle deep linking to tabs
-    useEffect(() => {
-        const tab = searchParams.get('tab');
-        if (tab && ['orders', 'workshops', 'art', 'coupons', 'reviews', 'franchise-requests', 'workshop-requests'].includes(tab)) {
-            setActiveSection(tab);
-        }
-    }, [searchParams]);
 
     // Edit form states
     const [editName, setEditName] = useState("");
@@ -261,6 +266,9 @@ export default function ProfilePage() {
 
     return (
         <>
+            <Suspense fallback={null}>
+                <TabHandler setActiveSection={setActiveSection} />
+            </Suspense>
             <Navbar />
             <main className="min-h-screen" style={{ backgroundColor: "#faeade" }}>
                 {/* Reward Notification Toast */}

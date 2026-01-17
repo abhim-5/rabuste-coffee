@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getMenuItemImageUrl } from '@/lib/utils/menuImages';
 
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
+
 // Enable ISR with 5 minute revalidation
 export const revalidate = 300;
 

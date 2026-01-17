@@ -22,6 +22,10 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     if (hasSeenLoader) {
       setIsLoading(false);
       setShowContent(true);
+      // Trigger loader-complete event immediately so animations work
+      setTimeout(() => {
+        window.dispatchEvent(new Event('loader-complete'));
+      }, 100);
       return;
     }
 

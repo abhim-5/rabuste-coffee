@@ -78,7 +78,7 @@ export function RobustaVsAmericano() {
       const Splitting = (await import("splitting")).default;
       
       // Initialize Splitting for Title
-      if (titleRef.current!.querySelectorAll('.char').length === 0) {
+      if (titleRef.current && titleRef.current.querySelectorAll('.char').length === 0) {
         Splitting({ target: titleRef.current, by: "chars" });
       }
 
