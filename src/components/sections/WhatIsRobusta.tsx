@@ -118,31 +118,35 @@ export default function WhatIsRobusta() {
         ref={sectionRef} 
         className="w-full bg-[#faeade] text-[#7f3b2d] overflow-hidden"
       >
-      <div className="w-full h-full flex flex-col md:flex-row min-h-[80vh]">
+      <div className="w-full h-full flex flex-col md:flex-row min-h-[80vh] relative">
         
-        {/* Left Content (Text) */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-20 gap-8 md:gap-12 relative z-10 order-1 md:order-1">
-          <h2 
-            ref={titleRef}
-            className="text-[12vw] md:text-[6rem] lg:text-[7.5rem] leading-[0.9] text-[#7f3b2d] font-['TanPearl'] relative -top-12 md:-top-35"
-          >
-            What is Robusta
-          </h2>
+        {/* Text and Heading Wrapper - uses contents on mobile to reorder children individually */}
+        <div className="contents md:flex md:w-1/2 md:flex-col md:justify-center md:p-20 md:gap-12 md:order-1 relative z-10">
+          <div className="order-1 p-8 pb-0 md:p-0">
+            <h2 
+              ref={titleRef}
+              className="text-[12vw] md:text-[6rem] lg:text-[7.5rem] leading-[0.9] text-[#7f3b2d] font-['TanPearl'] relative -top-12 md:-top-35"
+            >
+              What is Robusta
+            </h2>
+          </div>
           
-          <div 
-            ref={textContainerRef}
-            className="flex flex-col gap-6 text-[#7f3b2d]/80 font-sans text-base md:text-lg leading-relaxed max-w-xl"
-          >
-            <p>
-              Robusta coffee, originating from the Coffea canephora plant, creates a bold statement in every cup. 
-              Unlike its delicate cousin Arabica, Robusta thrives in lower altitudes and hotter climates, 
-              developing a strong, full-bodied profile with distinctive earthy and nutty notes.
-            </p>
-            <p>
-              Packed with nearly double the caffeine and rich in antioxidants, it produces a thick, 
-              golden crema that is essential for the perfect espresso. It is coffee solely defined by strength, 
-              resilience, and an unapologetically intense flavor.
-            </p>
+          <div className="order-3 p-8 pt-4 md:p-0">
+            <div 
+              ref={textContainerRef}
+              className="flex flex-col gap-6 text-[#7f3b2d]/80 font-sans text-base md:text-lg leading-relaxed max-w-xl"
+            >
+              <p>
+                Robusta coffee, originating from the Coffea canephora plant, creates a bold statement in every cup. 
+                Unlike its delicate cousin Arabica, Robusta thrives in lower altitudes and hotter climates, 
+                developing a strong, full-bodied profile with distinctive earthy and nutty notes.
+              </p>
+              <p>
+                Packed with nearly double the caffeine and rich in antioxidants, it produces a thick, 
+                golden crema that is essential for the perfect espresso. It is coffee solely defined by strength, 
+                resilience, and an unapologetically intense flavor.
+              </p>
+            </div>
           </div>
         </div>
 
