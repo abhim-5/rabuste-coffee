@@ -41,13 +41,10 @@ export default function Home() {
 
         {/* Main Menu Section */}
         <MenuLabels />
-        <SectionDivider />
+        <SectionDivider backgroundColor="#faeade" themeColor="#7f3b2d" />
 
         {/* Art Gallery Section */}
         <ArtGallery />
-
-        {/* Separator */}
-        <SectionDivider />
 
         {/* Fests & Workshops Section */}
         <FestsAndWorkshops />
@@ -55,10 +52,7 @@ export default function Home() {
 
         {/* Customer Reviews Section */}
         <CustomerReviews />
-        <SectionDivider />
 
-        {/* Franchise Info Section */}
-        <FranchiseInfo />
 
         {/* Footer */}
         <Footer />
