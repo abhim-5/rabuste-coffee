@@ -32,11 +32,14 @@ export async function POST(req: Request) {
                 notes: `Paid: ${razorpay_payment_id}`
             })
             .eq('id', order_id)
-            .select()
-            .single();
+            .select('*')
+            .maybeSingle();
+
+        console.log('First update attempt:', { updatedOrder, updateError });
 
         // If failed, try by order_number (for retry payments)
-        if (updateError) {
+        if (!updatedOrder) {
+            console.log('Trying by order_number:', order_id);
             const result = await supabase
                 .from('orders')
                 .update({ 
@@ -45,11 +48,12 @@ export async function POST(req: Request) {
                     notes: `Paid: ${razorpay_payment_id}`
                 })
                 .eq('order_number', order_id)
-                .select()
-                .single();
+                .select('*')
+                .maybeSingle();
             
             updatedOrder = result.data;
             updateError = result.error;
+            console.log('Second update attempt (by order_number):', { updatedOrder, updateError });
         }
 
         if (updateError) {
@@ -64,10 +68,58 @@ export async function POST(req: Request) {
 
         console.log('Order updated successfully:', updatedOrder);
 
+        // 3. Award next-order coupon if eligible
+        let couponEarned = null;
+        try {
+            const orderTotal = updatedOrder.subtotal || updatedOrder.total || 0;
+            console.log(`💰 Order total for coupon calculation: ₹${orderTotal}`);
+            
+            let discountAmount = 0;
+            
+            if (orderTotal >= 700) {
+                discountAmount = 30;
+            } else if (orderTotal >= 500) {
+                discountAmount = 20;
+            }
+
+            console.log(`🎁 Discount amount calculated: ₹${discountAmount}`);
+
+            if (discountAmount > 0) {
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + 30);
+
+                console.log('💾 Attempting to insert coupon...');
+                const { data: insertedCoupon, error: couponError } = await supabase
+                    .from('user_coupons')
+                    .insert({
+                        user_id: updatedOrder.user_id,
+                        discount_amount: discountAmount,
+                        earned_from_order_id: updatedOrder.id,
+                        expires_at: expiryDate.toISOString()
+                    })
+                    .select()
+                    .single();
+
+                console.log('💾 Insert result:', { insertedCoupon, couponError });
+
+                if (!couponError) {
+                    couponEarned = { amount: discountAmount };
+                    console.log(`✅ User earned ₹${discountAmount} coupon!`);
+                } else {
+                    console.error('❌ Failed to insert coupon:', couponError);
+                }
+            } else {
+                console.log('❌ Order total not eligible for coupon');
+            }
+        } catch (error) {
+            console.error('Failed to award coupon:', error);
+        }
+
         return NextResponse.json({ 
             success: true, 
             message: 'Payment verified and order updated',
-            order: updatedOrder
+            order: updatedOrder,
+            couponEarned
         });
 
     } catch (error: any) {

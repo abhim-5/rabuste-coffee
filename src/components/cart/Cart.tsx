@@ -62,46 +62,51 @@ export function Cart({
     const [orderType, setOrderType] = useState<OrderType>("takeaway-scheduled");
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
-    const [couponEarned, setCouponEarned] = useState<boolean>(false);
+    const [couponEarned, setCouponEarned] = useState<{ amount: number } | null>(null);
     const [completedOrderNumber, setCompletedOrderNumber] = useState<string>('');
-    const [availableCoupons, setAvailableCoupons] = useState<AvailableCouponsResponse | null>(null);
-    const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null);
+    const [lastPaymentId, setLastPaymentId] = useState<string>('');
+    const [userNextOrderCoupons, setUserNextOrderCoupons] = useState<any[]>([]);
 
-    // Fetch available coupons whenever cart changes
+    // Calculate regular cart discount (auto-applied based on cart total)
+    const calculateRegularDiscount = (cartTotal: number): number => {
+        if (cartTotal >= 500) return 30;
+        if (cartTotal >= 400) return 25;
+        if (cartTotal >= 300) return 20;
+        if (cartTotal >= 200) return 15;
+        return 0;
+    };
+
+    const regularDiscount = calculateRegularDiscount(filteredTotal);
+
+    // Get best next-order coupon if any
+    const bestNextOrderCoupon = userNextOrderCoupons
+        .filter((c: any) => !c.is_used)
+        .sort((a: any, b: any) => b.discount_amount - a.discount_amount)[0];
+
+    const nextOrderDiscount = bestNextOrderCoupon?.discount_amount || 0;
+    const totalDiscount = regularDiscount + nextOrderDiscount;
+
+    // Fetch user's next-order reward coupons
     React.useEffect(() => {
-        const fetchCoupons = async () => {
-            if (!currentUser || filteredItems.length === 0 || hasGalleryItems) {
-                setAvailableCoupons(null);
+        const fetchUserCoupons = async () => {
+            if (!currentUser || hasGalleryItems) {
+                setUserNextOrderCoupons([]);
                 return;
             }
 
             try {
-                const response = await fetch('/api/coupons/available', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cart_total: filteredTotal,
-                        items: filteredItems.map(item => ({
-                            id: String(item.menuItem.id),
-                            name: item.menuItem.name,
-                            category: item.menuItem.category,
-                            price: item.menuItem.price,
-                            quantity: item.quantity,
-                        })),
-                    }),
-                });
-
+                const response = await fetch('/api/coupons/my-coupons');
                 const data = await response.json();
                 if (data.success) {
-                    setAvailableCoupons(data);
+                    setUserNextOrderCoupons(data.coupons || []);
                 }
             } catch (error) {
-                console.error('Error fetching coupons:', error);
+                console.error('Error fetching user coupons:', error);
             }
         };
 
-        fetchCoupons();
-    }, [filteredTotal, filteredItems.length, currentUser, hasGalleryItems]);
+        fetchUserCoupons();
+    }, [currentUser, hasGalleryItems]);
 
     // Get gallery items not in cart
     const cartArtIds = filteredItems.map(item => {
@@ -205,6 +210,11 @@ export function Cart({
         setIsProcessingOrder(true);
 
         try {
+            const finalTotal = filteredTotal - totalDiscount;
+
+            console.log('🔐 Current user status:', currentUser ? 'Authenticated' : 'Not authenticated');
+            console.log('💰 Payment details:', { filteredTotal, regularDiscount, nextOrderDiscount, totalDiscount, finalTotal });
+
             const orderPayload: CreateOrderRequest = {
                 orderType,
                 scheduledTime: orderType === 'takeaway-scheduled'
@@ -221,16 +231,22 @@ export function Cart({
                 })),
                 subtotal: filteredTotal,
                 tax: 0,
-                total: filteredTotal,
+                total: finalTotal, // Use discounted total
                 notes: ''
             };
+
+            console.log('📦 Creating order with payload:', orderPayload);
 
             const orderRes = await fetch('/api/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderPayload)
             });
+
+            console.log('🔍 Order response status:', orderRes.status, orderRes.statusText);
+
             const data = await orderRes.json();
+            console.log('📥 Order response data:', data);
 
             if (!data.success) throw new Error(data.error || 'Failed to create order');
 
@@ -275,10 +291,11 @@ export function Cart({
                         const verifyData = await verifyRes.json();
 
                         if (verifyData.success) {
-                            // Generate Bill
+                            // Generate Bill with proper order number
                             const { generateBillPDF } = await import('@/utils/billGenerator');
+
                             generateBillPDF({
-                                orderId: response.razorpay_payment_id,
+                                orderId: data.orderNumber || `INV-${Date.now()}`,
                                 date: new Date().toLocaleDateString(),
                                 customerName: currentUser.email || 'Customer',
                                 items: filteredItems.map(i => ({
@@ -288,13 +305,21 @@ export function Cart({
                                     subtotal: i.subtotal
                                 })),
                                 subtotal: filteredTotal,
-                                total: filteredTotal,
+                                discount: totalDiscount,
+                                total: filteredTotal - totalDiscount,
                                 paymentMethod: 'Razorpay Online'
                             });
 
-                            // Store order details for coupon notification
-                            setCouponEarned(data.couponEarned || false);
-                            setCompletedOrderNumber(data.orderNumber);
+                            // Check if coupon was earned (from verify-payment API)
+                            console.log('Verify payment response:', verifyData);
+                            if (verifyData.couponEarned) {
+                                console.log('✅ Coupon earned:', verifyData.couponEarned);
+                                setCouponEarned(verifyData.couponEarned);
+                            } else {
+                                console.log('❌ No coupon earned');
+                            }
+                            setCompletedOrderNumber(data.orderNumber || response.razorpay_payment_id);
+                            setLastPaymentId(response.razorpay_payment_id);
 
                             setIsPaymentSuccess(true);
                             onClearCart();
@@ -358,11 +383,23 @@ export function Cart({
                                     <CheckCircle className="w-10 h-10 text-green-600" />
                                 </div>
                                 <h2 className="font-display text-3xl font-bold text-[#262626] mb-2">
-                                    Order Placed!
+                                    Order Placed Successfully!
                                 </h2>
-                                <p className="font-sans text-stone-600 mb-8 max-w-xs mx-auto">
+                                <p className="font-sans text-stone-600 mb-6 max-w-xs mx-auto">
                                     Your order has been confirmed. A receipt has been downloaded to your device.
                                 </p>
+
+                                {/* Order Number Card */}
+                                <div className="w-full max-w-md mb-6 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-dashed border-[#8B6F47] rounded-xl">
+                                    <p className="font-sans text-sm text-[#78716c] mb-1">Your Order Number</p>
+                                    <p className="font-display text-3xl font-bold text-[#8B6F47] tracking-wide">
+                                        {completedOrderNumber || 'Generating...'}
+                                    </p>
+                                    {/* Small Razorpay Payment ID for support reference */}
+                                    <p className="font-sans text-xs text-[#a8a29e] mt-2">
+                                        Payment ID: {lastPaymentId || 'N/A'}
+                                    </p>
+                                </div>
 
                                 <div className="w-full space-y-3">
                                     <button
@@ -376,7 +413,10 @@ export function Cart({
                                     </button>
 
                                     <button
-                                        onClick={onClose}
+                                        onClick={() => {
+                                            setIsPaymentSuccess(false);
+                                            onClose();
+                                        }}
                                         className="w-full bg-white border border-[#e7e5e4] text-[#78716c] font-sans font-semibold py-4 rounded-xl hover:bg-stone-50 transition-colors"
                                     >
                                         Back to Menu
@@ -664,98 +704,40 @@ export function Cart({
                                             )}
 
 
-                                            {/* Coupon Progress Section - Show only NEXT coupon */}
-                                            {hasMenuItems && !hasGalleryItems && currentUser && availableCoupons && (() => {
-                                                // Find the next coupon to unlock (closest to being unlocked)
-                                                const nextCoupon = availableCoupons.cart_coupons
-                                                    .filter(c => !c.can_apply)
-                                                    .sort((a, b) => a.min_cart - b.min_cart)[0];
-
-                                                // Find all unlocked coupons sorted by discount (highest first)
-                                                const unlockedCoupons = availableCoupons.cart_coupons
-                                                    .filter(c => c.can_apply)
-                                                    .sort((a, b) => b.discount - a.discount);
-
-                                                // Priority: Show BEST unlocked coupon, or the next one to unlock
-                                                const displayCoupon = unlockedCoupons[0] || nextCoupon;
-
-                                                if (!displayCoupon) return null;
-
-                                                return (
-                                                    <div className="mb-6">
-                                                        <motion.div
-                                                            key={displayCoupon.id}
-                                                            initial={{ opacity: 0, y: -10 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ duration: 0.3 }}
-                                                            className={`p-4 border-2 rounded-xl shadow-md ${displayCoupon.can_apply
-                                                                ? "border-green-500 bg-gradient-to-br from-green-50 to-emerald-50"
-                                                                : "border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50"
-                                                                }`}
-                                                        >
+                                            {/* Coupon Progress Section - Show BEST unlocked + NEXT to unlock */}
+                                            {/* Simple Discount Display */}
+                                            {hasMenuItems && !hasGalleryItems && currentUser && (regularDiscount > 0 || nextOrderDiscount > 0) && (
+                                                <div className="mb-6 space-y-3">
+                                                    {regularDiscount > 0 && (
+                                                        <div className="p-4 border-2 rounded-xl shadow-md border-green-500 bg-gradient-to-br from-green-50 to-emerald-50">
                                                             <div className="flex items-start gap-3">
-                                                                <motion.div
-                                                                    animate={{
-                                                                        rotate: displayCoupon.can_apply ? [0, 15, -15, 0] : 0,
-                                                                        scale: displayCoupon.can_apply ? [1, 1.15, 1] : 1
-                                                                    }}
-                                                                    transition={{ duration: 0.6 }}
-                                                                >
-                                                                    <Gift className={`w-6 h-6 flex-shrink-0 ${displayCoupon.can_apply ? "text-green-600" : "text-orange-500"}`} />
-                                                                </motion.div>
+                                                                <Gift className="w-6 h-6 flex-shrink-0 text-green-600" />
                                                                 <div className="flex-1">
-                                                                    <h4 className="font-sans text-base font-bold text-gray-900 mb-1">
-                                                                        {displayCoupon.name}
-                                                                    </h4>
-                                                                    <p className="font-sans text-sm text-gray-700 mb-3">
-                                                                        {displayCoupon.message}
-                                                                    </p>
-
-                                                                    {!displayCoupon.can_apply && displayCoupon.min_cart > filteredTotal && (
-                                                                        <>
-                                                                            <div className="relative w-full h-3 bg-white rounded-full overflow-hidden border-2 border-orange-300 mb-2 shadow-inner">
-                                                                                <motion.div
-                                                                                    initial={{ width: "0%" }}
-                                                                                    animate={{ width: `${displayCoupon.progress}%` }}
-                                                                                    transition={{
-                                                                                        type: "spring",
-                                                                                        stiffness: 100,
-                                                                                        damping: 15,
-                                                                                        duration: 0.6
-                                                                                    }}
-                                                                                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 shadow-sm"
-                                                                                />
-                                                                            </div>
-                                                                            <div className="flex items-center justify-between">
-                                                                                <p className="text-sm font-bold text-orange-600">
-                                                                                    Add ₹{(displayCoupon.min_cart - filteredTotal).toFixed(0)} more
-                                                                                </p>
-                                                                                <p className="text-xs text-orange-500">
-                                                                                    {displayCoupon.progress.toFixed(0)}% complete
-                                                                                </p>
-                                                                            </div>
-                                                                        </>
-                                                                    )}
-
-                                                                    {displayCoupon.can_apply && (
-                                                                        <motion.div
-                                                                            initial={{ scale: 0.9, opacity: 0 }}
-                                                                            animate={{ scale: 1, opacity: 1 }}
-                                                                            transition={{ delay: 0.1 }}
-                                                                            className="flex items-center gap-2 p-3 bg-white rounded-lg border-2 border-green-400 shadow-sm"
-                                                                        >
-                                                                            <CheckCircle className="w-5 h-5 text-green-600" />
-                                                                            <p className="text-sm font-bold text-green-700">
-                                                                                ₹{displayCoupon.discount} OFF will be applied!
-                                                                            </p>
-                                                                        </motion.div>
-                                                                    )}
+                                                                    <div className="flex items-center justify-between">
+                                                                        <p className="font-semibold text-green-800">Cart Discount Applied!</p>
+                                                                        <span className="text-2xl font-bold text-green-700">-₹{regularDiscount}</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-green-600 mt-1">Auto-applied based on cart value</p>
                                                                 </div>
                                                             </div>
-                                                        </motion.div>
-                                                    </div>
-                                                );
-                                            })()}
+                                                        </div>
+                                                    )}
+                                                    {nextOrderDiscount > 0 && (
+                                                        <div className="p-4 border-2 rounded-xl shadow-md border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50">
+                                                            <div className="flex items-start gap-3">
+                                                                <Gift className="w-6 h-6 flex-shrink-0 text-purple-600" />
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <p className="font-semibold text-purple-800">Reward Coupon Applied!</p>
+                                                                        <span className="text-2xl font-bold text-purple-700">-₹{nextOrderDiscount}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
                                         </>
                                     )}
                                 </div>
@@ -763,13 +745,7 @@ export function Cart({
                                 {filteredItems.length > 0 && (
                                     <div className="border-t-[0.5px] border-[#8B6F47] px-6 py-5" style={{ backgroundColor: "#D8CBB8" }}>
                                         {hasMenuItems && (() => {
-                                            // Calculate discount if any coupon is applied
-                                            const appliedCoupon = availableCoupons?.cart_coupons
-                                                ?.filter(c => c.can_apply)
-                                                .sort((a, b) => b.discount - a.discount)[0];
-
-                                            const discount = appliedCoupon?.discount || 0;
-                                            const finalTotal = filteredTotal - discount;
+                                            const finalTotal = filteredTotal - totalDiscount;
 
                                             return (
                                                 <>
@@ -780,7 +756,7 @@ export function Cart({
                                                             <span className="font-sans text-gray-900">₹{filteredTotal}</span>
                                                         </div>
 
-                                                        {discount > 0 && (
+                                                        {totalDiscount > 0 && (
                                                             <motion.div
                                                                 initial={{ opacity: 0, y: -5 }}
                                                                 animate={{ opacity: 1, y: 0 }}
@@ -788,9 +764,9 @@ export function Cart({
                                                             >
                                                                 <span className="font-sans text-green-600 font-semibold flex items-center gap-1">
                                                                     <Gift className="w-4 h-4" />
-                                                                    Coupon Discount
+                                                                    Total Discount
                                                                 </span>
-                                                                <span className="font-sans text-green-600 font-bold">- ₹{discount}</span>
+                                                                <span className="font-sans text-green-600 font-bold">- ₹{totalDiscount}</span>
                                                             </motion.div>
                                                         )}
 
@@ -798,25 +774,25 @@ export function Cart({
                                                             <div className="flex items-center justify-between">
                                                                 <span className="font-serif text-xl text-[#404040] font-bold">Total</span>
                                                                 <div className="text-right">
-                                                                    {discount > 0 && (
+                                                                    {totalDiscount > 0 && (
                                                                         <div className="text-sm text-gray-500 line-through">₹{filteredTotal}</div>
                                                                     )}
                                                                     <motion.span
                                                                         key={finalTotal}
                                                                         initial={{ scale: 1.1 }}
                                                                         animate={{ scale: 1 }}
-                                                                        className={`font-serif text-2xl font-bold ${discount > 0 ? "text-green-600" : "text-gray-900"
+                                                                        className={`font-serif text-2xl font-bold ${totalDiscount > 0 ? "text-green-600" : "text-gray-900"
                                                                             }`}
                                                                     >
                                                                         ₹{finalTotal}
                                                                     </motion.span>
-                                                                    {discount > 0 && (
+                                                                    {totalDiscount > 0 && (
                                                                         <motion.div
                                                                             initial={{ opacity: 0 }}
                                                                             animate={{ opacity: 1 }}
                                                                             className="text-xs text-green-600 font-semibold"
                                                                         >
-                                                                            You saved ₹{discount}! 🎉
+                                                                            You saved ₹{totalDiscount}! 🎉
                                                                         </motion.div>
                                                                     )}
                                                                 </div>
@@ -881,108 +857,111 @@ export function Cart({
                         )}
                     </motion.div>
                 </React.Fragment>
-            )}
+            )
+            }
 
             {/* Next-Order Coupon Earned Notification */}
-            {couponEarned && isPaymentSuccess && availableCoupons?.config && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: -20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
-                    onClick={() => {
-                        setCouponEarned(false);
-                        setIsPaymentSuccess(false);
-                    }}
-                >
+            {
+                couponEarned && isPaymentSuccess && (
                     <motion.div
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-gradient-to-br from-purple-50 via-white to-pink-50 border-4 border-purple-500 rounded-2xl shadow-2xl p-8 max-w-md w-full relative overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+                        onClick={() => {
+                            setCouponEarned(null);
+                            setIsPaymentSuccess(false);
+                        }}
                     >
-                        {/* Decorative elements */}
                         <motion.div
-                            animate={{
-                                rotate: [0, 360],
-                                scale: [1, 1.2, 1]
-                            }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="absolute -top-10 -right-10 w-32 h-32 bg-purple-200 rounded-full opacity-20"
-                        />
-                        <motion.div
-                            animate={{
-                                rotate: [360, 0],
-                                scale: [1, 1.1, 1]
-                            }}
-                            transition={{ duration: 3, repeat: Infinity }}
-                            className="absolute -bottom-10 -left-10 w-40 h-40 bg-pink-200 rounded-full opacity-20"
-                        />
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-gradient-to-br from-purple-50 via-white to-pink-50 border-4 border-purple-500 rounded-2xl shadow-2xl p-8 max-w-md w-full relative overflow-hidden"
+                        >
+                            {/* Decorative elements */}
+                            <motion.div
+                                animate={{
+                                    rotate: [0, 360],
+                                    scale: [1, 1.2, 1]
+                                }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="absolute -top-10 -right-10 w-32 h-32 bg-purple-200 rounded-full opacity-20"
+                            />
+                            <motion.div
+                                animate={{
+                                    rotate: [360, 0],
+                                    scale: [1, 1.1, 1]
+                                }}
+                                transition={{ duration: 3, repeat: Infinity }}
+                                className="absolute -bottom-10 -left-10 w-40 h-40 bg-pink-200 rounded-full opacity-20"
+                            />
 
-                        <div className="relative z-10">
-                            <div className="flex flex-col items-center text-center mb-6">
-                                <motion.div
-                                    animate={{
-                                        rotate: [0, 10, -10, 0],
-                                        scale: [1, 1.1, 1]
-                                    }}
-                                    transition={{
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        repeatDelay: 1
-                                    }}
-                                    className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4 shadow-lg"
-                                >
-                                    <Gift className="w-10 h-10 text-white" />
-                                </motion.div>
-                                <h2 className="font-display text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
-                                    Next-Order Coupon Earned! 🎉
-                                </h2>
-                                <p className="font-sans text-lg text-gray-700 font-semibold">
-                                    You've unlocked a special reward!
-                                </p>
-                            </div>
+                            <div className="relative z-10">
+                                <div className="flex flex-col items-center text-center mb-6">
+                                    <motion.div
+                                        animate={{
+                                            rotate: [0, 10, -10, 0],
+                                            scale: [1, 1.1, 1]
+                                        }}
+                                        transition={{
+                                            duration: 0.8,
+                                            repeat: Infinity,
+                                            repeatDelay: 1
+                                        }}
+                                        className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4 shadow-lg"
+                                    >
+                                        <Gift className="w-10 h-10 text-white" />
+                                    </motion.div>
+                                    <h2 className="font-display text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
+                                        Next-Order Coupon Earned! 🎉
+                                    </h2>
+                                    <p className="font-sans text-lg text-gray-700 font-semibold">
+                                        You've unlocked a special reward!
+                                    </p>
+                                </div>
 
-                            <div className="bg-white rounded-xl p-6 border-2 border-purple-300 shadow-inner mb-6">
-                                <div className="flex items-center justify-center gap-3 mb-3">
-                                    <div className="text-4xl font-bold text-purple-600">₹{availableCoupons?.config?.next_order_discount || 50}</div>
-                                    <div className="text-sm text-gray-600 text-left">
-                                        <div className="font-semibold">Discount</div>
-                                        <div className="text-xs">on your next order</div>
+                                <div className="bg-white rounded-xl p-6 border-2 border-purple-300 shadow-inner mb-6">
+                                    <div className="flex items-center justify-center gap-3 mb-3">
+                                        <div className="text-4xl font-bold text-purple-600">₹{couponEarned.amount}</div>
+                                        <div className="text-sm text-gray-600 text-left">
+                                            <div className="font-semibold">Discount</div>
+                                            <div className="text-xs">on your next order</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-center text-sm text-gray-600">
+                                        Min order: <span className="font-bold text-purple-600">₹100</span>
                                     </div>
                                 </div>
-                                <div className="text-center text-sm text-gray-600">
-                                    Min order: <span className="font-bold text-purple-600">₹{availableCoupons?.config?.next_order_min_earn || 200}</span>
+
+                                <div className="space-y-3">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => {
+                                            setCouponEarned(null);
+                                            setIsPaymentSuccess(false);
+                                            router.push('/profile?section=coupons');
+                                        }}
+                                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                                    >
+                                        <Gift className="w-5 h-5" />
+                                        View My Coupons
+                                    </motion.button>
+                                    <button
+                                        onClick={() => {
+                                            setCouponEarned(null);
+                                            setIsPaymentSuccess(false);
+                                        }}
+                                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors"
+                                    >
+                                        Close
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="space-y-3">
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => {
-                                        setCouponEarned(false);
-                                        setIsPaymentSuccess(false);
-                                        router.push('/profile?section=coupons');
-                                    }}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
-                                >
-                                    <Gift className="w-5 h-5" />
-                                    View My Coupons
-                                </motion.button>
-                                <button
-                                    onClick={() => {
-                                        setCouponEarned(false);
-                                        setIsPaymentSuccess(false);
-                                    }}
-                                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
+                        </motion.div>
                     </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+                )
+            }
+        </AnimatePresence >
     );
 }

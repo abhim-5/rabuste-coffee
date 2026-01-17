@@ -26,6 +26,7 @@ import { useProfileOrders } from "@/hooks/useProfileOrders";
 import { useProfileWorkshops } from "@/hooks/useProfileWorkshops";
 import { useProfileArt } from "@/hooks/useProfileArt";
 import { MyCouponsSection } from "@/components/profile/MyCouponsSection";
+import { useCart } from "@/hooks/useCart";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -36,10 +37,74 @@ export default function ProfilePage() {
     const { orders, loading: ordersLoading } = useProfileOrders();
     const { workshops, loading: workshopsLoading } = useProfileWorkshops();
     const { artPieces, loading: artLoading } = useProfileArt();
+    // const { addItem } = useCart(); // Removed as per instruction
 
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState("orders");
     const [rewardMessage, setRewardMessage] = useState<string | null>(null);
+
+    // Handle reorder functionality
+    const handleReorder = async (order: any) => {
+        try {
+            // Fetch current menu to match items
+            const menuRes = await fetch('/api/menu/items');
+            const menuData = await menuRes.json();
+
+            if (!menuData.success || !menuData.items) {
+                console.error('Unable to fetch menu items');
+                return;
+            }
+
+            const menuItems = menuData.items;
+            console.log('🔄 Reordering items from order:', order.order_number || order.id);
+            console.log('📦 Order items to add:', order.items);
+
+            // Get current cart from localStorage
+            const cartKey = 'rabuste-cart';
+            const storedCart = localStorage.getItem(cartKey);
+            let cart = storedCart ? JSON.parse(storedCart) : { items: [], total: 0, itemCount: 0 };
+
+            console.log('🛒 Current cart before reorder:', cart);
+
+            // Add each item from the order
+            for (const orderItem of order.items) {
+                const menuItem = menuItems.find((m: any) =>
+                    m.name.toLowerCase() === orderItem.name.toLowerCase()
+                );
+
+                if (menuItem) {
+                    console.log('➕ Adding to cart:', menuItem.name, 'x', orderItem.quantity);
+
+                    // Create cart item
+                    const cartItem = {
+                        menuItem: menuItem,
+                        quantity: orderItem.quantity,
+                        selectedVariation: undefined,
+                        subtotal: menuItem.price * orderItem.quantity
+                    };
+
+                    cart.items.push(cartItem);
+                } else {
+                    console.warn('⚠️ Menu item not found:', orderItem.name);
+                }
+            }
+
+            // Recalculate totals
+            cart.total = cart.items.reduce((sum: number, item: any) => sum + item.subtotal, 0);
+            cart.itemCount = cart.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+
+            // Save directly to localStorage
+            localStorage.setItem(cartKey, JSON.stringify(cart));
+            console.log('💾 Cart saved to localStorage:', cart);
+
+            // Navigate to menu page where cart will auto-open
+            console.log('🚀 Navigating to menu with', cart.itemCount, 'items...');
+            window.location.href = '/menu?openCart=true';
+
+        } catch (error) {
+            console.error('Error reordering:', error);
+        }
+    };
 
     // Handle deep linking to tabs
     useEffect(() => {
@@ -232,7 +297,7 @@ export default function ProfilePage() {
                         isEditing={isEditing}
                         setIsEditing={setIsEditing}
                     />
-                    <OrderHistory orders={orders || []} totalSpent={ordersTotal} />
+                    <OrderHistory orders={orders || []} totalSpent={ordersTotal} onReorder={handleReorder} />
                     <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} />
                     <ArtCollection artPieces={artPieces || []} />
                     <div className="container mx-auto px-4 pb-8">
@@ -468,7 +533,7 @@ export default function ProfilePage() {
                                     {/* Section Content */}
                                     <div className="p-8">
                                         {activeSection === "orders" && (
-                                            <OrderHistory orders={orders || []} totalSpent={ordersTotal} isDesktop />
+                                            <OrderHistory orders={orders || []} totalSpent={ordersTotal} isDesktop onReorder={handleReorder} />
                                         )}
                                         {activeSection === "workshops" && (
                                             <WorkshopsSection workshops={workshops || []} totalSpent={workshopsTotal} isDesktop />

@@ -108,15 +108,8 @@ export async function POST(request: NextRequest) {
 
     console.log('[Gallery Purchase API] Purchase records created:', purchases?.length);
 
-    // Mark art pieces as unavailable
-    const { error: updateError } = await supabase
-      .from('art_pieces')
-      .update({ available: false })
-      .in('id', artPieceIds);
-
-    if (updateError) {
-      console.error('[Gallery Purchase API] Error marking art as unavailable:', updateError);
-    }
+    // NOTE: Art pieces remain available for others to book (this is a booking system, not exclusive purchase)
+    // Removed: Marking art pieces as unavailable
 
     // Construct response
     // If multiple, maybe return the first one's booking info or a summary?

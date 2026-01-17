@@ -53,6 +53,7 @@ export default function GalleryPage() {
     artist: string;
     price: number;
   }>({ isOpen: false, bookingNumber: '', artPieceName: '', artist: '', price: 0 });
+  const [purchasedArtIds, setPurchasedArtIds] = useState<string[]>([]);
   const { cart, addItem, removeItem, updateQuantity, clearCart } = useCart();
   // Removed heroRef hooks as they are moved to GalleryHero
   const typeRef = useRef<HTMLDivElement>(null);
@@ -65,7 +66,16 @@ export default function GalleryPage() {
     return cart.items.some(item => item.menuItem.id === id);
   };
 
+  const isPurchased = (id: string) => {
+    return purchasedArtIds.includes(id);
+  };
+
   const handleAddToCart = (item: GalleryItem) => {
+    // Check if already purchased
+    if (isPurchased(item.id)) {
+      return; // Do nothing - button should be disabled anyway
+    }
+
     const cartItem = {
       id: `gallery-${item.id}`,
       name: item.name,
@@ -115,6 +125,30 @@ export default function GalleryPage() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch user's purchased art pieces
+  useEffect(() => {
+    if (!currentUser) {
+      setPurchasedArtIds([]);
+      return;
+    }
+
+    const fetchPurchasedArt = async () => {
+      try {
+        const response = await fetch('/api/art/purchases');
+        const data = await response.json();
+
+        if (data.success && data.purchases) {
+          const ids = data.purchases.map((p: any) => p.art_piece_id);
+          setPurchasedArtIds(ids);
+        }
+      } catch (error) {
+        console.error('Error fetching purchased art:', error);
+      }
+    };
+
+    fetchPurchasedArt();
+  }, [currentUser]);
 
   const handleGalleryBookingComplete = (bookingNumber: string, artPieceName: string, artist: string, price: number) => {
     setBookingConfirmation({
@@ -449,12 +483,12 @@ export default function GalleryPage() {
               const getImageSrc = () => {
                 if (!item.image_url) return '/gallery/default.jpg';
                 if (item.image_url.startsWith('http')) return item.image_url;
-                
+
                 // If it already has gallery/ prefix, respect it
                 if (item.image_url.includes('gallery/')) {
-                    return item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`;
+                  return item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`;
                 }
-                
+
                 // Otherwise assume it's in the gallery folder
                 return `/gallery/${item.image_url.startsWith('/') ? item.image_url.substring(1) : item.image_url}`;
               };
@@ -516,26 +550,37 @@ export default function GalleryPage() {
               </div>
 
               <div className="article__purchase">
-                {!item.available ? (
-                    <div className="w-full text-center py-3 bg-gray-100 rounded">
-                        <span className="text-red-600 font-bold uppercase tracking-wider">Out of Stock</span>
+                {isPurchased(item.id) ? (
+                  <div className="w-full space-y-3">
+                    <div className="w-full text-center py-3 bg-green-50 rounded border-2 border-green-500">
+                      <span className="text-green-700 font-bold uppercase tracking-wider">✓ Already Booked</span>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = '/profile';
+                      }}
+                      className="w-full py-3 bg-[#8B6F47] hover:bg-[#6d5638] text-white font-sans font-semibold rounded-lg transition-colors"
+                    >
+                      View in Profile
+                    </button>
+                  </div>
                 ) : (
-                    <>
-                        <p className="article__price">₹{item.price.toLocaleString('en-IN')}</p>
-                        <button
-                          className={`article__add-to-cart ${isInCart(`gallery-${item.id}`) ? 'remove-from-cart' : ''}`}
-                          onClick={() => {
-                            if (isInCart(`gallery-${item.id}`)) {
-                              handleRemoveFromCart(`gallery-${item.id}`);
-                            } else {
-                              handleAddToCart(item);
-                            }
-                          }}
-                        >
-                          {isInCart(`gallery-${item.id}`) ? 'Remove from Cart' : 'Add to Cart'}
-                        </button>
-                    </>
+                  <>
+                    <p className="article__price">₹{item.price.toLocaleString('en-IN')}</p>
+                    <button
+                      className={`article__add-to-cart ${isInCart(`gallery-${item.id}`) ? 'remove-from-cart' : ''}`}
+                      onClick={() => {
+                        if (isInCart(`gallery-${item.id}`)) {
+                          handleRemoveFromCart(`gallery-${item.id}`);
+                        } else {
+                          handleAddToCart(item);
+                        }
+                      }}
+                    >
+                      {isInCart(`gallery-${item.id}`) ? 'Remove from Cart' : 'Book Now'}
+                    </button>
+                  </>
                 )}
               </div>
 
