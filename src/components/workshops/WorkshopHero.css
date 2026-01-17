@@ -1,0 +1,125 @@
+/* Workshop Hero Zoom In Effect Styles */
+.workshop-hero {
+    position: relative;
+    width: 100vw;
+    height: 100svh;
+    background-color: #111117;
+    text-align: center;
+    overflow: hidden;
+}
+
+.workshop-hero-img-container,
+.workshop-hero-img-container img,
+.workshop-fade-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.workshop-hero-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Add initial scale to images like in original */
+.workshop-back,
+.workshop-front {
+    scale: 0.8;
+}
+
+.workshop-hero-img-logo {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 250px;
+    height: auto;
+}
+
+.workshop-hero-img-logo img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.workshop-hero-img-copy {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    will-change: opacity;
+}
+
+.workshop-hero-img-copy p {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    line-height: 0.8;
+    color: white;
+}
+
+.workshop-fade-overlay {
+    background-color: white;
+    will-change: opacity;
+}
+
+.workshop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: center 15%;
+    width: 100%;
+    height: 200%;
+    z-index: 1;
+}
+
+.workshop-logo-container {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 150px;
+    z-index: 2;
+}
+
+.workshop-overlay-copy {
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 2;
+}
+
+.workshop-overlay-copy h1 {
+    text-transform: uppercase;
+    font-size: 6rem;
+    font-weight: 700;
+    letter-spacing: -0.2rem;
+    line-height: 0.8;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    transform-origin: center 0%;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 900px) {
+    .workshop-overlay-copy h1 {
+        font-size: 2.5rem;
+        letter-spacing: 0;
+    }
+
+    .workshop-overlay-copy {
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .workshop-hero-img-copy p {
+        font-size: 1rem;
+    }
+}
