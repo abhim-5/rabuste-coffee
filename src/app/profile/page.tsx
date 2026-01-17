@@ -204,26 +204,14 @@ export default function ProfilePage() {
         setIsEditing(false);
     };
 
-    // Loading state
-    if (profileLoading || !profile) {
-        return (
-            <>
-                <Navbar />
-                <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#D8CBB8" }}>
-                    <div className="text-center">
-                        <div className="text-2xl font-display text-[#404040]">Loading your profile...</div>
-                    </div>
-                </main>
-            </>
-        );
-    }
+    // Loading check logic moved to render time
 
-    const userName = profile.full_name || user?.email?.split('@')[0] || 'User';
-    const userEmail = profile.email || user?.email || '';
-    const profileImage = profile.avatar_url || undefined;
+    const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+    const userEmail = profile?.email || user?.email || '';
+    const profileImage = profile?.avatar_url;
 
     // Calculate member duration
-    const memberSince = profile.created_at ? new Date(profile.created_at) : new Date();
+    const memberSince = profile?.created_at ? new Date(profile.created_at) : new Date();
     const diffMs = Date.now() - memberSince.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffMonths = Math.floor(diffDays / 30);
