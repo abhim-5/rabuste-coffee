@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 import Image from "next/image";
@@ -17,40 +16,47 @@ export default function WhatIsRobusta() {
   useEffect(() => {
     if (!titleRef.current) return;
 
-    // Initialize Splitting
-    Splitting({ target: titleRef.current, by: "chars" });
+    // Dynamically import Splitting to avoid SSR issues
+    const initializeSplitting = async () => {
+      const Splitting = (await import("splitting")).default;
+      
+      // Initialize Splitting
+      Splitting({ target: titleRef.current, by: "chars" });
 
-    const ctx = gsap.context(() => {
-      const chars = titleRef.current?.querySelectorAll(".char");
+      const ctx = gsap.context(() => {
+        const chars = titleRef.current?.querySelectorAll(".char");
 
-      if (chars?.length) {
-        gsap.fromTo(chars, {
-          'will-change': 'opacity, transform',
-          opacity: 0,
-          yPercent: 120,
-          scaleY: 2.3,
-          scaleX: 0.7,
-          transformOrigin: '50% 0%'
-        },
-          {
-            duration: 1,
-            ease: 'back.inOut(2)',
-            opacity: 1,
-            yPercent: 0,
-            scaleY: 1,
-            scaleX: 1,
-            stagger: 0.03,
-            scrollTrigger: {
-              trigger: titleRef.current,
-              start: 'top bottom', // Adjusted start for better visibility check
-              end: 'bottom center',
-              scrub: true
-            }
-          });
-      }
-    }, sectionRef);
+        if (chars?.length) {
+          gsap.fromTo(chars, {
+            'will-change': 'opacity, transform',
+            opacity: 0,
+            yPercent: 120,
+            scaleY: 2.3,
+            scaleX: 0.7,
+            transformOrigin: '50% 0%'
+          },
+            {
+              duration: 1,
+              ease: 'back.inOut(2)',
+              opacity: 1,
+              yPercent: 0,
+              scaleY: 1,
+              scaleX: 1,
+              stagger: 0.03,
+              scrollTrigger: {
+                trigger: titleRef.current,
+                start: 'top bottom', // Adjusted start for better visibility check
+                end: 'bottom center',
+                scrub: true
+              }
+            });
+        }
+      }, sectionRef);
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    };
+
+    initializeSplitting();
   }, []);
 
   return (

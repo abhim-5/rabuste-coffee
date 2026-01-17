@@ -6,7 +6,6 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -27,110 +26,117 @@ export function OwnerWords() {
   const y = useTransform(scrollYProgress, [0, 1], ["10%", "-10%"]);
 
   useEffect(() => {
-    // 1. Initialize Splitting for Heading (Words + Chars)
-    if (headingRef.current) {
-        // Reset if already split to prevent duplication/errors on re-renders
-        if (headingRef.current.querySelector('.word')) return;
-        
-        Splitting({ target: headingRef.current, by: "chars" });
-    }
-    
-    // 2. Initialize Splitting for Paragraphs (Words only)
-    if (paragraphContainerRef.current) {
-        const paragraphs = paragraphContainerRef.current.querySelectorAll('p');
-        paragraphs.forEach(p => {
-             if (p.querySelector('.word')) return; // Skip if already split
-             Splitting({ target: p, by: "words" });
-        });
-    }
+    // Dynamically import Splitting to avoid SSR issues
+    const initializeSplitting = async () => {
+      const Splitting = (await import("splitting")).default;
+      
+      // 1. Initialize Splitting for Heading (Words + Chars)
+      if (headingRef.current) {
+          // Reset if already split to prevent duplication/errors on re-renders
+          if (headingRef.current.querySelector('.word')) return;
+          
+          Splitting({ target: headingRef.current, by: "chars" });
+      }
+      
+      // 2. Initialize Splitting for Paragraphs (Words only)
+      if (paragraphContainerRef.current) {
+          const paragraphs = paragraphContainerRef.current.querySelectorAll('p');
+          paragraphs.forEach(p => {
+               if (p.querySelector('.word')) return; // Skip if already split
+               Splitting({ target: p, by: "words" });
+          });
+      }
 
-    const ctx = gsap.context(() => {
-        // give it a tick to ensure DOM updates
-        setTimeout(() => {
-            // --- Effect 28 (Liberation) for Heading ---
-            if (headingRef.current) {
-                const words = headingRef.current.querySelectorAll('.word');
-                
-                // Ensure words and chars display correctly for transforms
-                gsap.set(words, { display: 'inline-block', verticalAlign: 'top', margin: '0 0.2em' });
-                const allChars = headingRef.current.querySelectorAll('.char');
-                gsap.set(allChars, { display: 'inline-block' });
+      const ctx = gsap.context(() => {
+          // give it a tick to ensure DOM updates
+          setTimeout(() => {
+              // --- Effect 28 (Liberation) for Heading ---
+              if (headingRef.current) {
+                  const words = headingRef.current.querySelectorAll('.word');
+                  
+                  // Ensure words and chars display correctly for transforms
+                  gsap.set(words, { display: 'inline-block', verticalAlign: 'top', margin: '0 0.2em' });
+                  const allChars = headingRef.current.querySelectorAll('.char');
+                  gsap.set(allChars, { display: 'inline-block' });
 
-                words.forEach(word => {
-                    const chars = word.querySelectorAll('.char');
-                    if (!chars.length) return;
-                    
-                    const charsTotal = chars.length;
-                    
-                    gsap.fromTo(chars, {
-                        'will-change': 'transform, filter', 
-                        transformOrigin: '50% 100%',
-                        scale: position => {
-                            const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
-                            return gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0.5, 2.1, factor);
-                        },
-                        y: position => {
-                            const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
-                            return gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0, 60, factor);
-                        },
-                        rotation: position => {
-                            const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
-                            return position < charsTotal/2 ? gsap.utils.mapRange(0, Math.ceil(charsTotal/2), -4, 0, factor) : gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0, 4, factor);
-                        },
-                        filter: 'blur(12px) opacity(0)',
-                    }, 
-                    {
-                        ease: 'power2.inOut',
-                        y: 0,
-                        rotation: 0,
-                        scale: 1,
-                        filter: 'blur(0px) opacity(1)',
-                        scrollTrigger: {
-                            trigger: headingRef.current,
-                            start: 'top bottom-=10%',
-                            end: 'bottom center',
-                            scrub: true,
-                        },
-                        stagger: {
-                            amount: 0.15,
-                            from: 'center'
-                        }
-                    });
-                });
-            }
+                  words.forEach(word => {
+                      const chars = word.querySelectorAll('.char');
+                      if (!chars.length) return;
+                      
+                      const charsTotal = chars.length;
+                      
+                      gsap.fromTo(chars, {
+                          'will-change': 'transform, filter', 
+                          transformOrigin: '50% 100%',
+                          scale: position => {
+                              const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
+                              return gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0.5, 2.1, factor);
+                          },
+                          y: position => {
+                              const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
+                              return gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0, 60, factor);
+                          },
+                          rotation: position => {
+                              const factor = position < Math.ceil(charsTotal/2) ? position : Math.ceil(charsTotal/2) - Math.abs(Math.floor(charsTotal/2) - position) - 1;
+                              return position < charsTotal/2 ? gsap.utils.mapRange(0, Math.ceil(charsTotal/2), -4, 0, factor) : gsap.utils.mapRange(0, Math.ceil(charsTotal/2), 0, 4, factor);
+                          },
+                          filter: 'blur(12px) opacity(0)',
+                      }, 
+                      {
+                          ease: 'power2.inOut',
+                          y: 0,
+                          rotation: 0,
+                          scale: 1,
+                          filter: 'blur(0px) opacity(1)',
+                          scrollTrigger: {
+                              trigger: headingRef.current,
+                              start: 'top bottom-=10%',
+                              end: 'bottom center',
+                              scrub: true,
+                          },
+                          stagger: {
+                              amount: 0.15,
+                              from: 'center'
+                          }
+                      });
+                  });
+              }
 
-            // --- Paragraph Animation (Staggered Words) ---
-            if (paragraphContainerRef.current) {
-                const paragraphs = paragraphContainerRef.current.querySelectorAll('p');
-                paragraphs.forEach(p => {
-                    const words = p.querySelectorAll('.word');
-                    // Style words for spacing
-                    gsap.set(words, { display: 'inline-block', verticalAlign: 'top', margin: '0 0.15em' });
-                    
-                    if (words.length) {
-                        gsap.fromTo(words, {
-                            opacity: 0.1,
-                            willChange: 'opacity'
-                        }, 
-                        {
-                            ease: 'none',
-                            opacity: 1,
-                            stagger: 0.05,
-                            scrollTrigger: {
-                                trigger: p,
-                                start: 'top bottom-=5%',
-                                end: 'bottom center+=10%',
-                                scrub: true,
-                            }
-                        });
-                    }
-                });
-            }
-        }, 100); // reduced timeout 
+              // --- Paragraph Animation (Staggered Words) ---
+              if (paragraphContainerRef.current) {
+                  const paragraphs = paragraphContainerRef.current.querySelectorAll('p');
+                  paragraphs.forEach(p => {
+                      const words = p.querySelectorAll('.word');
+                      // Style words for spacing
+                      gsap.set(words, { display: 'inline-block', verticalAlign: 'top', margin: '0 0.15em' });
+                      
+                      if (words.length) {
+                          gsap.fromTo(words, {
+                              opacity: 0.1,
+                              willChange: 'opacity'
+                          }, 
+                          {
+                              ease: 'none',
+                              opacity: 1,
+                              stagger: 0.05,
+                              scrollTrigger: {
+                                  trigger: p,
+                                  start: 'top bottom-=5%',
+                                  end: 'bottom center+=10%',
+                                  scrub: true,
+                              }
+                          });
+                      }
+                  });
+              }
+          }, 100); // reduced timeout 
 
-    }, ref);
+      }, ref);
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    };
+
+    initializeSplitting();
   }, []);
 
   return (

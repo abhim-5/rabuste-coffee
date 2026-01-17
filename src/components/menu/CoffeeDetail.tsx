@@ -43,6 +43,25 @@ export function CoffeeDetail({
         }
     }, [item, isOpen]);
 
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            // Prevent body scroll
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Restore body scroll
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            // Cleanup
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
+
     if (!item) return null;
 
     // Get display values - variation overrides item if selected

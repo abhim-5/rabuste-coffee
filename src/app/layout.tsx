@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Cormorant_Garamond, Inter, Oswald } from "next/font/google";
 import "./globals.css";
-import PasswordProtection from "@/components/auth/PasswordProtection";
 import AuthChecker from "@/components/auth/AuthChecker";
 import { AuthProvider } from "@/hooks/useAuth";
 import LayoutWrapper from "@/components/ui/LayoutWrapper";
@@ -88,11 +87,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <AuthChecker />
-          <PasswordProtection>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-          </PasswordProtection>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </AuthProvider>
       </body>
     </html>

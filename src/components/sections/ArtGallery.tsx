@@ -5,7 +5,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -18,7 +17,10 @@ const ArtGallery = () => {
     const heading3Ref = useRef<HTMLSpanElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(() => {
+    useGSAP(async () => {
+        // Dynamically import Splitting to avoid SSR issues
+        const Splitting = (await import("splitting")).default;
+        
         // --- Effect 22 Logic for Headings (Dance) ---
         const headingEls = [heading1Ref.current, heading2Ref.current, heading3Ref.current].filter(Boolean);
         
@@ -84,10 +86,9 @@ const ArtGallery = () => {
                 stagger: 0.05,
                 scrollTrigger: {
                     trigger: textRef.current,
-                    start: 'top center-=10%', // Trigger later to allow heading to finish
+                    start: 'top center-=10%',
                     end: '+=70%', 
                     scrub: true,
-                    pin: containerRef.current,
                 }
             });
         }
@@ -142,7 +143,7 @@ const ArtGallery = () => {
                 {/* Explore Now Button */}
                 <div className="mt-2 lg:mt-4">
                     <Link href="/gallery">
-                        <button className="group relative">
+                        <button className="group relative" suppressHydrationWarning>
                             <div className="absolute inset-0 bg-[#222123] rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
                             <div className="relative font-tan-pearl text-2xl lg:text-4xl text-[#faeade] bg-[#222123] px-10 lg:px-16 py-4 lg:py-6 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl leading-none">
                                 Explore Now

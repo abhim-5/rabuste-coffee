@@ -28,7 +28,7 @@ const navItems = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | undefined>();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -147,20 +147,20 @@ export default function Navbar() {
       setScrolled(currentScrollY > 20);
 
       // Determine if navbar should hide (scrolling down) or show (scrolling up)
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
         // Scrolling down
         setHidden(true);
-      } else if (currentScrollY < lastScrollY) {
+      } else if (currentScrollY < lastScrollYRef.current) {
         // Scrolling up
         setHidden(false);
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, []); // Empty dependency array - no infinite loop!
 
   const formatTime = (dateStr: string) => {
     if (!dateStr) return '';
@@ -173,28 +173,6 @@ export default function Navbar() {
     return date.toLocaleDateString();
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      // Determine if navbar should have background
-      setScrolled(currentScrollY > 20);
-
-      // Determine if navbar should hide (scrolling down) or show (scrolling up)
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
-        setHidden(true);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up
-        setHidden(false);
-      }
-
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
 
   // Helper to generate initials
   const getInitials = (name: string) => {

@@ -363,7 +363,6 @@ const ZigzagLine = ({ progress }: { progress: any }) => {
 // ... imports ...
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -404,44 +403,51 @@ const Timeline = () => {
             targetY: Math.random() * -20
         })));
         
-        // --- Effect 18 (Zoom In) for Title ---
-        if (titleRef.current && !titleRef.current.classList.contains('splitting')) {
-            Splitting({ target: titleRef.current, by: "chars" });
-        }
+        // Dynamically import Splitting to avoid SSR issues
+        const initializeSplitting = async () => {
+            const Splitting = (await import("splitting")).default;
+            
+            // --- Effect 18 (Zoom In) for Title ---
+            if (titleRef.current && !titleRef.current.classList.contains('splitting')) {
+                Splitting({ target: titleRef.current, by: "chars" });
+            }
 
-        const ctx = gsap.context(() => {
-             if (titleRef.current) {
-                const chars = titleRef.current.querySelectorAll('.char');
-                
-                // Set perspective on parent of chars (words) for 3D effect
-                if (chars.length) {
-                    chars.forEach(char => {
-                         if (char.parentNode) gsap.set(char.parentNode, { perspective: 1000 });
-                         gsap.set(char, { display: 'inline-block', transformStyle: 'preserve-3d' });
-                    });
+            const ctx = gsap.context(() => {
+                 if (titleRef.current) {
+                    const chars = titleRef.current.querySelectorAll('.char');
+                    
+                    // Set perspective on parent of chars (words) for 3D effect
+                    if (chars.length) {
+                        chars.forEach(char => {
+                             if (char.parentNode) gsap.set(char.parentNode, { perspective: 1000 });
+                             gsap.set(char, { display: 'inline-block', transformStyle: 'preserve-3d' });
+                        });
 
-                    gsap.fromTo(chars, { 
-                        'will-change': 'opacity, transform', 
-                        opacity: 0.2,
-                        z: -800
-                    }, 
-                    {
-                        ease: 'back.out(1.2)',
-                        opacity: 1,
-                        z: 0,
-                        stagger: 0.04,
-                        scrollTrigger: {
-                            trigger: titleRef.current,
-                            start: 'top bottom-=10%',
-                            end: 'bottom center',
-                            scrub: true,
-                        }
-                    });
-                }
-             }
-        }, containerRef);
+                        gsap.fromTo(chars, { 
+                            'will-change': 'opacity, transform', 
+                            opacity: 0.2,
+                            z: -800
+                        }, 
+                        {
+                            ease: 'back.out(1.2)',
+                            opacity: 1,
+                            z: 0,
+                            stagger: 0.04,
+                            scrollTrigger: {
+                                trigger: titleRef.current,
+                                start: 'top bottom-=10%',
+                                end: 'bottom center',
+                                scrub: true,
+                            }
+                        });
+                    }
+                 }
+            }, containerRef);
 
-        return () => ctx.revert();
+            return () => ctx.revert();
+        };
+
+        initializeSplitting();
     }, []);
 
     const scaleY = useSpring(fastScrollProgress, {

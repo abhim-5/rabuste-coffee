@@ -70,11 +70,19 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       {isLoading && <LottieLoader onComplete={handleLoaderComplete} />}
-      <SmoothScroll>
+      {pathname === '/menu' || pathname === '/gallery' ? (
+        // No smooth scroll on menu and gallery pages
         <div>
           {children}
         </div>
-      </SmoothScroll>
+      ) : (
+        // Smooth scroll on all other pages
+        <SmoothScroll>
+          <div>
+            {children}
+          </div>
+        </SmoothScroll>
+      )}
     </>
   );
 }

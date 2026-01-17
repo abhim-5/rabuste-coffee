@@ -108,6 +108,25 @@ export function Cart({
         fetchUserCoupons();
     }, [currentUser, hasGalleryItems]);
 
+    // Lock scroll when cart is open
+    React.useEffect(() => {
+        if (isOpen) {
+            // Prevent body scroll
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Restore body scroll
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            // Cleanup
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
+
     // Get gallery items not in cart
     const cartArtIds = filteredItems.map(item => {
         const match = String(item.menuItem.id).match(/gallery-(.+)/);

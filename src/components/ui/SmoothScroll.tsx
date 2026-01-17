@@ -11,6 +11,9 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       smoothWheel: true,
     });
 
+    // Expose Lenis instance globally so modals can stop/start it
+    (window as any).lenis = lenis;
+
     // Animation loop
     function raf(time: number) {
       lenis.raf(time);
@@ -20,7 +23,10 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     requestAnimationFrame(raf);
 
     // Cleanup
-    return () => lenis.destroy();
+    return () => {
+      lenis.destroy();
+      (window as any).lenis = null;
+    };
   }, []);
 
   return <>{children}</>;

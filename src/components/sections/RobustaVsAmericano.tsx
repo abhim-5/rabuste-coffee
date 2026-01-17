@@ -8,7 +8,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import BlurImage from "@/components/ui/BlurImage";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -74,74 +73,81 @@ export function RobustaVsAmericano() {
   useEffect(() => {
     if (!titleRef.current) return;
 
-    // Initialize Splitting for Title
-    if (titleRef.current.querySelectorAll('.char').length === 0) {
-      Splitting({ target: titleRef.current, by: "chars" });
-    }
-
-    // Initialize Splitting for Reason Descriptions
-    const reasonDescriptions = ref.current?.querySelectorAll('.reason-description');
-    reasonDescriptions?.forEach((desc: Element) => {
-      if (desc.querySelectorAll('.word').length === 0) {
-        Splitting({ target: desc, by: "words" });
-      }
-    });
-
-    const ctx = gsap.context(() => {
-      // --- Title Animation ---
-      const chars = titleRef.current?.querySelectorAll('.char');
-      if (chars?.length) {
-        gsap.set(chars, {
-          opacity: 0,
-          yPercent: 120,
-          scaleY: 2.3,
-          scaleX: 0.7,
-          transformOrigin: '50% 0%',
-          willChange: 'opacity, transform',
-          display: 'inline-block'
-        });
-
-        gsap.to(chars, {
-          duration: 1,
-          ease: 'back.inOut(2)',
-          opacity: 1,
-          yPercent: 0,
-          scaleY: 1,
-          scaleX: 1,
-          stagger: 0.03,
-          scrollTrigger: {
-            trigger: titleRef.current,
-            start: 'top bottom-=10%',
-            end: 'center center',
-            scrub: true
-          }
-        });
+    // Dynamically import Splitting to avoid SSR issues
+    const initializeSplitting = async () => {
+      const Splitting = (await import("splitting")).default;
+      
+      // Initialize Splitting for Title
+      if (titleRef.current!.querySelectorAll('.char').length === 0) {
+        Splitting({ target: titleRef.current, by: "chars" });
       }
 
-      // --- Descriptions Animation (Word Opacity Fade) ---
+      // Initialize Splitting for Reason Descriptions
+      const reasonDescriptions = ref.current?.querySelectorAll('.reason-description');
       reasonDescriptions?.forEach((desc: Element) => {
-        const words = desc.querySelectorAll('.word');
-        if (words.length) {
-          gsap.fromTo(words, {
-            opacity: 0.1
-          },
-            {
-              ease: 'none',
-              opacity: 1,
-              stagger: 0.02,
-              scrollTrigger: {
-                trigger: desc,
-                start: 'top bottom-=10%',
-                end: 'bottom center+=10%',
-                scrub: true,
-              }
-            });
+        if (desc.querySelectorAll('.word').length === 0) {
+          Splitting({ target: desc, by: "words" });
         }
       });
 
-    }, ref);
+      const ctx = gsap.context(() => {
+        // --- Title Animation ---
+        const chars = titleRef.current?.querySelectorAll('.char');
+        if (chars?.length) {
+          gsap.set(chars, {
+            opacity: 0,
+            yPercent: 120,
+            scaleY: 2.3,
+            scaleX: 0.7,
+            transformOrigin: '50% 0%',
+            willChange: 'opacity, transform',
+            display: 'inline-block'
+          });
 
-    return () => ctx.revert();
+          gsap.to(chars, {
+            duration: 1,
+            ease: 'back.inOut(2)',
+            opacity: 1,
+            yPercent: 0,
+            scaleY: 1,
+            scaleX: 1,
+            stagger: 0.03,
+            scrollTrigger: {
+              trigger: titleRef.current,
+              start: 'top bottom-=10%',
+              end: 'center center',
+              scrub: true
+            }
+          });
+        }
+
+        // --- Descriptions Animation (Word Opacity Fade) ---
+        reasonDescriptions?.forEach((desc: Element) => {
+          const words = desc.querySelectorAll('.word');
+          if (words.length) {
+            gsap.fromTo(words, {
+              opacity: 0.1
+            },
+              {
+                ease: 'none',
+                opacity: 1,
+                stagger: 0.02,
+                scrollTrigger: {
+                  trigger: desc,
+                  start: 'top bottom-=10%',
+                  end: 'bottom center+=10%',
+                  scrub: true,
+                }
+              });
+          }
+        });
+
+      }, ref);
+
+      return () => ctx.revert();
+    };
+
+    initializeSplitting();
   }, []);
 
   // Reset to first image when carousel comes into view
@@ -251,7 +257,7 @@ export function RobustaVsAmericano() {
           <div className="flex flex-col items-center mb-6 lg:mb-16">
             <h2
               ref={titleRef}
-              className="font-['TanPearl'] text-[10vw] lg:text-[5rem] xl:text-[6rem] leading-[0.9] mb-6 text-center lg:whitespace-nowrap relative -top-12 lg:-top-24"
+              className="font-['TanPearl'] text-[10vw] lg:text-[5rem] xl:text-[6rem] leading-[0.9] mb-6 text-center lg:whitespace-nowrap relative top-0 lg:top-0"
               style={{ color: THEME_COLOR }}
             >
               robusta vs arabica

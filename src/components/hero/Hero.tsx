@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -31,85 +30,92 @@ export default function Hero() {
     if (!titleRef.current) return;
     if (animationPlayed) return;
 
-    // Initialize Splitting only if not already split
-    if (titleRef.current && titleRef.current.querySelectorAll('.char').length === 0) {
-      Splitting({ target: titleRef.current, by: "chars" });
-    }
-    
-    // Select characters created by Splitting (or existing ones)
-    const chars = titleRef.current.querySelectorAll(".char");
-    
-    if (chars.length === 0) return;
-
-    // Wrap each character - exactly like typography demo
-    // Check if wrapping is needed
-    if (!chars[0].parentElement?.classList.contains('char-wrap')) {
-        wrapElements(Array.from(chars), "span", "char-wrap");
-    }
-
-    // Set initial state IMMEDIATELY to prevent any flash of unstyled text
-    gsap.set(chars, {
-      opacity: 0,
-      xPercent: -250,
-      rotationZ: 45,
-      scaleX: 6,
-      transformOrigin: "100% 50%",
-    });
-
-    // Function to run animation
-    const runAnimation = () => {
-      if (!titleRef.current) return;
+    // Dynamically import Splitting to avoid SSR issues
+    const initializeSplitting = async () => {
+      const Splitting = (await import("splitting")).default;
       
-      // Make h1 visible
-      titleRef.current.style.opacity = "1";
+      // Initialize Splitting only if not already split
+      if (titleRef.current && titleRef.current.querySelectorAll('.char').length === 0) {
+        Splitting({ target: titleRef.current, by: "chars" });
+      }
       
-      gsap.to(
-        chars,
-        {
-          duration: 2.5, // Even slower for maximum smoothness
-          ease: "power2.inOut", // InOut for smoother start AND end
-          xPercent: 0,
-          rotationZ: 0,
-          scaleX: 1,
-          opacity: 1, 
-          stagger: -0.03, // Small stagger for continuous flow
-          onComplete: () => setAnimationPlayed(true),
-        }
-      );
-    };
+      // Select characters created by Splitting (or existing ones)
+      const chars = titleRef.current?.querySelectorAll(".char");
+      
+      if (!chars || chars.length === 0) return;
 
-    // Check if video is already ready (e.g. from cache)
-    if (videoRef.current && videoRef.current.readyState >= 3) {
-      setIsVideoLoaded(true);
-      window.dispatchEvent(new Event('video-loaded'));
-    }
+      // Wrap each character - exactly like typography demo
+      // Check if wrapping is needed
+      if (!chars[0].parentElement?.classList.contains('char-wrap')) {
+          wrapElements(Array.from(chars), "span", "char-wrap");
+      }
 
-    // Function to start everything (video + text)
-    const startExperience = () => {
-       if (videoRef.current) {
-          videoRef.current.currentTime = 0; // Reset to start
-          videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
-       }
-       // Small delay for text to start slightly after video begins
-       setTimeout(runAnimation, 500); 
-    };
+      // Set initial state IMMEDIATELY to prevent any flash of unstyled text
+      gsap.set(chars, {
+        opacity: 0,
+        xPercent: -250,
+        rotationZ: 45,
+        scaleX: 6,
+        transformOrigin: "100% 50%",
+      });
 
-    // Check if loader has been seen
-    if (sessionStorage.getItem('hasSeenLoader')) {
-      // If already seen, run immediately
-      startExperience();
-    } else {
-      // Otherwise wait for loader completion event
-      const handleLoaderComplete = () => {
+      // Function to run animation
+      const runAnimation = () => {
+        if (!titleRef.current) return;
+        
+        // Make h1 visible
+        titleRef.current.style.opacity = "1";
+        
+        gsap.to(
+          chars,
+          {
+            duration: 2.5, // Even slower for maximum smoothness
+            ease: "power2.inOut", // InOut for smoother start AND end
+            xPercent: 0,
+            rotationZ: 0,
+            scaleX: 1,
+            opacity: 1, 
+            stagger: -0.03, // Small stagger for continuous flow
+            onComplete: () => setAnimationPlayed(true),
+          }
+        );
+      };
+
+      // Check if video is already ready (e.g. from cache)
+      if (videoRef.current && videoRef.current.readyState >= 3) {
+        setIsVideoLoaded(true);
+        window.dispatchEvent(new Event('video-loaded'));
+      }
+
+      // Function to start everything (video + text)
+      const startExperience = () => {
+         if (videoRef.current) {
+            videoRef.current.currentTime = 0; // Reset to start
+            videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+         }
+         // Small delay for text to start slightly after video begins
+         setTimeout(runAnimation, 500); 
+      };
+
+      // Check if loader has been seen
+      if (sessionStorage.getItem('hasSeenLoader')) {
+        // If already seen, run immediately
         startExperience();
-      };
-      
-      window.addEventListener('loader-complete', handleLoaderComplete);
-      
-      return () => {
-        window.removeEventListener('loader-complete', handleLoaderComplete);
-      };
-    }
+      } else {
+        // Otherwise wait for loader completion event
+        const handleLoaderComplete = () => {
+          startExperience();
+        };
+        
+        window.addEventListener('loader-complete', handleLoaderComplete);
+        
+        return () => {
+          window.removeEventListener('loader-complete', handleLoaderComplete);
+        };
+      }
+    };
+
+    initializeSplitting();
   }, [animationPlayed]);
 
   return (

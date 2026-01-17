@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 import Image from "next/image";
@@ -33,74 +32,81 @@ export default function WhatIsRobusta() {
   useEffect(() => {
     if (!titleRef.current || !textContainerRef.current) return;
 
-    // Helper to init splitting
-    const initSplitting = (el: HTMLElement, by: string) => {
-      // Check for specific children class based on 'by' type to avoid double init
-      const checkClass = by.includes('chars') ? '.char' : '.word';
-      if (el.querySelectorAll(checkClass).length === 0) {
-        Splitting({ target: el, by: by as 'chars' | 'words' | 'lines' | 'items' });
-      }
-    };
+    // Dynamically import Splitting to avoid SSR issues
+    const initializeSplitting = async () => {
+      const Splitting = (await import("splitting")).default;
+      
+      // Helper to init splitting
+      const initSplitting = (el: HTMLElement, by: string) => {
+        // Check for specific children class based on 'by' type to avoid double init
+        const checkClass = by.includes('chars') ? '.char' : '.word';
+        if (el.querySelectorAll(checkClass).length === 0) {
+          Splitting({ target: el, by: by as 'chars' | 'words' | 'lines' | 'items' });
+        }
+      };
 
-    initSplitting(titleRef.current, "chars");
-    initSplitting(textContainerRef.current, "words");
+      initSplitting(titleRef.current!, "chars");
+      initSplitting(textContainerRef.current!, "words");
 
-    const ctx = gsap.context(() => {
+      const ctx = gsap.context(() => {
 
-      // --- Title Animation (Set 1, Effect 2: Stretchy Reveal) ---
-      const titleChars = titleRef.current?.querySelectorAll('.char');
-      if (titleChars?.length) {
-        gsap.set(titleChars, {
-          opacity: 0,
-          yPercent: 120,
-          scaleY: 2.3,
-          scaleX: 0.7,
-          transformOrigin: '50% 0%',
-          willChange: 'opacity, transform',
-          display: 'inline-block'
-        });
+        // --- Title Animation (Set 1, Effect 2: Stretchy Reveal) ---
+        const titleChars = titleRef.current?.querySelectorAll('.char');
+        if (titleChars?.length) {
+          gsap.set(titleChars, {
+            opacity: 0,
+            yPercent: 120,
+            scaleY: 2.3,
+            scaleX: 0.7,
+            transformOrigin: '50% 0%',
+            willChange: 'opacity, transform',
+            display: 'inline-block'
+          });
 
-        gsap.to(titleChars, {
-          duration: 1,
-          ease: 'back.inOut(2)',
-          opacity: 1,
-          yPercent: 0,
-          scaleY: 1,
-          scaleX: 1,
-          stagger: 0.03,
-          scrollTrigger: {
-            trigger: titleRef.current,
-            start: 'top bottom-=10%',
-            end: 'center center',
-            scrub: true
-          }
-        });
-      }
-
-      // --- Paragraph Animation (Set 2, Effect 1: Word Opacity Fade) ---
-      const paragraphWords = textContainerRef.current?.querySelectorAll(".word");
-      if (paragraphWords?.length) {
-        gsap.set(paragraphWords, { opacity: 0.1, willChange: 'opacity' });
-
-        gsap.fromTo(paragraphWords, {
-          opacity: 0.1
-        },
-          {
-            ease: 'none',
+          gsap.to(titleChars, {
+            duration: 1,
+            ease: 'back.inOut(2)',
             opacity: 1,
-            stagger: 0.02,
+            yPercent: 0,
+            scaleY: 1,
+            scaleX: 1,
+            stagger: 0.03,
             scrollTrigger: {
-              trigger: textContainerRef.current,
+              trigger: titleRef.current,
               start: 'top bottom-=10%',
-              end: 'bottom center+=10%',
-              scrub: true,
+              end: 'center center',
+              scrub: true
             }
           });
-      }
+        }
 
-    }, sectionRef);
+        // --- Paragraph Animation (Set 2, Effect 1: Word Opacity Fade) ---
+        const paragraphWords = textContainerRef.current?.querySelectorAll(".word");
+        if (paragraphWords?.length) {
+          gsap.set(paragraphWords, { opacity: 0.1, willChange: 'opacity' });
 
-    return () => ctx.revert();
+          gsap.fromTo(paragraphWords, {
+            opacity: 0.1
+          },
+            {
+              ease: 'none',
+              opacity: 1,
+              stagger: 0.02,
+              scrollTrigger: {
+                trigger: textContainerRef.current,
+                start: 'top bottom-=10%',
+                end: 'bottom center+=10%',
+                scrub: true,
+              }
+            });
+        }
+
+      }, sectionRef);
+
+      return () => ctx.revert();
+    };
+
+    initializeSplitting();
   }, []);
 
   return (
@@ -125,7 +131,7 @@ export default function WhatIsRobusta() {
             <div className="order-1 p-8 pb-0 md:p-0">
               <h2
                 ref={titleRef}
-                className="text-[12vw] md:text-[6rem] lg:text-[7.5rem] leading-[0.9] text-[#7f3b2d] font-['TanPearl'] relative -top-12 md:-top-35"
+                className="text-[12vw] md:text-[6rem] lg:text-[7.5rem] leading-[0.9] text-[#7f3b2d] font-['TanPearl'] relative top-0 md:top-0"
               >
                 What is Robusta
               </h2>

@@ -5,7 +5,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useRef } from "react";
 import Link from "next/link";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -60,7 +59,10 @@ const MenuLabels = () => {
         { title: "Food", bg: "#222123", color: "#faeade" },
     ];
 
-    useGSAP(() => {
+    useGSAP(async () => {
+        // Dynamically import Splitting to avoid SSR issues
+        const Splitting = (await import("splitting")).default;
+        
         // 1. Heading Animation (3D Fly-In)
         if (headingRef.current) {
             // Force a re-init of Splitting to be safe
@@ -170,7 +172,7 @@ const MenuLabels = () => {
                 {/* Order Now Button */}
                 <div className="mt-8 lg:mt-12 z-20"> {/* Increased gap (switched to positive margin) */}
                     <Link href="/menu">
-                        <button className="group relative">
+                        <button className="group relative" suppressHydrationWarning>
                             <div className="absolute inset-0 bg-[#222123] rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
                             <div className="relative font-tan-pearl text-2xl lg:text-4xl text-[#faeade] bg-[#222123] px-10 lg:px-16 py-4 lg:py-6 rounded-full hover:rotate-[2deg] transition-all duration-300 shadow-xl hover:scale-110 active:scale-95 leading-none">
                                 Order Now

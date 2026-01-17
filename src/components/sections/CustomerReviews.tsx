@@ -156,12 +156,14 @@ export default function CustomerReviews() {
                     <button 
                         onClick={prevReview}
                         className="p-3 rounded-full border border-[#7f3b2d]/20 text-[#7f3b2d] hover:bg-[#7f3b2d] hover:text-[#faeade] transition-all duration-300 hover:scale-110"
+                        suppressHydrationWarning
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </button>
                     <button 
                         onClick={nextReview}
                         className="p-3 rounded-full border border-[#7f3b2d]/20 text-[#7f3b2d] hover:bg-[#7f3b2d] hover:text-[#faeade] transition-all duration-300 hover:scale-110"
+                        suppressHydrationWarning
                     >
                         <ChevronRight className="w-6 h-6" />
                     </button>
@@ -170,7 +172,7 @@ export default function CustomerReviews() {
                 {/* Franchise Inquiry Button */}
                 <div className="mt-12">
                    <Link href="/about-us#franchise-inquiry">
-                        <button className="px-8 py-3 bg-[#7f3b2d] text-[#faeade] rounded-full font-display text-xl hover:bg-[#5e2b21] transition-all duration-300 hover:scale-105 shadow-lg">
+                        <button className="px-8 py-3 bg-[#7f3b2d] text-[#faeade] rounded-full font-display text-xl hover:bg-[#5e2b21] transition-all duration-300 hover:scale-105 shadow-lg" suppressHydrationWarning>
                             Own our Franchise
                         </button>
                    </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Search } from "lucide-react";
@@ -49,7 +49,7 @@ export function MenuSection({
         milk: "all" as "all" | "with-milk" | "no-milk"
     });
     const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const lastScrollYRef = useRef(0);
     const [activeCategory, setActiveCategory] = useState<MenuCategory | "all">("all");
     const [isAtMenuTop, setIsAtMenuTop] = useState(true);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -123,17 +123,17 @@ export function MenuSection({
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
                 setScrollDirection("down");
-            } else if (currentScrollY < lastScrollY) {
+            } else if (currentScrollY < lastScrollYRef.current) {
                 setScrollDirection("up");
             }
-            setLastScrollY(currentScrollY);
+            lastScrollYRef.current = currentScrollY;
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [lastScrollY]);
+    }, []); // Empty dependency array - no infinite loop!
 
     // Detect active category based on scroll position
     useEffect(() => {

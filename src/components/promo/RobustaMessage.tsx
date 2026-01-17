@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Splitting from "splitting";
 import "splitting/dist/splitting.css";
 import "splitting/dist/splitting-cells.css";
 
@@ -16,61 +15,68 @@ export default function RobustaMessage() {
   useEffect(() => {
     if (!sectionRef.current || !wrapperRef.current) return;
 
-    // Initialize Splitting for text
-    const splitResults = Splitting({ target: "[data-splitting]", by: "words" });
+    // Dynamically import Splitting to avoid SSR issues
+    const initializeSplitting = async () => {
+      const Splitting = (await import("splitting")).default;
+      
+      // Initialize Splitting for text
+      const splitResults = Splitting({ target: "[data-splitting]", by: "words" });
 
-    const ctx = gsap.context(() => {
-      // 1. Text Color Revealer (Scrub)
-      // "Awaken your boldest senses with"
-      const firstMsgWords = sectionRef.current?.querySelectorAll(".first-message .word");
-      if (firstMsgWords?.length) {
-        gsap.to(firstMsgWords, {
-          color: "#faeade", // Milk color
-          ease: "power1.in",
-          stagger: 0.5, // Much slower stagger for distinct word by word feel
+      const ctx = gsap.context(() => {
+        // 1. Text Color Revealer (Scrub)
+        // "Awaken your boldest senses with"
+        const firstMsgWords = sectionRef.current?.querySelectorAll(".first-message .word");
+        if (firstMsgWords?.length) {
+          gsap.to(firstMsgWords, {
+            color: "#faeade", // Milk color
+            ease: "power1.in",
+            stagger: 0.5, // Much slower stagger for distinct word by word feel
+            scrollTrigger: {
+              trigger: ".first-message",
+              start: "top bottom", // Starts immediately when entering viewport
+              end: "bottom center",
+              scrub: 1,
+            },
+          });
+        }
+
+        // "intense dark roast for the fearless soul"
+        const secMsgWords = sectionRef.current?.querySelectorAll(".second-message .word");
+        if (secMsgWords?.length) {
+          gsap.to(secMsgWords, {
+            color: "#faeade",
+            ease: "power1.in",
+            stagger: 0.5,
+            scrollTrigger: {
+              trigger: ".second-message",
+              start: "top bottom",
+              end: "bottom center",
+              scrub: 1,
+            },
+          });
+        }
+
+        // 2. Center "PURE ROBUSTA" Reveal
+        const revealTl = gsap.timeline({
           scrollTrigger: {
-            trigger: ".first-message",
+            trigger: ".msg-text-scroll",
             start: "top bottom", // Starts immediately when entering viewport
-            end: "bottom center",
+            end: "top 40%",
             scrub: 1,
           },
         });
-      }
 
-      // "intense dark roast for the fearless soul"
-      const secMsgWords = sectionRef.current?.querySelectorAll(".second-message .word");
-      if (secMsgWords?.length) {
-        gsap.to(secMsgWords, {
-          color: "#faeade",
-          ease: "power1.in",
-          stagger: 0.5,
-          scrollTrigger: {
-            trigger: ".second-message",
-            start: "top bottom",
-            end: "bottom center",
-            scrub: 1,
-          },
+        revealTl.to(".msg-text-scroll", {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          ease: "power2.inOut",
         });
-      }
 
-      // 2. Center "PURE ROBUSTA" Reveal
-      const revealTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: ".msg-text-scroll",
-          start: "top bottom", // Starts immediately when entering viewport
-          end: "top 40%",
-          scrub: 1,
-        },
-      });
+      }, sectionRef);
 
-      revealTl.to(".msg-text-scroll", {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-        ease: "power2.inOut",
-      });
+      return () => ctx.revert();
+    };
 
-    }, sectionRef);
-
-    return () => ctx.revert();
+    initializeSplitting();
   }, []);
 
   return (
