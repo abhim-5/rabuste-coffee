@@ -39,16 +39,17 @@ export class SearchIndexService {
     const itemNames: string[] = [];
 
     menuItems.forEach(item => {
+      const itemId = String(item.id);
       // Store item by ID
-      itemsById.set(item.id, item);
+      itemsById.set(itemId, item);
       itemNames.push(item.name);
 
       // Index all searchable fields
-      this.indexField(item.id, item.name, invertedIndex);
+      this.indexField(itemId, item.name, invertedIndex);
       if (item.description) {
-        this.indexField(item.id, item.description, invertedIndex);
+        this.indexField(itemId, item.description, invertedIndex);
       }
-      this.indexField(item.id, item.category, invertedIndex);
+      this.indexField(itemId, item.category, invertedIndex);
     });
 
     this.index = {
@@ -90,17 +91,18 @@ export class SearchIndexService {
   updateItem(item: MenuItem): void {
     if (!this.index) return;
 
-    console.log(`🔄 Updating index for item: ${item.id}`);
+    const itemId = String(item.id);
+    console.log(`🔄 Updating index for item: ${itemId}`);
     
     // Remove old entries if item exists
-    this.removeItem(item.id);
+    this.removeItem(itemId);
     
     // Add new entries
-    this.index.itemsById.set(item.id, item);
+    this.index.itemsById.set(itemId, item);
     
     // Update item names list
     const existingIndex = this.index.itemNames.findIndex(name => 
-      this.index!.itemsById.get(item.id)?.name === name
+      this.index!.itemsById.get(itemId)?.name === name
     );
     
     if (existingIndex >= 0) {
@@ -110,11 +112,11 @@ export class SearchIndexService {
     }
     
     // Re-index the item
-    this.indexField(item.id, item.name, this.index.invertedIndex);
+    this.indexField(itemId, item.name, this.index.invertedIndex);
     if (item.description) {
-      this.indexField(item.id, item.description, this.index.invertedIndex);
+      this.indexField(itemId, item.description, this.index.invertedIndex);
     }
-    this.indexField(item.id, item.category, this.index.invertedIndex);
+    this.indexField(itemId, item.category, this.index.invertedIndex);
     
     this.index.lastBuilt = Date.now();
     this.index.itemCount = this.index.itemsById.size;

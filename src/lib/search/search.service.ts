@@ -294,7 +294,7 @@ export class SearchService {
       }
 
       // NEW: Popularity boost (if dealPercentage exists, it's popular)
-      if (item.dealPercentage && item.dealPercentage > 0) {
+      if ((item as any).dealPercentage && (item as any).dealPercentage > 0) {
         score *= 1.2;
       }
 

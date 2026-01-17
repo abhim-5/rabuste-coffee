@@ -29,12 +29,12 @@ const BookingsSection = ({ bookings, onUpdateStatus }: { bookings: any[], onUpda
     // I will replace `export default function GalleryPage...` onwards.
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Bookings</h3>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-500">
-                     <thead className="bg-gray-50 text-xs uppercase text-gray-700">
+                    <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                         <tr>
                             <th className="px-6 py-3">Date</th>
                             <th className="px-6 py-3">ID</th>
@@ -51,8 +51,8 @@ const BookingsSection = ({ bookings, onUpdateStatus }: { bookings: any[], onUpda
                                 <td className="px-6 py-4"><span className="font-mono text-xs">{booking.id.split('-')[0]}...</span></td>
                                 <td className="px-6 py-4">
                                     <div>
-                                         <p className="font-medium text-sm">{booking.art_pieces?.name || 'Unknown'}</p>
-                                         <p className="text-xs text-gray-500">{booking.art_pieces?.artist}</p>
+                                        <p className="font-medium text-sm">{booking.art_pieces?.name || 'Unknown'}</p>
+                                        <p className="text-xs text-gray-500">{booking.art_pieces?.artist}</p>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4"><span className="text-xs truncate max-w-[100px]">{booking.user_id}</span></td>
@@ -62,11 +62,10 @@ const BookingsSection = ({ bookings, onUpdateStatus }: { bookings: any[], onUpda
                                         <select
                                             value={booking.status || 'pending'}
                                             onChange={(e) => onUpdateStatus(booking.id, e.target.value)}
-                                            className={`block w-[130px] pl-3 pr-8 py-2 text-sm font-semibold rounded-full border appearance-none focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer transition shadow-sm ${
-                                                booking.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-200 focus:ring-green-500' :
+                                            className={`block w-[130px] pl-3 pr-8 py-2 text-sm font-semibold rounded-full border appearance-none focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer transition shadow-sm ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-200 focus:ring-green-500' :
                                                 booking.status === 'cancelled' ? 'bg-red-100 text-red-800 border-red-200 focus:ring-red-500' :
-                                                'bg-amber-100 text-amber-800 border-amber-200 focus:ring-amber-500'
-                                            }`}
+                                                    'bg-amber-100 text-amber-800 border-amber-200 focus:ring-amber-500'
+                                                }`}
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             <option value="pending">Pending</option>
@@ -77,7 +76,7 @@ const BookingsSection = ({ bookings, onUpdateStatus }: { bookings: any[], onUpda
                                 </td>
                             </tr>
                         ))}
-                         {bookings.length === 0 && (
+                        {bookings.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                                     No bookings found
@@ -115,7 +114,7 @@ export default function GalleryPage() {
                 .from('art_purchases')
                 .select(`*, art_pieces (id, name, artist, price, image_url)`)
                 .order('created_at', { ascending: false });
-                
+
             if (purchaseError) throw purchaseError;
             setBookings(purchases || []);
 
@@ -178,9 +177,9 @@ export default function GalleryPage() {
     };
 
     const handleUpdateArt = async (id: string, updates: any) => {
-         const res = await fetch('/api/gallery/items', {
+        const res = await fetch('/api/gallery/items', {
             method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, ...updates })
         });
         if (!res.ok) throw new Error('Failed to update');
@@ -205,8 +204,8 @@ export default function GalleryPage() {
                 </div>
             )
         },
-        { key: 'total_sales', label: 'Sales', sortable: true, render: (row) => row.total_sales },
-        { key: 'total_revenue', label: 'Revenue', sortable: true, render: (row) => `₹${row.total_revenue.toLocaleString()}` },
+        { key: 'total_sales', label: 'Sales', sortable: true, render: (row: ArtistData) => row.total_sales },
+        { key: 'total_revenue', label: 'Revenue', sortable: true, render: (row: ArtistData) => `₹${row.total_revenue.toLocaleString()}` },
     ];
 
     return (
@@ -216,7 +215,7 @@ export default function GalleryPage() {
                     <h1 className="text-3xl font-bold text-gray-900">Art Gallery Management</h1>
                     <p className="text-gray-600 mt-1">Manage art pieces and view sales analytics</p>
                 </div>
-                <button 
+                <button
                     onClick={() => setIsAddModalOpen(true)}
                     className="bg-[#8B6F47] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#725a39] transition shadow-sm font-medium"
                 >
@@ -233,9 +232,9 @@ export default function GalleryPage() {
                     <StatCard title="Avg Sale Price" value={`₹${stats.avg_price?.toFixed(0) || 0}`} icon={Palette} loading={loading} />
                 </div>
             )}
-            
+
             {/* Inventory Grid */}
-             <div className="space-y-4">
+            <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-900">Art Inventory</h2>
                     {artPieces.length > INITIAL_ART_DISPLAY_COUNT && (
@@ -272,7 +271,7 @@ export default function GalleryPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                     <BookingsSection bookings={bookings} onUpdateStatus={handleUpdateStatus} />
+                    <BookingsSection bookings={bookings} onUpdateStatus={handleUpdateStatus} />
                 </div>
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
@@ -280,16 +279,16 @@ export default function GalleryPage() {
                             <h3 className="text-lg font-semibold text-gray-900">Artist Performance</h3>
                         </div>
                         <div className="p-0">
-                           <DataTable data={artists} columns={columns} loading={loading} searchable={false} pagination={false} />
+                            <DataTable data={artists} columns={columns} loading={loading} searchable={false} />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <AddArtModal 
-                isOpen={isAddModalOpen} 
-                onClose={() => setIsAddModalOpen(false)} 
-                onSuccess={fetchData} 
+            <AddArtModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onSuccess={fetchData}
             />
         </div>
     );

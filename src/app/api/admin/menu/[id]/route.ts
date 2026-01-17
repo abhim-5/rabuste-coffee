@@ -8,9 +8,10 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Auth check
@@ -32,7 +33,6 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { id } = params;
 
     // Update menu item
     const { data, error } = await supabase
@@ -82,9 +82,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Auth check
@@ -104,8 +105,6 @@ export async function DELETE(
     if (!profile || !['admin', 'superadmin'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const { id } = params;
 
     // Delete menu item
     const { error } = await supabase

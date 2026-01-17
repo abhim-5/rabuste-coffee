@@ -88,7 +88,7 @@ export interface OrderItem {
 export interface Order {
   id: string;
   date: Date;
-  status: "delivered" | "preparing" | "pending" | "cancelled";
+  status: "completed" | "delivered" | "ready" | "confirmed" | "preparing" | "pending" | "cancelled";
   pointsEarned: number;
   total: number;
   items: OrderItem[];
