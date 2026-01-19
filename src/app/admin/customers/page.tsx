@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import DataTable from '@/components/admin/DataTable';
 import StatCard from '@/components/admin/StatCard';
-import { Users, TrendingUp, Award, DollarSign } from 'lucide-react';
+import { Users, TrendingUp, DollarSign } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface Customer {
@@ -13,7 +13,6 @@ interface Customer {
     full_name: string | null;
     total_orders: number;
     total_spent: number;
-    points_balance: number;
     created_at: string;
 }
 
@@ -48,24 +47,12 @@ export default function CustomersPage() {
                     const totalOrders = orders?.length || 0;
                     const totalSpent = orders?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
 
-                    // Get points
-                    const { data: pointsData } = await supabase
-                        .from('points_transactions')
-                        .select('points, transaction_type')
-                        .eq('user_id', profile.id);
-
-                    const pointsEarned = pointsData?.filter(t => t.transaction_type === 'earned')
-                        .reduce((sum, t) => sum + t.points, 0) || 0;
-                    const pointsRedeemed = pointsData?.filter(t => t.transaction_type === 'redeemed')
-                        .reduce((sum, t) => sum + Math.abs(t.points), 0) || 0;
-
                     return {
                         user_id: profile.id,
                         email: profile.email,
                         full_name: profile.full_name,
                         total_orders: totalOrders,
                         total_spent: totalSpent,
-                        points_balance: pointsEarned - pointsRedeemed,
                         created_at: profile.created_at
                     };
                 })
@@ -83,7 +70,6 @@ export default function CustomersPage() {
                 new Date(c.created_at) >= sevenDaysAgo
             ).length;
 
-            const totalPoints = customerData.reduce((sum, c) => sum + c.points_balance, 0);
             const avgSpent = customerData.length > 0
                 ? customerData.reduce((sum, c) => sum + c.total_spent, 0) / customerData.length
                 : 0;
@@ -91,7 +77,6 @@ export default function CustomersPage() {
             setStats({
                 total: customerData.length,
                 new_7d: newCustomers,
-                total_points: totalPoints,
                 avg_spent: avgSpent
             });
 
@@ -126,17 +111,6 @@ export default function CustomersPage() {
             render: (row: Customer) => (
                 <span className="font-semibold text-green-700">₹{row.total_spent.toLocaleString()}</span>
             )
-        },
-        {
-            key: 'points_balance',
-            label: 'Points',
-            sortable: true,
-            render: (row: Customer) => (
-                <span className="flex items-center gap-1">
-                    <Award className="w-4 h-4 text-[#D4AF37]" />
-                    {row.points_balance}
-                </span>
-            )
         }
     ];
 
@@ -165,12 +139,6 @@ export default function CustomersPage() {
                         title="Avg Spent"
                         value={`₹${stats.avg_spent?.toFixed(0) || 0}`}
                         icon={DollarSign}
-                        loading={loading}
-                    />
-                    <StatCard
-                        title="Total Points"
-                        value={stats.total_points}
-                        icon={Award}
                         loading={loading}
                     />
                 </div>

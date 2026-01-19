@@ -73,11 +73,13 @@ export default function AdminDashboardPage() {
             };
 
             setOrderStatusData(
-                Object.entries(statusCounts).map(([status, count]) => ({
-                    status: status.charAt(0).toUpperCase() + status.slice(1),
-                    count,
-                    color: statusColors[status as keyof typeof statusColors]
-                }))
+                Object.entries(statusCounts)
+                    .filter(([status]) => status !== 'preparing' && status !== 'cancelled')
+                    .map(([status, count]) => ({
+                        status: status.charAt(0).toUpperCase() + status.slice(1),
+                        count,
+                        color: statusColors[status as keyof typeof statusColors]
+                    }))
             );
 
             // ========== ORDER ITEMS FOR TOP PRODUCTS ==========
