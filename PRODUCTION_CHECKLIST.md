@@ -100,6 +100,89 @@ Located in: `.gitignore`
    - Note bundle sizes
    - Verify no critical errors
 
+## 🔐 Authentication & Deployment Configuration
+
+### 1. Supabase Authentication Setup
+
+**Before deploying to production:**
+
+1. **Configure Redirect URLs** (CRITICAL)
+   - Navigate to: Supabase Dashboard → Authentication → URL Configuration
+   - Set **Site URL** to production domain:
+     ```
+     https://your-production-domain.com
+     ```
+   - Add to **Redirect URLs** (comma-separated):
+     ```
+     http://localhost:3000/auth/callback,
+     https://your-production-domain.com/auth/callback
+     ```
+   - ✅ SAVE changes
+
+2. **Enable Email Provider**
+   - Authentication → Providers → Email
+   - ✅ Enable Email provider
+   - ✅ Enable "Confirm email" (recommended)
+   - Configure rate limits as needed
+
+3. **Configure Google OAuth**
+   - Authentication → Providers → Google
+   - ✅ Enable Google provider
+   - Add Client ID (from Google Cloud Console)
+   - Add Client Secret (from Google Cloud Console)
+   - ✅ SAVE
+
+4. **Customize Email Templates** (Optional)
+   - Authentication → Email Templates
+   - Update "Confirm signup" template
+   - Update "Reset Password" template
+   - Ensure templates use `{{ .SiteURL }}` for links
+   - Use brand name "Rabuste Coffee"
+
+### 2. Google OAuth Configuration
+
+**In Google Cloud Console:**
+
+1. **Access Credentials**
+   - Go to [console.cloud.google.com](https://console.cloud.google.com/)
+   - Select your project
+   - APIs & Services → Credentials
+
+2. **Configure OAuth Client**
+   - Select your OAuth 2.0 Client ID
+   - Under **Authorized JavaScript origins**, add:
+     ```
+     http://localhost:3000
+     https://your-production-domain.com
+     https://[your-supabase-project].supabase.co
+     ```
+   - Under **Authorized redirect URIs**, add:
+     ```
+     http://localhost:3000/auth/callback
+     https://your-production-domain.com/auth/callback
+     https://[your-supabase-project].supabase.co/auth/v1/callback
+     ```
+   - ✅ SAVE (wait 5 minutes for propagation)
+
+### 3. Environment Variables Verification
+
+**Required variables for production:**
+
+- ✅ `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- ✅ `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon/public key
+- ✅ `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side only)
+- ✅ `NEXT_PUBLIC_RAZORPAY_KEY_ID` - **LIVE** key (rzp_live_xxx)
+- ✅ `RAZORPAY_KEY_SECRET` - **LIVE** secret key
+- ✅ `GEMINI_API_KEY` - Google Gemini API key
+- ✅ `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` - reCAPTCHA site key (optional)
+- ✅ `RECAPTCHA_SECRET_KEY` - reCAPTCHA secret key (optional)
+
+**Set in Vercel Dashboard:**
+- Settings → Environment Variables
+- Add all variables
+- Select: Production, Preview, Development
+
+
 ## 🚀 Vercel Deployment Steps
 
 ### 1. Connect GitHub Repository

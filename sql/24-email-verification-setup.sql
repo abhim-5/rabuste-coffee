@@ -13,7 +13,7 @@ MANUAL STEPS REQUIRED IN SUPABASE DASHBOARD:
 3. Set "Site URL" to your production URL (e.g., https://your-domain.com)
 4. Set "Redirect URLs" to include:
    - http://localhost:3000/auth/callback (for development)
-   - https://your-domain.com/auth/callback (for production)
+   - https://your-production-domain.com/auth/callback (for production)
 
 5. Go to Authentication → Email Templates → "Confirm signup"
 6. Verify the template looks good (optional: customize it)
