@@ -179,6 +179,19 @@ CREATE TABLE public.order_items (
   CONSTRAINT order_items_pkey PRIMARY KEY (id),
   CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
 );
+CREATE TABLE public.order_verifications (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id uuid NOT NULL UNIQUE,
+  verification_token character varying NOT NULL UNIQUE,
+  qr_data_url text NOT NULL,
+  is_verified boolean NOT NULL DEFAULT false,
+  verified_at timestamp with time zone,
+  verified_by uuid,
+  expires_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT order_verifications_pkey PRIMARY KEY (id),
+  CONSTRAINT order_verifications_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
+);
 CREATE TABLE public.orders (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -318,11 +331,10 @@ CREATE TABLE public.workshop_requests (
 CREATE TABLE public.workshop_reviews (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   workshop_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  rating integer CHECK (rating >= 1 AND rating <= 5),
-  review_text text,
+  user_id uuid,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment text,
   created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT workshop_reviews_pkey PRIMARY KEY (id),
   CONSTRAINT workshop_reviews_workshop_id_fkey FOREIGN KEY (workshop_id) REFERENCES public.workshops(id),
   CONSTRAINT workshop_reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)

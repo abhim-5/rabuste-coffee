@@ -64,6 +64,8 @@ export function Cart({
     const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
     const [couponEarned, setCouponEarned] = useState<{ amount: number } | null>(null);
     const [completedOrderNumber, setCompletedOrderNumber] = useState<string>('');
+    const [completedOrderType, setCompletedOrderType] = useState<OrderType>('takeaway-scheduled'); // Track order type
+    const [orderQRCode, setOrderQRCode] = useState<string | null>(null); // Store QR code
     const [lastPaymentId, setLastPaymentId] = useState<string>('');
     const [userNextOrderCoupons, setUserNextOrderCoupons] = useState<any[]>([]);
 
@@ -310,11 +312,27 @@ export function Cart({
                         const verifyData = await verifyRes.json();
 
                         if (verifyData.success) {
-                            // Generate Bill with proper order number
+                            // Store order type for QR generation
+                            setCompletedOrderType(orderType);
+
+                            // Generate QR code for takeaway orders
+                            if (orderType === 'takeaway-now' || orderType === 'takeaway-scheduled') {
+                                try {
+                                    const { generateOrderQR } = await import('@/utils/qrGenerator');
+                                    const qrCode = await generateOrderQR(data.orderNumber);
+                                    setOrderQRCode(qrCode);
+                                } catch (err) {
+                                    console.error('Failed to generate QR code:', err);
+                                }
+                            }
+
+                            // Generate Bill with proper order number and order type
                             const { generateBillPDF } = await import('@/utils/billGenerator');
 
-                            generateBillPDF({
+                            await generateBillPDF({
                                 orderId: data.orderNumber || `INV-${Date.now()}`,
+                                orderNumber: data.orderNumber,
+                                orderType: orderType,
                                 date: new Date().toLocaleDateString(),
                                 customerName: currentUser.email || 'Customer',
                                 items: filteredItems.map(i => ({
@@ -415,10 +433,32 @@ export function Cart({
                                         {completedOrderNumber || 'Generating...'}
                                     </p>
                                     {/* Small Razorpay Payment ID for support reference */}
-                                    <p className="font-sans text-xs text-[#a8a29e] mt-2">
+                                    <p className="text-xs text-gray-500 text-center mt-2">
                                         Payment ID: {lastPaymentId || 'N/A'}
                                     </p>
                                 </div>
+
+                                {/* QR Code Section - Only for Takeaway Orders */}
+                                {(completedOrderType === 'takeaway-now' || completedOrderType === 'takeaway-scheduled') && orderQRCode && (
+                                    <div className="w-full max-w-md mb-6 p-6 bg-white border-2 border-[#8B6F47] rounded-xl">
+                                        <h3 className="font-serif text-lg font-bold text-gray-900 text-center mb-2">
+                                            Pickup Verification QR
+                                        </h3>
+                                        <p className="text-sm text-gray-600 text-center mb-4">
+                                            Show this QR code at pickup counter
+                                        </p>
+                                        <div className="flex justify-center">
+                                            <img
+                                                src={orderQRCode}
+                                                alt="Order Verification QR Code"
+                                                className="w-48 h-48 border-2 border-gray-200 rounded-lg"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 text-center mt-3">
+                                            Also included in your PDF receipt
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div className="w-full space-y-3">
                                     <button

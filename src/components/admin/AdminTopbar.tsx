@@ -24,7 +24,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
             {/* Left Side - Page Title & Mobile Menu */}
             <div className="flex items-center gap-4">
                 {/* Mobile Menu Button */}
-                <button 
+                <button
                     onClick={onMenuClick}
                     className="p-2 -ml-2 text-[#7f3b2d] hover:bg-[#7f3b2d]/5 rounded-lg lg:hidden"
                 >
@@ -41,6 +41,18 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
 
             {/* Right Side - Actions */}
             <div className="flex items-center gap-3 lg:gap-6">
+                {/* V Scan QR */}
+                <Link
+                    href="/admin/verify-order"
+                    className="flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 bg-[#8B6F47] hover:bg-[#6d5638] text-white rounded-full transition-all text-[10px] lg:text-xs font-bold tracking-wider uppercase group shadow-md"
+                    title="Verify Order QR"
+                >
+                    <svg className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                    <span className="hidden sm:inline">Scan QR</span>
+                </Link>
+
                 {/* View as Customer */}
                 <Link
                     href="/"

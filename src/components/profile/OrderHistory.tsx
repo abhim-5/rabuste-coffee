@@ -96,15 +96,20 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false, onReorder 
         try {
             const { generateBillPDF } = await import('@/utils/billGenerator');
 
-            // Use order_number if available, fallback to id
+            // Extract order details
             const orderNumber = (order as any).order_number || order.id;
-            const discount = (order as any).discount || 0;
+            const orderType = (order as any).order_type || 'dine-in';
+            const discount = (order as any).coupon_discount || (order as any).discount || 0;
             const subtotal = (order as any).subtotal || order.total;
 
-            generateBillPDF({
+            console.log('📄 Generating bill for order:', orderNumber, 'Type:', orderType);
+
+            await generateBillPDF({
                 orderId: orderNumber,
+                orderNumber: orderNumber,
+                orderType: orderType,
                 date: new Date(order.date).toLocaleDateString(),
-                customerName: "Valued Customer", // You can pass user name via props if needed
+                customerName: "Valued Customer",
                 items: order.items.map(item => ({
                     name: item.name,
                     quantity: item.quantity,
@@ -116,9 +121,11 @@ export function OrderHistory({ orders, totalSpent, isDesktop = false, onReorder 
                 total: order.total,
                 paymentMethod: 'Online / Paid'
             });
+
+            console.log('✅ Bill generated successfully');
         } catch (error) {
-            console.error('Error generating bill:', error);
-            alert('Failed to generate bill');
+            console.error('❌ Error generating bill:', error);
+            alert(`Failed to generate bill: ${(error as Error).message || 'Unknown error'}`);
         }
     };
 
