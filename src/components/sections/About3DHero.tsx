@@ -63,7 +63,7 @@ const About3DHero = () => {
               // Let's use a conditional animate prop if we had 'isMobile' state here, but we don't.
               // We'll rely on the fact that 'inset' percentage works on both.
               transition={{ 
-                duration: 1.5, // Slow reveal
+                duration: 3, // Slower reveal for more dramatic effect
                 delay: textStartDelay, 
                 ease: [0.22, 1, 0.36, 1] // Custom ease
               }}

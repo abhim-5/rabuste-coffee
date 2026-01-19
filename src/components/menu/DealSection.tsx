@@ -57,9 +57,9 @@ function ProductCountdown({ expiryDate, onExpire }: ProductCountdownProps) {
     const textColor = isUrgent ? "text-red-600" : "text-[#8B6F47]";
 
     return (
-        <div className={`flex items-center gap-1.5 text-xs font-bold ${textColor} bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-current/20`}>
-            <Clock className="w-3 h-3" />
-            <span className="font-mono tracking-wide">
+        <div className={`flex items-center gap-1 text-[10px] lg:text-xs font-bold ${textColor} bg-white/80 backdrop-blur-sm px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-full shadow-sm border border-current/20`}>
+            <Clock className="w-1.5 h-1.5 lg:w-3 lg:h-3" />
+            <span className="font-mono tracking-tight lg:tracking-wide">
                 {String(timeLeft.hours).padStart(2, '0')}:
                 {String(timeLeft.minutes).padStart(2, '0')}:
                 {String(timeLeft.seconds).padStart(2, '0')}
@@ -106,13 +106,13 @@ export function DealSection({
                     <div className="relative">
                         <div className="flex items-center gap-3 px-8 py-3 bg-[#7f3b2d] text-[#faeade] rounded-full shadow-xl border border-[#faeade]/20 transform hover:scale-105 transition-transform duration-300">
                             <Sparkles className="w-5 h-5 animate-pulse text-[#e3a458]" />
-                            <h2 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold uppercase tracking-[0.15em] mx-2">
+                            <h2 className="font-serif text-sm sm:text-xl lg:text-2xl font-bold uppercase tracking-[0.15em] mx-2">
                                 Limited Time Deals
                             </h2>
                             <Sparkles className="w-5 h-5 animate-pulse text-[#e3a458]" />
                         </div>
                         {/* Decorative line */}
-                        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[#262626]/20 -z-10 transform scale-x-150" />
+                        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[#262626]/20 -z-10" />
                     </div>
                     
                     <p className="mt-4 font-sans text-[#262626]/70 text-xl font-medium">

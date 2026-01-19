@@ -115,8 +115,8 @@ export function CoffeeDetail({
                     transition={{ type: "spring", damping: 30, stiffness: 300 }}
                     className="fixed inset-x-0 bottom-0 lg:inset-0 lg:flex lg:items-center lg:justify-center z-[110] pointer-events-none"
                 >
-                    <div className="rounded-t-2xl rounded-b-none lg:rounded-2xl max-h-[90vh] lg:max-h-[85vh] w-full lg:w-auto lg:max-w-4xl overflow-hidden shadow-2xl pointer-events-auto border-[0.5px] border-[#8B6F47] max-w-full" style={{ backgroundColor: "#D8CBB8" }}>
-                        <div className="sticky top-0 z-10 px-4 lg:px-6 py-4 border-b-[0.5px] border-[#8B6F47] flex items-center justify-between" style={{ backgroundColor: "#D8CBB8" }}>
+                    <div className="rounded-t-2xl rounded-b-none lg:rounded-2xl max-h-[90vh] lg:max-h-[85vh] w-full lg:w-auto lg:max-w-4xl overflow-hidden shadow-2xl pointer-events-auto border-[0.5px] border-[#8B6F47] max-w-full" style={{ backgroundColor: "#faeade" }}>
+                        <div className="sticky top-0 z-10 px-4 lg:px-6 py-4 border-b-[0.5px] border-[#8B6F47] flex items-center justify-between" style={{ backgroundColor: "#faeade" }}>
                             <h2 className="font-serif text-xl lg:text-2xl font-bold text-[#262626]">
                                 Product Details
                             </h2>
