@@ -39,11 +39,17 @@ export async function GET(request: NextRequest) {
 
     // Transform to frontend format
     const transformedArt = (purchases || []).map(purchase => {
-      const imageUrl = purchase.art_pieces?.image_url;
-      // Ensure image has proper path prefix
-      const imagePath = imageUrl 
-        ? (imageUrl.startsWith('/') || imageUrl.startsWith('http') ? imageUrl : `/gallery/${imageUrl}`)
-        : '/gallery/default.jpg';
+      let imageUrl = '/gallery/default.jpg'; // Default fallback
+      
+      if (purchase.art_pieces?.image_url) {
+        // If it's already a full URL (starts with http), use it
+        if (purchase.art_pieces.image_url.startsWith('http')) {
+          imageUrl = purchase.art_pieces.image_url;
+        } else {
+          // It's just a filename, construct full Supabase URL
+          imageUrl = `https://cxwudthziqkqazzpatlp.supabase.co/storage/v1/object/public/gallery/${purchase.art_pieces.image_url}`;
+        }
+      }
       
       return {
         id: purchase.art_pieces?.id || purchase.id,
@@ -51,7 +57,7 @@ export async function GET(request: NextRequest) {
         artist: purchase.art_pieces?.artist || 'Artist',
         purchaseDate: purchase.purchase_date,
         price: purchase.purchase_price || purchase.art_pieces?.price || 0,
-        image: imagePath,
+        image: imageUrl,
         status: purchase.status || 'purchased'
       };
     });

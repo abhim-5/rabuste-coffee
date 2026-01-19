@@ -50,12 +50,10 @@ export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionPro
                                 >
                                     <div className="flex gap-4 p-4">
                                         <div className="relative h-24 w-24 flex-shrink-0 rounded-xl overflow-hidden">
-                                            <Image
+                                            <img
                                                 src={piece.image}
                                                 alt={piece.title}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                                sizes="96px"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -185,14 +183,11 @@ export function ArtCollection({ artPieces, isDesktop = false }: ArtCollectionPro
 
                                         <div className="flex items-center gap-4 p-4">
                                             <div className="relative h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden">
-                                                <Image
+                                                <img
                                                     src={piece.image}
                                                     alt={piece.title}
-                                                    fill
-                                                    className="object-cover"
-                                                    sizes="80px"
+                                                    className="w-full h-full object-cover"
                                                 />
-                                                {/* No overlay needed here */}
                                             </div>
 
                                             <div className="flex-1 min-w-0">

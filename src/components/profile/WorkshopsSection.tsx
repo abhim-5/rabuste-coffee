@@ -337,12 +337,10 @@ export function WorkshopsSection({ workshops, totalSpent, isDesktop = false }: W
 
                                     <div className="flex items-center gap-4 p-4">
                                         <div className="relative h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden">
-                                            <Image
+                                            <img
                                                 src={workshop.image}
                                                 alt={workshop.title}
-                                                fill
-                                                className="object-cover"
-                                                sizes="80px"
+                                                className="w-full h-full object-cover"
                                             />
                                         </div>
 

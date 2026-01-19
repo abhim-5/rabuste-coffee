@@ -303,11 +303,104 @@ export default function ProfilePage() {
                     />
                     <OrderHistory orders={(orders as any) || []} totalSpent={ordersTotal} onReorder={handleReorder} />
                     <WorkshopsSection workshops={(workshops as any) || []} totalSpent={workshopsTotal} />
+                    
+                    <section className="w-full py-8 lg:py-10" style={{ backgroundColor: "#D8CBB8" }}>
+                        <div className="mx-auto w-full px-4 lg:px-6 max-w-6xl">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="flex flex-col items-center mb-8"
+                            >
+                                <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-3 text-center">
+                                    Workshop Requests
+                                </h2>
+                                <div className="relative w-24 h-6 mb-3">
+                                    <Image
+                                        src="/title-separator.png"
+                                        fill
+                                        alt=""
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </motion.div>
+                            <WorkshopRequestsSection />
+                        </div>
+                    </section>
+
                     <ArtCollection artPieces={(artPieces as any) || []} />
-                    <div className="container mx-auto px-4 pb-8">
-                        <h2 className="text-2xl font-bold text-[#292524] mb-6">Cafe Reviews</h2>
-                        <CafeReviewsSection />
-                    </div>
+                    
+                    <section className="w-full py-8 lg:py-10" style={{ backgroundColor: "#D8CBB8" }}>
+                        <div className="mx-auto w-full px-4 lg:px-6 max-w-6xl">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="flex flex-col items-center mb-8"
+                            >
+                                <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-3 text-center">
+                                    My Coupons
+                                </h2>
+                                <div className="relative w-24 h-6 mb-3">
+                                    <Image
+                                        src="/title-separator.png"
+                                        fill
+                                        alt=""
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </motion.div>
+                            <MyCouponsSection />
+                        </div>
+                    </section>
+                    
+                    <section className="w-full py-8 lg:py-10" style={{ backgroundColor: "#D8CBB8" }}>
+                        <div className="mx-auto w-full px-4 lg:px-6 max-w-6xl">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="flex flex-col items-center mb-8"
+                            >
+                                <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-3 text-center">
+                                    Franchise Requests
+                                </h2>
+                                <div className="relative w-24 h-6 mb-3">
+                                    <Image
+                                        src="/title-separator.png"
+                                        fill
+                                        alt=""
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </motion.div>
+                            <FranchiseRequestsSection />
+                        </div>
+                    </section>
+                    
+                    <section className="w-full py-8 lg:py-10" style={{ backgroundColor: "#D8CBB8" }}>
+                        <div className="mx-auto w-full px-4 lg:px-6 max-w-6xl">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="flex flex-col items-center mb-8"
+                            >
+                                <h2 className="font-display text-2xl lg:text-3xl font-bold text-[#404040] mb-3 text-center">
+                                    Cafe Reviews
+                                </h2>
+                                <div className="relative w-24 h-6 mb-3">
+                                    <Image
+                                        src="/title-separator.png"
+                                        fill
+                                        alt=""
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </motion.div>
+                            <CafeReviewsSection />
+                        </div>
+                    </section>
 
                     <div className="container mx-auto px-4 py-8">
                         <div className="max-w-lg mx-auto flex flex-row items-center justify-center gap-4">
@@ -497,9 +590,9 @@ export default function ProfilePage() {
                                                     <Icon className="w-5 h-5" />
                                                 </div>
                                                 <p className="text-xs text-[#78716c] font-medium mb-1">{stat.label}</p>
-                                                <p className="font-display text-xl font-bold text-[#7f3b2d]">
+                                                <div className="font-display text-xl font-bold text-[#7f3b2d]">
                                                     {profileLoading ? <Skeleton className="h-6 w-16" /> : stat.value}
-                                                </p>
+                                                </div>
                                             </motion.div>
                                         );
                                     })}
@@ -552,6 +645,9 @@ export default function ProfilePage() {
                                         )}
                                         {activeSection === "workshop-requests" && (
                                             <WorkshopRequestsSection />
+                                        )}
+                                        {activeSection === "reviews" && (
+                                            <CafeReviewsSection />
                                         )}
                                     </div>
                                 </div>

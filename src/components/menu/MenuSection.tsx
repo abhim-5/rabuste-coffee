@@ -418,6 +418,7 @@ export function MenuSection({
                     if (e.key === 'Enter') handleSearchSubmit();
                   }}
                   className="flex-1 bg-transparent border-none outline-none px-3 text-[#262626] placeholder:text-[#262626]/60 text-sm h-full font-medium font-sans"
+                  suppressHydrationWarning
                 />
                 
                 {/* Voice Search & Clear Buttons */}
@@ -539,6 +540,7 @@ export function MenuSection({
                                         setShowFilterDropdown(false);
                                     }}
                                     className="flex items-center gap-1 px-4 py-2 border-[0.5px] border-[#8B6F47] bg-[#faeade] text-[#262626] font-sans text-sm font-semibold transition-all cursor-pointer whitespace-nowrap hover:bg-[#ebdec8]"
+                                    suppressHydrationWarning
                                 >
                                     Sort
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" className={`transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}>
@@ -546,7 +548,7 @@ export function MenuSection({
                                     </svg>
                                 </button>
                                 {showSortDropdown && (
-                                    <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20 w-[180px]">
+                                    <div className="absolute top-full left-0 lg:left-auto lg:right-0 mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20 w-[180px]">
                                         {[
                                             { value: "default", label: "Default" },
                                             { value: "price-low", label: "Price: Low-High" },
@@ -583,6 +585,7 @@ export function MenuSection({
                                             ? "bg-[#8B6F47] text-white border-[#8B6F47]"
                                             : "bg-[#faeade] text-[#262626] border-[#8B6F47] hover:bg-[#ebdec8]"
                                     }`}
+                                    suppressHydrationWarning
                                 >
                                     Filter
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" className={`transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`}>
@@ -590,7 +593,7 @@ export function MenuSection({
                                     </svg>
                                 </button>
                                 {showFilterDropdown && (
-                                    <div className="absolute top-full right-0 left-auto mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20 w-[240px] lg:w-auto max-h-[400px] overflow-y-auto lg:overflow-visible">
+                                    <div className="absolute top-full left-0 lg:left-auto lg:right-0 mt-1 bg-white rounded-lg shadow-lg border-[0.5px] border-[#8B6F47] overflow-hidden z-20 w-[min(240px,calc(100vw-2rem))] lg:w-auto max-h-[400px] overflow-y-auto lg:overflow-visible">
                                         {/* Desktop: Horizontal Layout - BIGGER */}
                                         <div className="hidden lg:flex lg:flex-row lg:divide-x lg:divide-[#8B6F47]/10">
                                             {/* Temperature */}
@@ -815,6 +818,7 @@ export function MenuSection({
                                     setTimeout(() => setSearchQuery(searchQuery.trim()), 0);
                                 }}
                                 className="px-4 py-2 border-[0.5px] border-[#8B6F47] bg-[#8B6F47] text-white font-sans text-sm font-semibold hover:bg-[#6d5835] transition-all whitespace-nowrap"
+                                suppressHydrationWarning
                             >
                                 Apply
                             </button>
@@ -832,6 +836,7 @@ export function MenuSection({
                         className={`sticky z-30 py-4 mb-8 lg:mb-10 shadow-md transition-all duration-300 ${scrollDirection === "down" ? "top-0" : "top-[64px] lg:top-[80px]"
                             }`}
                         style={{ backgroundColor: "#faeade" }}
+                        suppressHydrationWarning
                     >
                         <div className="flex flex-wrap justify-center gap-1.5 lg:gap-3">
                             {categoryFilters.map((filter) => {
