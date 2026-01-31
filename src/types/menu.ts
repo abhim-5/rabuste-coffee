@@ -1,4 +1,5 @@
 export type MenuCategory = 
+  | "rabuste-special"
   | "robusta-cold"
   | "robusta-hot"
   | "blend-cold"
@@ -32,6 +33,7 @@ export interface MenuItem {
   available?: boolean;
   frequentlyBoughtWith?: string[];
   similarItems?: string[];
+  is_rabuste_special?: boolean;
 }
 
 export interface CartItem {

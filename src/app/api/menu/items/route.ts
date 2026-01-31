@@ -78,6 +78,7 @@ export async function GET(request: NextRequest) {
         isDealOfTheDay: item.is_deal_of_day || false,
         dealExpiry: item.deal_expiry,
         is_featured: item.is_featured || false,
+        is_rabuste_special: item.is_rabuste_special || false,
       };
     });
 
