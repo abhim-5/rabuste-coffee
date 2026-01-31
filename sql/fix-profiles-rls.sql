@@ -1,4 +1,4 @@
--- Ensure RLS is enabled on profiles
+-- ensure RLS is enabled on profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Allow Public Read access to profiles (needed for reviews to show names)
